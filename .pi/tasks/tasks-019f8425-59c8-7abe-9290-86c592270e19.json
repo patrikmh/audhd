@@ -1,5 +1,5 @@
 {
-  "nextId": 20,
+  "nextId": 26,
   "tasks": [
     {
       "id": "6",
@@ -17,13 +17,13 @@
       "id": "7",
       "subject": "Add future task scheduling and day view",
       "description": "Add ability to schedule tasks for future dates and show other days' tasks. Add scheduledDate field to tasks and day selector UI.",
-      "status": "in_progress",
+      "status": "completed",
       "activeForm": "Adding future task scheduling",
       "metadata": {},
       "blocks": [],
       "blockedBy": [],
       "createdAt": 1784629681460,
-      "updatedAt": 1784630203247
+      "updatedAt": 1784652759622
     },
     {
       "id": "8",
@@ -84,61 +84,61 @@
       "id": "12",
       "subject": "Create AG-UI SSE streaming endpoint in varv-server",
       "description": "Add POST /ag-ui endpoint that emits AG-UI lifecycle/text/tool/state events via SSE. Wrap existing agent dispatch (classify, refine, breakdown, observer, sync) with AG-UI event emission.",
-      "status": "in_progress",
+      "status": "completed",
       "activeForm": "Building AG-UI streaming endpoint",
       "metadata": {},
       "blocks": [],
       "blockedBy": [],
       "createdAt": 1784638862045,
-      "updatedAt": 1784639079910
+      "updatedAt": 1784652764228
     },
     {
       "id": "13",
       "subject": "Build AG-UI React client with streaming agent display",
       "description": "Add AG-UI SSE client to frontend. Show real-time agent processing steps, streaming text, tool calls, and state updates in the UI. Replace polling-based agent log.",
-      "status": "pending",
+      "status": "completed",
       "activeForm": "Building AG-UI React client",
       "metadata": {},
       "blocks": [],
       "blockedBy": [],
       "createdAt": 1784638893577,
-      "updatedAt": 1784638893577
+      "updatedAt": 1784652768840
     },
     {
       "id": "14",
       "subject": "Define Varv A2UI component catalog",
       "description": "Create A2UI component catalog for Varv's design system: TaskCard, EnergyPicker, BreathingWidget, ToolSuggestion, MorningCheckin, etc. Define which components agents can use.",
-      "status": "pending",
+      "status": "completed",
       "activeForm": "Defining A2UI component catalog",
       "metadata": {},
       "blocks": [],
       "blockedBy": [],
       "createdAt": 1784638908857,
-      "updatedAt": 1784638908857
+      "updatedAt": 1784652773649
     },
     {
       "id": "15",
       "subject": "Build A2UI React renderer for Varv",
       "description": "Create React renderer that takes A2UI JSON messages and renders native Varv-styled components. Wire into agent streaming pipeline.",
-      "status": "pending",
+      "status": "completed",
       "activeForm": "Building A2UI React renderer",
       "metadata": {},
       "blocks": [],
       "blockedBy": [],
       "createdAt": 1784638925946,
-      "updatedAt": 1784638925946
+      "updatedAt": 1784652777915
     },
     {
       "id": "16",
       "subject": "Wire agents to emit A2UI messages through AG-UI stream",
       "description": "Update classify, refine, breakdown, observer agents to generate A2UI component messages alongside their AG-UI text/state events. Observatören suggests tools as A2UI cards.",
-      "status": "pending",
+      "status": "completed",
       "activeForm": "Wiring agents to emit A2UI",
       "metadata": {},
       "blocks": [],
       "blockedBy": [],
       "createdAt": 1784638954007,
-      "updatedAt": 1784638954007
+      "updatedAt": 1784652784095
     },
     {
       "id": "17",
@@ -175,6 +175,78 @@
       "blockedBy": [],
       "createdAt": 1784642108867,
       "updatedAt": 1784642545056
+    },
+    {
+      "id": "20",
+      "subject": "Trim today view — remove duplication and dead stubs",
+      "description": "Remove from today view: (1) TimeAnchor duplication of energy/winddown/progression already in WorkingMemoryDisplay — pick ONE source. (2) Dead calendar/email integration stub (\"inte kopplad till servern än\"). (3) \"Nästa halvdag\" section when empty. (4) Condense stats footer (0 klara / 4 kvar / energi / vinster) into the tasks header. Keep: greeting, one clear next thing, tasks + day strip, capture.",
+      "status": "in_progress",
+      "activeForm": "Trimming today view",
+      "metadata": {},
+      "blocks": [],
+      "blockedBy": [],
+      "createdAt": 1784651961776,
+      "updatedAt": 1784652755730
+    },
+    {
+      "id": "21",
+      "subject": "Move energy mode + meds to less prominent position",
+      "description": "Move energy mode buttons (Stadig/Lågt batteri/Återhämtning) and Medicin idag panel out of the hero/prominent position. Options: collapse into a single \"details\" row, move to a profile/settings panel, or tuck under a toggle. Goal: not the first thing you see, but still accessible.",
+      "status": "in_progress",
+      "activeForm": "Demoting energy and meds",
+      "metadata": {},
+      "blocks": [],
+      "blockedBy": [],
+      "createdAt": 1784651968971,
+      "updatedAt": 1784653015221
+    },
+    {
+      "id": "22",
+      "subject": "Richer task editing — time, notes, images",
+      "description": "Enhance task editing: (1) Set/modify time on tasks (beyond just date). (2) Add notes/description to tasks. (3) Add images to tasks (need backend storage — base64 in DB or file upload). ContextMenu 'Redigera' should open a full edit sheet with all fields. TaskCard should display time and image thumbnail when present.",
+      "status": "pending",
+      "activeForm": "Adding richer task editing",
+      "metadata": {},
+      "blocks": [],
+      "blockedBy": [],
+      "createdAt": 1784651975704,
+      "updatedAt": 1784651975704
+    },
+    {
+      "id": "23",
+      "subject": "Richer idea editing — refine, images",
+      "description": "Enhance idea editing: (1) Refine ideas (exists via Förfinaren agent). (2) Add images to ideas. (3) Rich notes/body. IdeaCard edit mode already has title+note; add image upload. Backend needs image support on Idea model.",
+      "status": "pending",
+      "activeForm": "Adding richer idea editing",
+      "metadata": {},
+      "blocks": [],
+      "blockedBy": [],
+      "createdAt": 1784651981069,
+      "updatedAt": 1784651981069
+    },
+    {
+      "id": "24",
+      "subject": "Richer profile with preferences",
+      "description": "Expand user profile/preferences: baseline energy capacity, wake/winddown times (exist), ADD: preferred/visible tools on landing, theme/density preference, notification prefs, default task duration, breathing pace, which sections to show on today view. Store server-side (extend User model + /api/me PATCH). New profile/settings view.",
+      "status": "pending",
+      "activeForm": "Building richer profile",
+      "metadata": {},
+      "blocks": [],
+      "blockedBy": [],
+      "createdAt": 1784651986811,
+      "updatedAt": 1784651986811
+    },
+    {
+      "id": "25",
+      "subject": "Auto-generate tags from detailed idea descriptions",
+      "description": "When a user adds or refines the detailed description (note/body) of an idea, automatically generate new tags based on the content. Could reuse the Förfinaren/Sorteraren agent to extract keywords/topics from the note, or do lightweight keyword extraction client-side. Update idea.tags with new suggestions (merge, don't overwrite user tags). Trigger on: refine result, manual edit save, and on-demand 'föreslå taggar' button.",
+      "status": "pending",
+      "activeForm": "Adding auto-tagging from descriptions",
+      "metadata": {},
+      "blocks": [],
+      "blockedBy": [],
+      "createdAt": 1784652079721,
+      "updatedAt": 1784652079721
     }
   ]
 }

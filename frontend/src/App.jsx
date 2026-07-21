@@ -5,11 +5,8 @@ import { SystemStatus } from "./components/SystemStatus";
 import SetupWizard from "./components/SetupWizard";
 import DailyCheckin from "./components/DailyCheckin";
 import { TaskInitiationSupport } from "./components/TaskInitiationSupport";
-import { TimeAnchor } from "./components/TimeBlindnessSupport";
-import A2UIRenderer from "./components/A2UIRenderer";
 import { useAgentStream } from "./hooks/useAgentStream";
 import { AgentProgress } from "./components/AgentProgress";
-import { useAgUI } from "./hooks/useAgUI";
 import { T, MODES, ENERGY_LABELS, MOVEMENT_IDEAS, REST_MENU, EDU_CARDS, ICON_CHOICES, WEEKDAYS, ICON_KEYWORDS, PRIORITY_ORDER, API_BASE, AUTH_KEY } from "./constants/tokens";
 import { uid, todayKey, todayWeekday, guessIcon, energyColor, nowHM, hmToMin } from "./utils/helpers";
 import { getAuth, setAuth, clearAuth, login } from "./utils/auth";
@@ -160,11 +157,6 @@ function VarvApp({ username, onLogout }) {
     state,
     setState
   );
-
-  // AG-UI streaming agent panel
-  const agui = useAgUI();
-  const [aguiAgent, setAguiAgent] = useState("classify");
-  const [aguiInput, setAguiInput] = useState("");
 
   // Streaming agent for main app flows (classify, refine, breakdown)
   const streamAgent = useAgentStream();
@@ -886,37 +878,73 @@ function VarvApp({ username, onLogout }) {
             onWinddownClick={() => setTool("sleep")}
           />
 
-          {/* Mode switching - kept minimal */}
+          {/* Compact status row: energy mode + medication, less prominent */}
           <div style={{
             display: 'flex',
-            gap: '8px',
-            justifyContent: 'center',
-            marginTop: '12px'
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 12,
+            marginTop: 10,
+            paddingTop: 10,
+            borderTop: `1px solid ${T.line}`,
+            flexWrap: 'wrap'
           }}>
-            {Object.entries(MODES).map(([k, m]) => (
-              <button
-                key={k}
-                onClick={() => patch({ capacity: k, capacityBy: { day: todayKey(), by: "user" } })}
-                style={{
-                  background: state.capacity === k ? T.petrol : 'transparent',
-                  color: state.capacity === k ? 'white' : T.petrol,
-                  border: `1px solid ${T.petrol}`,
-                  borderRadius: '6px',
-                  padding: '6px 12px',
-                  fontFamily: 'Atkinson Hyperlegible',
-                  fontSize: '0.85rem',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease'
-                }}
-              >
-                {m.label}
-              </button>
-            ))}
-          </div>
+            {/* Energy mode — small text pills */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ fontSize: 11, color: T.soft }}></span>
+              {Object.entries(MODES).map(([k, m]) => (
+                <button
+                  key={k}
+                  onClick={() => patch({ capacity: k, capacityBy: { day: todayKey(), by: "user" } })}
+                  style={{
+                    background: state.capacity === k ? T.petrol : 'transparent',
+                    color: state.capacity === k ? 'white' : T.soft,
+                    border: state.capacity === k ? `1px solid ${T.petrol}` : `1px solid transparent`,
+                    borderRadius: '12px',
+                    padding: '3px 9px',
+                    fontFamily: 'Atkinson Hyperlegible',
+                    fontSize: '0.72rem',
+                    fontWeight: state.capacity === k ? 700 : 400,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  {m.label}
+                </button>
+              ))}
+            </div>
 
-          {/* Time anchor - temporal context for ADHD time blindness */}
-          <div style={{ marginTop: '12px' }}>
-            <TimeAnchor settings={state.settings} />
+            {/* Medication — discreet pill */}
+            {medToday ? (
+              <button
+                style={{ background: 'none', border: 'none', color: medToday.status === 'taken' ? T.moss : T.soft, fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', padding: 0 }}
+                onClick={() => setState((st) => ({ ...st, meds: st.meds.filter((m) => m.day !== todayKey()) }))}
+              >
+                {medToday.status === "taken" ? "✓ medicin" : medToday.status === "skipped" ? "~ medicin" : "· medicin"}
+              </button>
+            ) : (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <span style={{ fontSize: '0.7rem', color: T.soft }}>medicin</span>
+                {["taken", "skipped", "off"].map((v) => (
+                  <button
+                    key={v}
+                    onClick={() => setState((st) => ({ ...st, meds: [...st.meds, { day: todayKey(), status: v }] }))}
+                    style={{
+                      background: 'transparent',
+                      border: `1px solid ${T.line}`,
+                      borderRadius: '10px',
+                      padding: '2px 7px',
+                      fontSize: '0.68rem',
+                      color: T.soft,
+                      cursor: 'pointer',
+                      fontFamily: 'inherit'
+                    }}
+                  >
+                    {v === "taken" ? "✓" : v === "skipped" ? "~" : "·"}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {overBudget && state.capacity !== "recovery" && (
@@ -931,80 +959,7 @@ function VarvApp({ username, onLogout }) {
             </div>
           )}
 
-          {/* medication — discreet daily check */}
-          <div style={s.medRow}>
-            <span style={{ fontSize: 13, color: T.soft }}>Medicin idag</span>
-            {medToday ? (
-              <button
-                style={s.medStatus}
-                onClick={() => setState((st) => ({ ...st, meds: st.meds.filter((m) => m.day !== todayKey()) }))}
-              >
-                {medToday.status === "taken" ? "✓ tagen" : medToday.status === "skipped" ? "hoppade över" : "inte idag"} · ändra
-              </button>
-            ) : (
-              <span style={{ display: "flex", gap: 6 }}>
-                {[["taken", "Tagen"], ["skipped", "Hoppade över"], ["off", "Inte idag"]].map(([v, l]) => (
-                  <button key={v} style={s.medBtn} onClick={() => setState((st) => ({ ...st, meds: [...st.meds, { day: todayKey(), status: v }] }))}>
-                    {l}
-                  </button>
-                ))}
-              </span>
-            )}
-          </div>
         </section>
-
-        {/* ============ Google-synk ============ */}
-        <div style={s.syncRow}>
-          <button style={{ ...s.ghostBtn, flex: 1, fontSize: 13, padding: "9px 8px" }} onClick={syncCalendar} disabled={calBusy}>
-            {calBusy ? "hämtar…" : state.gcal.day === todayKey() ? `🗓️ Kalender · ${state.gcal.events.length} idag` : "🗓️ Hämta kalendern"}
-          </button>
-          <button style={{ ...s.ghostBtn, flex: 1, fontSize: 13, padding: "9px 8px" }} onClick={checkGmail} disabled={mailBusy}>
-            {mailBusy ? "kollar…" : "✉️ Kolla mejlen"}
-          </button>
-        </div>
-        {syncErr && <div style={{ fontSize: 13, color: T.warn, marginTop: 6 }}>{syncErr}</div>}
-        {state.sync.last && (
-          <div style={{ fontSize: 12, color: T.soft, marginTop: 6, fontFamily: "'IBM Plex Mono', monospace" }}>
-            {[["kalender", state.sync.cal], ["mejl", state.sync.mail], ["oura", state.sync.oura], ["notion", state.sync.notion]]
-              .map(([n, v]) => `${n} ${v === "ok" ? "✓" : v === "skip" ? "–" : v === "fail" ? "✗" : "…"}`)
-              .join(" · ")}
-            {state.oura.day === todayKey() && state.oura.sleepScore != null && ` · sömn ${state.oura.sleepScore}`}
-            {` · ${new Date(state.sync.last).toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" })}, sedan var 3:e h`}
-          </div>
-        )}
-
-        {state.mailSug.day === todayKey() && state.mailSug.items.length > 0 && (
-          <section style={{ ...s.card, borderLeft: `4px solid ${T.petrol}` }}>
-            <div style={s.eyebrow}>Från mejlen — vill du göra uppgifter av dessa?</div>
-            {state.mailSug.items.map((m) => (
-              <div key={m.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderBottom: `1px solid ${T.line}` }}>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 14, fontWeight: 700 }}>{m.title}</div>
-                  <div style={{ fontSize: 12, color: T.soft, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.from} · {m.subject}</div>
-                </div>
-                <button
-                  style={{ ...s.medBtn, flexShrink: 0 }}
-                  onClick={() => {
-                    addTask({ title: m.title, icon: "✉️" });
-                    setState((st) => ({
-                      ...st,
-                      mailSug: { ...st.mailSug, items: st.mailSug.items.filter((x) => x.id !== m.id), dismissed: [...(st.mailSug.dismissed || []), `${m.from}|${m.subject}`] },
-                    }));
-                  }}
-                >
-                  Lägg till
-                </button>
-                <button
-                  style={{ ...s.linkBtn, color: T.soft, fontSize: 13, flexShrink: 0 }}
-                  onClick={() => setState((st) => ({ ...st, mailSug: { ...st.mailSug, items: st.mailSug.items.filter((x) => x.id !== m.id), dismissed: [...(st.mailSug.dismissed || []), `${m.from}|${m.subject}`] } }))}
-                >
-                  nej
-                </button>
-              </div>
-            ))}
-          </section>
-        )}
-
         {/* ============ recovery rest menu ============ */}
         {recoveryTint && (
           <section style={{ ...s.card, background: T.rest }}>
@@ -1132,13 +1087,10 @@ function VarvApp({ username, onLogout }) {
           )}
         </section>
 
-        {/* ============ timeline ============ */}
-        {!recoveryTint && (
+        {/* ============ timeline (only when there are scheduled items) ============ */}
+        {!recoveryTint && scheduled.length > 0 && (
           <section style={s.section}>
             <div style={s.eyebrow}>Nästa halvdag</div>
-            {scheduled.length === 0 ? (
-              <p style={s.body}>Inga tidsatta punkter de närmaste timmarna. Oschemalagda uppgifter finns nedanför.</p>
-            ) : (
               <div style={s.timeline}>
                 <NowMarker />
                 {scheduled.map((t, i) => {
@@ -1170,7 +1122,6 @@ function VarvApp({ username, onLogout }) {
                   );
                 })}
               </div>
-            )}
           </section>
         )}
 
@@ -1449,9 +1400,8 @@ function VarvApp({ username, onLogout }) {
             <ToolBtn active={tool === "ground"} onClick={() => setTool(tool === "ground" ? null : "ground")} label="Andningsankare" sub="3 min, +1⚡" />
             <ToolBtn active={tool === "week"} onClick={() => setTool(tool === "week" ? null : "week")} label="Veckoöversikt" sub="energimönster" />
             <ToolBtn active={tool === "edu"} onClick={() => setTool(tool === "edu" ? null : "edu")} label="Varför det funkar" sub="evidensen" />
-            <ToolBtn active={tool === "connect"} onClick={() => setTool(tool === "connect" ? null : "connect")} label="Kopplingar" sub="Google · Notion · Oura" />
+            <ToolBtn active={tool === "connect"} onClick={() => setTool(tool === "connect" ? null : "connect")} label="Kopplingar" sub="Oura ring" />
             <ToolBtn active={tool === "agents"} onClick={() => setTool(tool === "agents" ? null : "agents")} label="Agenter" sub={`${Object.values(state.agents).filter(Boolean).length}/5 aktiva`} />
-            <ToolBtn active={tool === "agui"} onClick={() => setTool(tool === "agui" ? null : "agui")} label="AG-UI" sub="streaming demo" />
             <ToolBtn onClick={() => setShowCheckin(true)} label="Morgoncheck" sub="översikt + energi" />
             <ToolBtn onClick={() => setShowSetup(true)} label="Inställningar" sub="guidad setup" />
           </div>
@@ -1490,122 +1440,6 @@ function VarvApp({ username, onLogout }) {
               )}
             </div>
           )}
-
-          {tool === "agui" && (
-            <div style={{ ...s.card, marginTop: 10 }}>
-              <div style={{ ...s.eyebrow }}>AG-UI live</div>
-              <div style={{ fontSize: 13, color: T.soft, marginBottom: 10 }}>
-                Strömmande agent via AG-UI protokollet — testa riktigt flöde.
-              </div>
-
-              <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
-                {["classify", "refine", "breakdown", "observer"].map((a) => (
-                  <button
-                    key={a}
-                    onClick={() => setAguiAgent(a)}
-                    style={{
-                      ...s.ghostBtn,
-                      fontSize: 12,
-                      padding: "4px 10px",
-                      background: aguiAgent === a ? T.spruce + "22" : "transparent",
-                      border: `1px solid ${aguiAgent === a ? T.spruce : T.line}`,
-                      color: aguiAgent === a ? T.spruce : T.soft,
-                    }}
-                  >
-                    {a}
-                  </button>
-                ))}
-              </div>
-
-              <div style={{ display: "flex", gap: 8 }}>
-                <input
-                  type="text"
-                  value={aguiInput}
-                  onChange={(e) => setAguiInput(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && aguiInput.trim() && agui.run(aguiAgent, aguiInput, state, true)}
-                  placeholder={aguiAgent === "observer" ? "Analyserar state..." : aguiAgent === "classify" ? "Beskriv en fångst..." : aguiAgent === "refine" ? "Rå idé att förfinа..." : "Uppgift att bryta ner..."}
-                  style={{ ...s.input, flex: 1 }}
-                />
-                <button
-                  onClick={() => aguiInput.trim() && agui.run(aguiAgent, aguiInput, state, true)}
-                  disabled={agui.active || !aguiInput.trim()}
-                  style={{
-                    ...s.solidBtn,
-                    fontSize: 13,
-                    opacity: agui.active || !aguiInput.trim() ? 0.5 : 1,
-                  }}
-                >
-                  {agui.active ? "..." : "Kör"}
-                </button>
-              </div>
-
-              {/* Streaming progress */}
-              {agui.steps.length > 0 && (
-                <div style={{ marginTop: 12 }}>
-                  <div style={{ ...s.eyebrow }}>Steg</div>
-                  {agui.steps.map((step, i) => (
-                    <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "3px 0" }}>
-                      <span style={{ fontSize: 14 }}>{step.status === "done" ? "✓" : step.status === "active" ? "⏳" : "○"}</span>
-                      <span style={{ fontSize: 13, color: T.soft }}>{step.name}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Tool calls */}
-              {agui.toolCalls.length > 0 && (
-                <div style={{ marginTop: 12 }}>
-                  <div style={{ ...s.eyebrow }}>Verktyg</div>
-                  {agui.toolCalls.map((tc) => (
-                    <div key={tc.id} style={{ fontSize: 12, fontFamily: "IBM Plex Mono", color: T.soft, padding: "3px 0" }}>
-                      <span style={{ color: T.spruce }}>{tc.name}</span>
-                      {tc.status === "done" ? " ✓" : " ⏳"}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Messages */}
-              {agui.messages.length > 0 && (
-                <div style={{ marginTop: 12 }}>
-                  <div style={{ ...s.eyebrow }}>Svar</div>
-                  {agui.messages.map((msg) => (
-                    <div key={msg.id} style={{ fontSize: 14, color: T.ink, padding: "4px 0", lineHeight: 1.5 }}>
-                      {msg.text}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Error */}
-              {agui.error && (
-                <div style={{ marginTop: 10, padding: "8px 12px", background: T.warn + "15", borderRadius: 8, fontSize: 13, color: T.warn }}>
-                  {agui.error}
-                </div>
-              )}
-
-              {/* A2UI generative surfaces */}
-              {agui.a2uiSurfaces.length > 0 && (
-                <div style={{ marginTop: 12 }}>
-                  <div style={{ ...s.eyebrow }}>Genererad UI</div>
-                  <A2UIRenderer surfaces={agui.a2uiSurfaces} onAction={(action, payload) => console.log("A2UI action:", action, payload)} />
-                </div>
-              )}
-
-              {/* Raw events (collapsed) */}
-              {agui.events.length > 0 && (
-                <details style={{ marginTop: 12 }}>
-                  <summary style={{ fontSize: 12, color: T.soft, cursor: "pointer" }}>
-                    {agui.events.length} händelser (klicka för att visa)
-                  </summary>
-                  <pre style={{ fontSize: 10, fontFamily: "IBM Plex Mono", color: T.soft, maxHeight: 200, overflow: "auto", marginTop: 6, padding: 8, background: T.track, borderRadius: 6 }}>
-                    {JSON.stringify(agui.events, null, 2)}
-                  </pre>
-                </details>
-              )}
-            </div>
-          )}
-
           {tool === "connect" && (
             <div style={{ ...s.card, marginTop: 10 }}>
               <label style={{ ...s.smallLabel, flexDirection: "row", alignItems: "center", gap: 8, marginTop: 0 }}>
@@ -1649,18 +1483,9 @@ function VarvApp({ username, onLogout }) {
                 ))}
               </div>
 
-              <div style={{ ...s.eyebrow, marginTop: 16 }}>Notion</div>
-              <p style={s.body}>
-                Gårdagens vinster och energisiffror arkiveras automatiskt till sidan "Varv – logg". Kräver att Notion är anslutet i Claudes kopplingsinställningar.
-                {state.sync.notion === "fail" && " Senaste försöket misslyckades — kontrollera anslutningen."}
-              </p>
-
               <div style={{ ...s.eyebrow, marginTop: 16 }}>Kör om nu</div>
               <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
                 <button style={s.medBtn} onClick={async () => { const r = await syncOura(); setState((st) => ({ ...st, sync: { ...st.sync, day: todayKey(), oura: r } })); }}>Oura</button>
-                <button style={s.medBtn} onClick={async () => { const r = await syncCalendar(); setState((st) => ({ ...st, sync: { ...st.sync, day: todayKey(), cal: r } })); }}>Kalender</button>
-                <button style={s.medBtn} onClick={async () => { const r = await checkGmail(); setState((st) => ({ ...st, sync: { ...st.sync, day: todayKey(), mail: r } })); }}>Mejl</button>
-                <button style={s.medBtn} onClick={async () => { const r = await archiveToNotion(); setState((st) => ({ ...st, sync: { ...st.sync, day: todayKey(), notion: r } })); }}>Notion-arkiv</button>
               </div>
             </div>
           )}
