@@ -61,6 +61,11 @@ class TaskPatch(BaseModel):
     priority: Priority | None = None
     essential: bool | None = None
     done: bool | None = None
+    scheduled_date: str | None = Field(default=None, pattern=r"^\d{4}-\d{2}-\d{2}$", description="YYYY-MM-DD for future tasks")
+
+class IdeaPatch(BaseModel):
+    title: str | None = None
+    note: str | None = None
 
 
 class WeekDay(BaseModel):

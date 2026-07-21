@@ -1,7 +1,7 @@
 """KB-Whisper via faster-whisper. Lazy-laddning: modellen läses först vid första anropet.
 
 Installeras med:  pip install "varv-server[transcribe]"
-kb-whisper-small slår OpenAI:s whisper-large-v3 på svenska och rullar på Pi 5 med int8.
+kb-whisper-tiny = ~2x faster, kb-whisper-small = bättre kvalitet. Båda slår OpenAI på svenska.
 """
 import logging
 import tempfile
@@ -14,6 +14,7 @@ from varv.schemas import TranscriptOut
 log = logging.getLogger(__name__)
 
 
+# Cache cleared when model changes - delete __pycache__ to force reload
 @lru_cache(maxsize=1)
 def _model():
     try:
@@ -31,7 +32,8 @@ def transcribe_bytes(audio: bytes, suffix: str = ".webm", language: str | None =
         f.write(audio)
         path = Path(f.name)
     try:
-        segments, info = _model().transcribe(str(path), beam_size=5, vad_filter=True, language=language)
+        # beam_size=1 = greedy decode = fastest; vad_filter = skip silence
+        segments, info = _model().transcribe(str(path), beam_size=1, vad_filter=True, language=language)
         text = " ".join(seg.text.strip() for seg in segments).strip()
         return TranscriptOut(text=text, language=info.language, duration_s=round(info.duration, 1))
     finally:

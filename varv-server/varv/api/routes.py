@@ -18,7 +18,7 @@ from varv.db.models import (
 )
 from varv.schemas import (
     Breakdown, BreakdownIn, CaptureIn, CaptureOut, ChangeIn, ClassifiedCapture, ClassifyIn,
-    LoginIn, LoginOut, RefinedIdea, RefineIn, SyncPushOut, TaskPatch, TranscriptOut, WeekStats,
+    IdeaPatch, LoginIn, LoginOut, RefinedIdea, RefineIn, SyncPushOut, TaskPatch, TranscriptOut, WeekStats,
 )
 from varv.services import stats, sync
 from varv.services.capture import known_tag_vocabulary, process_capture
@@ -184,6 +184,20 @@ def list_ideas(user: User = Depends(current_user), session: Session = Depends(ge
         .order_by(Idea.created_at.desc())
         .limit(100)
     ).all()
+
+
+@router.patch("/ideas/{idea_id}")
+def patch_idea(idea_id: str, patch: IdeaPatch, user: User = Depends(current_user), session: Session = Depends(get_session)):
+    idea = session.get(Idea, idea_id)
+    if not idea or idea.user_id != user.id or idea.deleted_at is not None:
+        raise HTTPException(404)
+    data = patch.model_dump(exclude_unset=True)
+    for key, value in data.items():
+        setattr(idea, key, value)
+    idea.updated_at = datetime.now()
+    session.commit()
+    session.refresh(idea)
+    return idea
 
 
 @router.delete("/ideas/{idea_id}")

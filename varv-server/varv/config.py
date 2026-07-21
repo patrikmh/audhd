@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     agent_tick_seconds: int = 300            # bakgrundsloopens intervall
 
     # --- transkribering (KB-Whisper) ---
-    whisper_model: str = "KBLab/kb-whisper-small"
+    whisper_model: str = "KBLab/kb-whisper-tiny"  # tiny = ~2x faster than small, slightly lower quality
     whisper_device: str = "cpu"
     whisper_compute_type: str = "int8"       # int8 = Pi-vänligt
 

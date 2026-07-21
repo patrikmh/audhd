@@ -89,6 +89,7 @@ class Task(SQLModel, table=True):
     updated_at: datetime = Field(default_factory=datetime.now, index=True)
     deleted_at: datetime | None = None        # mjuk radering — se synkkommentar överst
     day: str = Field(default_factory=today, index=True)
+    scheduled_date: str | None = None         # YYYY-MM-DD för framtida uppgifter
 
 
 class TaskStep(SQLModel, table=True):

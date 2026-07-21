@@ -1,4 +1,12 @@
 import { useState, useEffect, useRef, useMemo } from "react";
+import { useSync } from "./hooks/useSync";
+import { WorkingMemoryDisplay } from "./components/WorkingMemoryDisplay";
+import { SystemStatus } from "./components/SystemStatus";
+import { TaskInitiationSupport } from "./components/TaskInitiationSupport";
+import { TimeAnchor } from "./components/TimeBlindnessSupport";
+import { T, MODES, ENERGY_LABELS, MOVEMENT_IDEAS, REST_MENU, EDU_CARDS, ICON_CHOICES, WEEKDAYS, ICON_KEYWORDS, PRIORITY_ORDER, API_BASE, AUTH_KEY } from "./constants/tokens";
+import { uid, todayKey, todayWeekday, guessIcon, energyColor, nowHM, hmToMin } from "./utils/helpers";
+import { getAuth, setAuth, clearAuth, login } from "./utils/auth";
 
 /* ============================================================
    VARV — an AuDHD day companion
@@ -10,115 +18,15 @@ import { useState, useEffect, useRef, useMemo } from "react";
    shows today's remaining capacity as an arc with tick marks.
    ============================================================ */
 
-const T = {
-  paper: "#F2F1EC",
-  card: "#FAF9F5",
-  ink: "#33393B",
-  soft: "#6C7370",
-  spruce: "#46564F",
-  petrol: "#4C6E75",
-  petrolDark: "#3D5960",
-  moss: "#8A977F",
-  track: "#DFDED6",
-  line: "#E4E2DA",
-  warn: "#A66A4F",
-  rest: "#EFEDE4",
+// triggerSuggestion is used by TaskInitiationSupport component
+const triggerSuggestion = (taskTitle) => {
+  const lowerTitle = taskTitle.toLowerCase();
+  if (lowerTitle.includes('kaffe') || lowerTitle.includes('frukost')) return 'jag har ätit';
+  if (lowerTitle.includes('jobb') || lowerTitle.includes('arbet')) return 'jag sitter vid skrivbordet';
+  if (lowerTitle.includes('motion') || lowerTitle.includes('träning')) return 'jag har träningskläder på mig';
+  if (lowerTitle.includes('läsa') || lowerTitle.includes('bok')) return 'jag har boken framför mig';
+  return 'jag är redo att börja';
 };
-
-const MODES = {
-  steady: { label: "Stadig", budget: 20, blurb: "Normal kapacitet. Planera nästa halvdag." },
-  low: { label: "Lågt batteri", budget: 12, blurb: "Sänkt kapacitet. Färre uppgifter, mer marginal." },
-  recovery: { label: "Återhämtning", budget: 6, blurb: "Kraven ner. Bara nödvändigt, vila räknas som framsteg." },
-};
-
-const ENERGY_LABELS = { 1: "lätt", 2: "mild", 3: "medel", 4: "tung", 5: "mycket tung" };
-
-const MOVEMENT_IDEAS = [
-  "Gå till slutet av gatan och tillbaka",
-  "20 långsamma knäböj vid skrivbordet",
-  "Skaka loss armar och ben i en minut, sträck dig sedan lång",
-  "Gå uppför en trappa två gånger",
-  "Sätt på en låt och rör dig som det känns",
-  "Stå upp, rulla axlarna, tio armhävningar mot väggen",
-];
-
-const REST_MENU = [
-  "Ligg ner någonstans dunkelt i tio minuter, ingen mobil",
-  "Brusreducering på, ett välbekant album",
-  "Tid med ett specialintresse, noll krav på resultat",
-  "Varm dusch, sedan mjuka kläder",
-  "Sitt med katten. Det är hela uppgiften",
-  "Tyngdtäcke, fördragna gardiner, timer på 20 min",
-];
-
-const EDU_CARDS = [
-  { t: "Varför om-så-triggers", b: "Implementeringsintentioner — 'när X gör jag Y' — visar medelstor till stor effekt på genomförande i hundratals studier. Planen utlöses av signalen, så starten hänger inte längre på viljestyrka i stunden." },
-  { t: "Varför pyttesmå första steg", b: "Igångsättningen fallerar på vaga uppgifter, inte svåra. En konkret fysisk handling under 10 minuter kringgår frysningen. Det är mekanismen bakom varje nedbrytningsverktyg." },
-  { t: "Varför energibudgeten", b: "Utmattning byggs när uttag (sensorisk last, maskering, admin) tyst överstiger insättningar (vila, intressen, rörelse) i veckor. Poängen är att göra bokföringen synlig — du kan inte budgetera det du inte ser." },
-  { t: "Varför rörelsepauser", b: "Metaanalyser visar att redan 5 minuters rörelse mätbart förbättrar impulskontroll och uppmärksamhet vid ADHD. Intensiteten spelar knappt roll — skiftet gör det." },
-  { t: "Varför tidskalibrering", b: "Tidsblindhet gör att tidsuppskattningar systematiskt blir för korta. Att jämföra gissning mot faktisk tid över veckor bygger externt den kalibrering som den inre klockan inte ger." },
-  { t: "Varför parkera distraktioner", b: "Att skriva ner en förströdd tanke mitt i fokus — 'distractibility delay' från validerade KBT-protokoll — hedrar tanken utan att följa den. Den ligger i inkorgen efter varvet." },
-  { t: "Varför inga streaks", b: "Skam sänker motivationen ytterligare, inte mindre — ett återkommande KBT-fynd. Att varje dag börjar på noll är ett designbeslut, inte en saknad funktion." },
-  { t: "Varför fast väckningstid", b: "I KBT-I, guldstandarden mot sömnbesvär, är konsekvent väckningstid den starkaste enskilda spaken. Den förankrar hela dygnsrytmen, som allt annat lutar sig mot." },
-  { t: "Varför para uppgifter med belöning", b: "Temptation bundling — en spellista eller podd du bara tillåter dig under en tråkig uppgift — höjde gymnärvaro i kontrollerade studier. ADHD-motivation följer intresse, inte vikt; låna intresset." },
-  { t: "Varför listor slår minnet", b: "Prospektivt minne — att komma ihåg att komma ihåg — är precis det ADHD-arbetsminnet tappar. Om det är viktigt bor det på en lista inom tre sekunder från tanken. Att bocka av ger dessutom belöningsloopen en takt." },
-];
-
-const uid = () => Math.random().toString(36).slice(2, 9);
-const todayKey = () => new Date().toISOString().slice(0, 10);
-
-const ICON_CHOICES = ["📌", "🛒", "📞", "✉️", "🧹", "🧺", "🐈", "🩺", "🏃", "📚", "💻", "✍️", "💳", "🗓️", "🍳", "🔧"];
-const WEEKDAYS = [
-  { key: "mon", label: "Mån" }, { key: "tue", label: "Tis" }, { key: "wed", label: "Ons" },
-  { key: "thu", label: "Tor" }, { key: "fri", label: "Fre" }, { key: "sat", label: "Lör" }, { key: "sun", label: "Sön" },
-];
-const todayWeekday = () => ["sun", "mon", "tue", "wed", "thu", "fri", "sat"][new Date().getDay()];
-const ICON_KEYWORDS = [
-  ["handla", "🛒"], ["köp", "🛒"], ["buy", "🛒"], ["shop", "🛒"], ["grocer", "🛒"],
-  ["ring", "📞"], ["call", "📞"], ["mail", "✉️"], ["mejl", "✉️"], ["email", "✉️"],
-  ["clean", "🧹"], ["städ", "🧹"], ["tvätt", "🧺"], ["laundry", "🧺"],
-  ["vet", "🐈"], ["katt", "🐈"], ["cat", "🐈"], ["läkar", "🩺"], ["doctor", "🩺"], ["vård", "🩺"],
-  ["gym", "🏃"], ["träna", "🏃"], ["run", "🏃"], ["walk", "🏃"], ["promenad", "🏃"],
-  ["read", "📚"], ["läs", "📚"], ["book", "📚"], ["code", "💻"], ["kod", "💻"], ["deploy", "💻"],
-  ["write", "✍️"], ["skriv", "✍️"], ["cv", "✍️"], ["pay", "💳"], ["betal", "💳"], ["faktur", "💳"], ["invoice", "💳"],
-  ["meeting", "🗓️"], ["möte", "🗓️"], ["cook", "🍳"], ["laga mat", "🍳"], ["fix", "🔧"], ["repair", "🔧"],
-];
-const guessIcon = (title) => {
-  const words = title.toLowerCase().split(/\s+/);
-  const hit = ICON_KEYWORDS.find(([k]) => words.some((w) => w.startsWith(k)));
-  return hit ? hit[1] : "📌";
-};
-const energyColor = (e) => (e <= 2 ? T.moss : e === 3 ? T.petrol : T.warn);
-
-// Backend nås via en tunnel till Raspberry Pi:n (varv-server). Sätts vid
-// bygge via Vite-miljövariabler, se frontend/.env.example.
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "https://TUNNEL_ADDRESS";
-const AUTH_KEY = "varv-auth"; // { token, username } — per person, satt vid inloggning
-
-function getAuth() {
-  try {
-    const raw = localStorage.getItem(AUTH_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch (e) {
-    return null;
-  }
-}
-function setAuth(auth) {
-  localStorage.setItem(AUTH_KEY, JSON.stringify(auth));
-}
-function clearAuth() {
-  localStorage.removeItem(AUTH_KEY);
-}
-
-async function login(username, password) {
-  const response = await fetch(`${API_BASE}/api/auth/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username, password }),
-  });
-  if (!response.ok) throw new Error(response.status === 401 ? "Fel användarnamn eller lösenord" : `login → ${response.status}`);
-  return response.json(); // { token, username }
-}
 
 async function apiPost(path, body) {
   const auth = getAuth();
@@ -165,15 +73,7 @@ async function fetchOura(token) {
   };
 }
 
-const nowHM = () => {
-  const d = new Date();
-  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
-};
-const hmToMin = (hm) => {
-  if (!hm) return null;
-  const [h, m] = hm.split(":").map(Number);
-  return h * 60 + m;
-};
+
 
 const DEFAULT_STATE = {
   capacity: "steady",
@@ -210,6 +110,7 @@ function VarvApp({ username, onLogout }) {
   const [tool, setTool] = useState(null); // 'focus' | 'move' | 'checkin' | 'wins' | 'sleep'
   const [showAdd, setShowAdd] = useState(false);
   const [lapRunning, setLapRunning] = useState(false);
+  const [selectedTask, setSelectedTask] = useState(null); // For task initiation support
   const [view, setView] = useState("today"); // 'today' | 'lists' | 'tools'
   const [captureOpen, setCaptureOpen] = useState(false);
   const [toast, setToast] = useState(null);
@@ -223,6 +124,14 @@ function VarvApp({ username, onLogout }) {
   const [mailBusy, setMailBusy] = useState(false);
   const [syncErr, setSyncErr] = useState("");
   const saveTimer = useRef(null);
+
+  // Sync integration
+  const sync = useSync(
+    API_BASE,
+    getAuth,
+    state,
+    setState
+  );
 
   useEffect(() => {
     const t = setInterval(() => setTick((n) => n + 1), 30000);
@@ -302,18 +211,28 @@ function VarvApp({ username, onLogout }) {
   const overBudget = spent - recharged > mode.budget;
   const winsToday = state.wins.filter((w) => new Date(w.ts).toDateString() === new Date().toDateString());
 
+  // Selected date for viewing tasks (default: today)
+  const [selectedDate, setSelectedDate] = useState(todayKey());
+  const isToday = selectedDate === todayKey();
+
   const visibleTasks = useMemo(() => {
     const today = todayWeekday();
-    let open = state.tasks.filter(
-      (t) => !t.done && ((t.repeatDays || []).length === 0 || t.repeatDays.includes(today))
-    );
-    if (state.capacity === "recovery") open = open.filter((t) => t.essential);
+    let open = state.tasks.filter((t) => {
+      if (t.done) return false;
+      // Filter by scheduled_date if set, otherwise show on creation day
+      const taskDay = t.scheduled_date || t.day;
+      if (taskDay !== selectedDate) return false;
+      // Also check repeatDays for recurring tasks
+      if ((t.repeatDays || []).length > 0 && !t.repeatDays.includes(today)) return false;
+      return true;
+    });
+    if (state.capacity === "recovery" && isToday) open = open.filter((t) => t.essential);
     return [...open].sort((a, b) => {
       const pa = a.priority ? PRIORITY_ORDER[a.priority] : 3;
       const pb = b.priority ? PRIORITY_ORDER[b.priority] : 3;
       return pa - pb;
     });
-  }, [state.tasks, state.capacity]);
+  }, [state.tasks, state.capacity, selectedDate, isToday]);
 
   const doneToday = useMemo(
     () => state.tasks.filter((t) => t.done && t.doneAt && new Date(t.doneAt).toDateString() === new Date().toDateString()),
@@ -387,14 +306,21 @@ function VarvApp({ username, onLogout }) {
   const patch = (p) => setState((s) => ({ ...s, ...p }));
 
   const addWin = (text) => {
-    setState((s) => ({ ...s, wins: [{ id: uid(), text, ts: Date.now() }, ...s.wins].slice(0, 200) }));
+    const id = uid();
+    const win = { id, text, ts: Date.now(), day: todayKey() };
+    setState((s) => ({ ...s, wins: [win, ...s.wins].slice(0, 200) }));
+    sync.trackChange('win', id, 'upsert', win);
     setToast(text);
     clearTimeout(toastTimer.current);
     toastTimer.current = setTimeout(() => setToast(null), 2600);
   };
 
-  const logEnergy = (delta, label) =>
-    setState((s) => ({ ...s, energyLog: [...s.energyLog, { delta, label, day: todayKey() }] }));
+  const logEnergy = (delta, label) => {
+    const id = uid();
+    const energyEvent = { id, delta, label, day: todayKey(), ts: Date.now() };
+    setState((s) => ({ ...s, energyLog: [...s.energyLog, energyEvent] }));
+    sync.trackChange('energy_event', id, 'upsert', energyEvent);
+  };
 
   const completeTask = (task) => {
     if (task.done) return;
@@ -406,10 +332,20 @@ function VarvApp({ username, onLogout }) {
     addWin(`Klart: ${task.title}`);
   };
 
-  const updateTask = (id, p) =>
-    setState((s) => ({ ...s, tasks: s.tasks.map((t) => (t.id === id ? { ...t, ...p } : t)) }));
+  const updateTask = (id, p) => {
+    const task = state.tasks.find(t => t.id === id);
+    const updatedTask = { ...task, ...p, updatedAt: new Date().toISOString() };
+    setState((s) => ({ ...s, tasks: s.tasks.map((t) => (t.id === id ? updatedTask : t)) }));
+    sync.trackChange('task', id, 'upsert', updatedTask);
+  };
 
-  const removeTask = (id) => setState((s) => ({ ...s, tasks: s.tasks.filter((t) => t.id !== id) }));
+  const removeTask = (id) => {
+    const task = state.tasks.find(t => t.id === id);
+    if (!task) return;
+    const deletedTask = { ...task, deletedAt: new Date().toISOString() };
+    setState((s) => ({ ...s, tasks: s.tasks.filter((t) => t.id !== id) }));
+    sync.trackChange('task', id, 'delete', deletedTask);
+  };
 
   // Nedbrytaren körs direkt när en uppgift skapas — inte bara i bakgrundssvepet — så
   // det första steget redan finns när man möter uppgiften. Tyst vid fel: man kan
@@ -427,10 +363,40 @@ function VarvApp({ username, onLogout }) {
   };
 
   const addTask = (draft) => {
-    const task = { ...DEFAULT_TASK, id: uid(), icon: guessIcon(draft.title), ...draft };
+    const task = { ...DEFAULT_TASK, id: uid(), icon: guessIcon(draft.title), ...draft, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
     setState((st) => ({ ...st, tasks: [...st.tasks, task] }));
+    sync.trackChange('task', task.id, 'upsert', task);
     breakdownTask(task.id, task.title);
     return task;
+  };
+
+  // Task selection for initiation support
+  const selectTask = (task) => {
+    setSelectedTask(prev => prev?.id === task.id ? null : task);
+  };
+
+  const deselectTask = () => {
+    setSelectedTask(null);
+  };
+
+  const startTaskStep = (task, step = null) => {
+    if (step) {
+      // Mark the specific step as done
+      const updatedSteps = task.steps.map((s, i) =>
+        (i === 0 ? { ...s, done: true } : s)
+      );
+      updateTask(task.id, { steps: updatedSteps });
+    }
+    // Could add timer start here
+    setTool("focus");
+    deselectTask();
+  };
+
+  const setTaskTrigger = (task) => {
+    const trigger = prompt("När vill du göra detta?", `när ${triggerSuggestion(task.title)}`);
+    if (trigger) {
+      updateTask(task.id, { trigger });
+    }
   };
 
   /* ---------- Google-synk ----------
@@ -504,25 +470,36 @@ function VarvApp({ username, onLogout }) {
 
   /* ---------- idéer: spara direkt, förfina i bakgrunden ---------- */
   const refineIdea = async (id, raw) => {
-    setState((st) => ({ ...st, ideas: st.ideas.map((i) => (i.id === id ? { ...i, status: "refining", attempts: (i.attempts || 0) + 1 } : i)) }));
+    const updatingIdea = state.ideas.find(i => i.id === id);
+    const refiningIdea = { ...updatingIdea, status: "refining", attempts: (updatingIdea.attempts || 0) + 1, updatedAt: new Date().toISOString() };
+
+    setState((st) => ({ ...st, ideas: st.ideas.map((i) => (i.id === id ? refiningIdea : i)) }));
+    sync.trackChange('idea', id, 'upsert', refiningIdea);
+
     try {
       const r = await aiRefineIdea(raw);
+      const refinedIdea = { ...updatingIdea, title: r.title, note: r.note, tags: (r.tags || []).slice(0, 3), status: "klar", updatedAt: new Date().toISOString() };
       setState((st) => ({
         ...st,
-        ideas: st.ideas.map((i) => (i.id === id ? { ...i, title: r.title, note: r.note, tags: (r.tags || []).slice(0, 3), status: "klar" } : i)),
+        ideas: st.ideas.map((i) => (i.id === id ? refinedIdea : i)),
       }));
+      sync.trackChange('idea', id, 'upsert', refinedIdea);
       logAgent("Förfinaren", `städade "${(r.title || raw).slice(0, 40)}"`);
     } catch (e) {
-      setState((st) => ({ ...st, ideas: st.ideas.map((i) => (i.id === id ? { ...i, status: "fail" } : i)) }));
+      const failedIdea = { ...updatingIdea, status: "fail", updatedAt: new Date().toISOString() };
+      setState((st) => ({ ...st, ideas: st.ideas.map((i) => (i.id === id ? failedIdea : i)) }));
+      sync.trackChange('idea', id, 'upsert', failedIdea);
     }
   };
 
   const addIdea = (raw) => {
     const id = uid();
+    const newIdea = { id, raw, title: null, note: null, tags: [], ts: Date.now(), status: "refining", updatedAt: new Date().toISOString() };
     setState((st) => ({
       ...st,
-      ideas: [{ id, raw, title: null, note: null, tags: [], ts: Date.now(), status: "refining" }, ...st.ideas].slice(0, 100),
+      ideas: [newIdea, ...st.ideas].slice(0, 100),
     }));
+    sync.trackChange('idea', id, 'upsert', newIdea);
     setToast(`💡 Sparad — förfinas i bakgrunden`);
     clearTimeout(toastTimer.current);
     toastTimer.current = setTimeout(() => setToast(null), 2200);
@@ -535,7 +512,21 @@ function VarvApp({ username, onLogout }) {
     addWin(`Idé → uppgift: ${title}`);
   };
 
-  const removeIdea = (id) => setState((st) => ({ ...st, ideas: st.ideas.filter((i) => i.id !== id) }));
+  const removeIdea = (id) => {
+    const idea = state.ideas.find(i => i.id === id);
+    if (!idea) return;
+    const deletedIdea = { ...idea, deletedAt: new Date().toISOString() };
+    setState((st) => ({ ...st, ideas: st.ideas.filter((i) => i.id !== id) }));
+    sync.trackChange('idea', id, 'delete', deletedIdea);
+  };
+
+  const updateIdea = (id, updates) => {
+    const idea = state.ideas.find(i => i.id === id);
+    if (!idea) return;
+    const updatedIdea = { ...idea, ...updates, updatedAt: new Date().toISOString() };
+    setState((st) => ({ ...st, ideas: st.ideas.map((i) => (i.id === id ? updatedIdea : i)) }));
+    sync.trackChange('idea', id, 'upsert', updatedIdea);
+  };
 
   /* ---------- auto-klassificering: agenten sorterar när du inte väljer ---------- */
   const logTags = (tags) =>
@@ -618,16 +609,36 @@ function VarvApp({ username, onLogout }) {
     if (syncingRef.current) return;
     syncingRef.current = true;
     setState((st) => ({ ...st, sync: { ...st.sync, day: todayKey(), last: Date.now() } })); // lås direkt mot dubbelkörning
-    const ouraStatus = await syncOura();
-    setState((st) => ({ ...st, sync: { ...st.sync, oura: ouraStatus } }));
-    const calStatus = await syncCalendar();
-    setState((st) => ({ ...st, sync: { ...st.sync, cal: calStatus } }));
-    const mailStatus = await checkGmail();
-    setState((st) => ({ ...st, sync: { ...st.sync, mail: mailStatus } }));
-    const notionStatus = stateRef.current.notionArchivedDay === todayKey() ? "ok" : await archiveToNotion();
-    setState((st) => ({ ...st, sync: { ...st.sync, notion: notionStatus } }));
-    logAgent("Synkaren", `körning klar: kalender ${calStatus}, mejl ${mailStatus}, oura ${ouraStatus}, notion ${notionStatus}`);
-    syncingRef.current = false;
+
+    try {
+      // Main data sync
+      const syncResult = await sync.performSync();
+      if (!syncResult.success) {
+        setSyncErr(syncResult.reason || "Sync failed");
+      } else {
+        setSyncErr("");
+      }
+
+      const ouraStatus = await syncOura();
+      setState((st) => ({ ...st, sync: { ...st.sync, oura: ouraStatus } }));
+      const calStatus = await syncCalendar();
+      setState((st) => ({ ...st, sync: { ...st.sync, cal: calStatus } }));
+      const mailStatus = await checkGmail();
+      setState((st) => ({ ...st, sync: { ...st.sync, mail: mailStatus } }));
+      const notionStatus = stateRef.current.notionArchivedDay === todayKey() ? "ok" : await archiveToNotion();
+      setState((st) => ({ ...st, sync: { ...st.sync, notion: notionStatus } }));
+
+      const syncStats = syncResult.success ?
+        `data ${syncResult.push.created + syncResult.push.updated + syncResult.push.deleted} changes` :
+        `data sync failed: ${syncResult.reason}`;
+
+      logAgent("Synkaren", `körning klar: ${syncStats}, kalender ${calStatus}, mejl ${mailStatus}, oura ${ouraStatus}, notion ${notionStatus}`);
+    } catch (error) {
+      setSyncErr(error.message);
+      logAgent("Synkaren", `körning misslyckades: ${error.message}`);
+    } finally {
+      syncingRef.current = false;
+    }
   };
 
   // Förfinaren som svepare: plockar upp råa/misslyckade idéer, max 2 per tick, max 3 försök per idé
@@ -733,26 +744,45 @@ function VarvApp({ username, onLogout }) {
           </div>
         )}
 
-        {/* ============ hero: state of the day ============ */}
-        <section style={s.hero}>
-          <div style={{ display: "grid", placeItems: "center" }}>
-            <EnergyDial budget={mode.budget} remaining={remaining} />
-          </div>
-          <div style={s.modeRow}>
+        {/* ============ hero: working memory display (ADHD-optimized) ============ */}
+        <section style={{ marginBottom: 20 }}>
+          <WorkingMemoryDisplay
+            state={state}
+            settings={state.settings}
+            onWinddownClick={() => setTool("sleep")}
+          />
+
+          {/* Mode switching - kept minimal */}
+          <div style={{
+            display: 'flex',
+            gap: '8px',
+            justifyContent: 'center',
+            marginTop: '12px'
+          }}>
             {Object.entries(MODES).map(([k, m]) => (
               <button
                 key={k}
                 onClick={() => patch({ capacity: k, capacityBy: { day: todayKey(), by: "user" } })}
                 style={{
-                  ...s.modeBtn,
-                  background: state.capacity === k ? T.spruce : "transparent",
-                  color: state.capacity === k ? T.card : T.spruce,
-                  borderColor: T.spruce,
+                  background: state.capacity === k ? T.petrol : 'transparent',
+                  color: state.capacity === k ? 'white' : T.petrol,
+                  border: `1px solid ${T.petrol}`,
+                  borderRadius: '6px',
+                  padding: '6px 12px',
+                  fontFamily: 'Atkinson Hyperlegible',
+                  fontSize: '0.85rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
                 }}
               >
                 {m.label}
               </button>
             ))}
+          </div>
+
+          {/* Time anchor - temporal context for ADHD time blindness */}
+          <div style={{ marginTop: '12px' }}>
+            <TimeAnchor settings={state.settings} />
           </div>
 
           {overBudget && state.capacity !== "recovery" && (
@@ -1046,8 +1076,43 @@ function VarvApp({ username, onLogout }) {
             </button>
           </div>
 
+          {/* Day selector */}
+          <div style={{ display: "flex", gap: 6, marginBottom: 12, overflowX: "auto", paddingBottom: 4 }}>
+            {[-2, -1, 0, 1, 2, 3].map((offset) => {
+              const d = new Date();
+              d.setDate(d.getDate() + offset);
+              const dateStr = d.toISOString().split('T')[0];
+              const isSelected = dateStr === selectedDate;
+              const isTodayDate = offset === 0;
+              const dayName = d.toLocaleDateString('sv-SE', { weekday: 'short' });
+              const dayNum = d.getDate();
+              return (
+                <button
+                  key={dateStr}
+                  onClick={() => setSelectedDate(dateStr)}
+                  style={{
+                    padding: '6px 10px',
+                    borderRadius: 8,
+                    border: `1px solid ${isSelected ? T.petrol : '#E8E7E2'}`,
+                    background: isSelected ? T.petrol : 'transparent',
+                    color: isSelected ? 'white' : T.ink,
+                    fontSize: 12,
+                    fontFamily: "'IBM Plex Mono', monospace",
+                    cursor: 'pointer',
+                    flexShrink: 0,
+                    fontWeight: isTodayDate ? 600 : 400,
+                  }}
+                >
+                  <div>{dayName}</div>
+                  <div style={{ fontSize: 14, fontWeight: 600 }}>{dayNum}</div>
+                </button>
+              );
+            })}
+          </div>
+
           {showAdd && (
             <AddTask
+              defaultDate={selectedDate}
               onAdd={(draft) => {
                 addTask(draft);
                 setShowAdd(false);
@@ -1064,17 +1129,31 @@ function VarvApp({ username, onLogout }) {
           )}
 
           {visibleTasks.map((t) => (
-            <TaskCard
+            <div
               key={t.id}
-              task={t}
-              onDone={() => completeTask(t)}
-              onUpdate={(p) => updateTask(t.id, p)}
-              onRemove={() => removeTask(t.id)}
-              onWin={addWin}
-              onPushCal={pushTaskToCalendar}
-            />
+              onClick={() => selectTask(t)}
+              style={{ cursor: 'pointer' }}
+            >
+              <TaskCard
+                task={t}
+                onDone={() => completeTask(t)}
+                onUpdate={(p) => updateTask(t.id, p)}
+                onRemove={() => removeTask(t.id)}
+                onWin={addWin}
+                onPushCal={pushTaskToCalendar}
+              />
+            </div>
           ))}
         </section>
+
+        {/* ============ task initiation support (ADHD) ============ */}
+        {selectedTask && (
+          <TaskInitiationSupport
+            task={selectedTask}
+            onStartStep={(task, step) => startTaskStep(task, step)}
+            onSetTrigger={(task) => setTaskTrigger(task)}
+          />
+        )}
 
         {/* ============ klart idag ============ */}
         {doneToday.length > 0 && (
@@ -1136,6 +1215,7 @@ function VarvApp({ username, onLogout }) {
                 onRefine={() => refineIdea(state._selIdea, state.ideas.find((i) => i.id === state._selIdea).raw)}
                 onToTask={() => ideaToTask(state.ideas.find((i) => i.id === state._selIdea))}
                 onRemove={() => { removeIdea(state._selIdea); setState((st) => ({ ...st, _selIdea: null })); }}
+                onUpdate={updateIdea}
               />
             )}
             {ideaMode === "list" && state.ideas.map((idea) => (
@@ -1145,6 +1225,7 @@ function VarvApp({ username, onLogout }) {
                 onRefine={() => refineIdea(idea.id, idea.raw)}
                 onToTask={() => ideaToTask(idea)}
                 onRemove={() => removeIdea(idea.id)}
+                onUpdate={updateIdea}
               />
             ))}
           </section>
@@ -1394,6 +1475,14 @@ function VarvApp({ username, onLogout }) {
           )
         )}
       </nav>
+
+      {/* ============ System Status (ADHD anxiety reduction) ============ */}
+      <SystemStatus
+        sync={state.sync}
+        agents={state.agents}
+        lastSync={state.sync.last}
+        onSyncClick={() => runSync()}
+      />
     </div>
   );
 }
@@ -1641,7 +1730,7 @@ function NowMarker() {
 /* ============================================================ */
 /* Add task — trigger, energy, time, essential                   */
 /* ============================================================ */
-function AddTask({ onAdd }) {
+function AddTask({ onAdd, defaultDate }) {
   const [title, setTitle] = useState("");
   const [trigger, setTrigger] = useState("");
   const [energy, setEnergy] = useState(2);
@@ -1650,6 +1739,7 @@ function AddTask({ onAdd }) {
   const [icon, setIcon] = useState(null);
   const [pickIcon, setPickIcon] = useState(false);
   const [repeatDays, setRepeatDays] = useState([]);
+  const [scheduledDate, setScheduledDate] = useState(defaultDate || todayKey());
   const s = styles;
   const shownIcon = icon || guessIcon(title || " ");
   const toggleDay = (key) =>
@@ -1704,6 +1794,21 @@ function AddTask({ onAdd }) {
         </label>
       </div>
       <div style={{ marginTop: 8 }}>
+        <span style={s.smallLabel}>schema</span>
+        <input
+          type="date"
+          style={s.select}
+          value={scheduledDate}
+          onChange={(e) => setScheduledDate(e.target.value)}
+          min={todayKey()}
+        />
+        {scheduledDate !== todayKey() && (
+          <div style={{ fontSize: 12, color: T.soft, marginTop: 4 }}>
+            schemalagt för {new Date(scheduledDate + 'T12:00:00').toLocaleDateString('sv-SE', { weekday: 'long', month: 'long', day: 'numeric' })}
+          </div>
+        )}
+      </div>
+      <div style={{ marginTop: 8 }}>
         <span style={s.smallLabel}>upprepas</span>
         <div style={{ display: "flex", gap: 4, marginTop: 4, flexWrap: "wrap" }}>
           {WEEKDAYS.map((d) => (
@@ -1732,7 +1837,7 @@ function AddTask({ onAdd }) {
         style={{ ...s.primaryBtn, marginTop: 12, opacity: title.trim() ? 1 : 0.5 }}
         disabled={!title.trim()}
         onClick={() =>
-          onAdd({ title: title.trim(), icon: shownIcon, trigger: trigger.trim(), energy, time, essential, priority: null, inbox: false, repeatDays })
+          onAdd({ title: title.trim(), icon: shownIcon, trigger: trigger.trim(), energy, time, essential, priority: null, inbox: false, repeatDays, scheduled_date: scheduledDate !== todayKey() ? scheduledDate : null })
         }
       >
         Lägg till uppgift
@@ -1788,6 +1893,11 @@ function TaskCard({ task, onDone, onUpdate, onRemove, onWin, onPushCal }) {
               {task.title}
             </span>
             <span style={{ display: "block", fontSize: 12, color: T.soft, marginTop: 2 }}>
+              {task.scheduled_date && task.scheduled_date !== todayKey() && (
+                <span style={{ color: T.petrol, fontWeight: 500 }}>
+                  {new Date(task.scheduled_date + 'T12:00:00').toLocaleDateString('sv-SE', { weekday: 'short', month: 'short', day: 'numeric' })} · 
+                </span>
+              )}
               {task.time ? `${task.time} · ` : ""}{task.energy}⚡{stepsLeft > 0 ? ` · ${stepsLeft} steg kvar` : ""}{expanded ? "" : " · tryck för mer"}
             </span>
           </span>
@@ -2383,18 +2493,62 @@ function Lists({ lists, onChange }) {
 }
 
 /* ============================================================ */
-/* Idékort — rå direkt, förfinad när AI:n hunnit                 */
+/* Idékort — rå direkt, förfinad när AI:n hunnit, redigerbar */
 /* ============================================================ */
-function IdeaCard({ idea, onRefine, onToTask, onRemove }) {
+function IdeaCard({ idea, onRefine, onToTask, onRemove, onUpdate }) {
   const [showRaw, setShowRaw] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editTitle, setEditTitle] = useState(idea.title || "");
+  const [editNote, setEditNote] = useState(idea.note || "");
   const s = styles;
   const refined = idea.status === "klar" && idea.title;
+
+  const handleSave = () => {
+    if (onUpdate) {
+      onUpdate(idea.id, { title: editTitle.trim() || null, note: editNote.trim() || null });
+    }
+    setEditing(false);
+  };
+
+  const handleCancel = () => {
+    setEditTitle(idea.title || "");
+    setEditNote(idea.note || "");
+    setEditing(false);
+  };
+
   return (
     <div style={{ ...s.card, marginTop: 10 }}>
-      {refined ? (
+      {editing ? (
+        /* === Edit mode === */
+        <>
+          <div style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.5px", color: T.soft, marginBottom: 6 }}>
+            Redigera idé
+          </div>
+          <input
+            style={{ ...s.input, fontFamily: "'Fraunces', serif", fontWeight: 500, fontSize: 18 }}
+            placeholder="Rubrik…"
+            value={editTitle}
+            onChange={(e) => setEditTitle(e.target.value)}
+            autoFocus
+          />
+          <textarea
+            style={{ ...s.input, minHeight: 80, marginTop: 8, resize: "vertical", fontFamily: "'Atkinson Hyperlegible', sans-serif" }}
+            placeholder="Beskriv idén mer detaljerat…"
+            value={editNote}
+            onChange={(e) => setEditNote(e.target.value)}
+          />
+          <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+            <button style={{ ...s.primaryBtn, flex: 1 }} onClick={handleSave}>Spara</button>
+            <button style={{ ...s.ghostBtn, flex: 1 }} onClick={handleCancel}>Avbryt</button>
+          </div>
+        </>
+      ) : refined ? (
+        /* === Refined view === */
         <>
           <div style={{ fontFamily: "'Fraunces', serif", fontWeight: 500, fontSize: 19 }}>{idea.title}</div>
-          <p style={{ ...s.body, color: T.ink, fontSize: 14 }}>{idea.note}</p>
+          {idea.note && (
+            <p style={{ ...s.body, color: T.ink, fontSize: 14, marginTop: 6 }}>{idea.note}</p>
+          )}
           {idea.tags.length > 0 && (
             <div style={s.metaRow}>
               {idea.tags.map((t) => <span key={t} style={s.chipSoft}>#{t}</span>)}
@@ -2402,14 +2556,23 @@ function IdeaCard({ idea, onRefine, onToTask, onRemove }) {
           )}
         </>
       ) : (
+        /* === Raw / refining / fail view === */
         <>
-          <p style={{ ...s.body, color: T.ink, marginTop: 0 }}>{idea.raw}</p>
+          <div style={{ fontFamily: "'Fraunces', serif", fontWeight: 500, fontSize: 16, color: T.ink }}>
+            {idea.raw.slice(0, 80)}{idea.raw.length > 80 ? "…" : ""}
+          </div>
+          {idea.raw.length > 80 && (
+            <p style={{ ...s.body, color: T.soft, fontSize: 13, marginTop: 4 }}>{idea.raw}</p>
+          )}
           {idea.status === "refining" && <div style={{ fontSize: 12, color: T.soft, marginTop: 6 }}>✨ förfinas…</div>}
           {idea.status === "fail" && <div style={{ fontSize: 12, color: T.warn, marginTop: 6 }}>förfiningen misslyckades</div>}
         </>
       )}
-      <div style={{ display: "flex", gap: 12, marginTop: 10, flexWrap: "wrap", alignItems: "center" }}>
+
+      {/* Action row */}
+      <div style={{ display: "flex", gap: 10, marginTop: 12, flexWrap: "wrap", alignItems: "center" }}>
         <button style={s.linkBtn} onClick={onToTask}>→ uppgift</button>
+        <button style={s.linkBtn} onClick={() => setEditing(true)}>✎ redigera</button>
         {refined && (
           <button style={{ ...s.linkBtn, color: T.soft }} onClick={() => setShowRaw((v) => !v)}>
             {showRaw ? "dölj original" : "visa original"}
