@@ -7,6 +7,8 @@ import DailyCheckin from "./components/DailyCheckin";
 import { TaskInitiationSupport } from "./components/TaskInitiationSupport";
 import { TimeAnchor } from "./components/TimeBlindnessSupport";
 import A2UIRenderer from "./components/A2UIRenderer";
+import { useAgentStream } from "./hooks/useAgentStream";
+import { AgentProgress } from "./components/AgentProgress";
 import { useAgUI } from "./hooks/useAgUI";
 import { T, MODES, ENERGY_LABELS, MOVEMENT_IDEAS, REST_MENU, EDU_CARDS, ICON_CHOICES, WEEKDAYS, ICON_KEYWORDS, PRIORITY_ORDER, API_BASE, AUTH_KEY } from "./constants/tokens";
 import { uid, todayKey, todayWeekday, guessIcon, energyColor, nowHM, hmToMin } from "./utils/helpers";
@@ -71,6 +73,7 @@ async function apiGet(path) {
 
 // Agenterna (Nedbrytaren/Förfinaren/Sorteraren) körs server-side mot
 // OpenRouter — frontend anropar bara varv-server, aldrig LLM-API:et direkt.
+// Legacy non-streaming fallbacks (kept for sync/sweep flows):
 async function aiBreakdown(title) {
   const data = await apiPost("/api/agents/breakdown", { title });
   return data.steps.map((st) => ({ id: uid(), title: st.title, minutes: st.minutes, done: false }));
@@ -162,6 +165,9 @@ function VarvApp({ username, onLogout }) {
   const agui = useAgUI();
   const [aguiAgent, setAguiAgent] = useState("classify");
   const [aguiInput, setAguiInput] = useState("");
+
+  // Streaming agent for main app flows (classify, refine, breakdown)
+  const streamAgent = useAgentStream();
 
   useEffect(() => {
     const t = setInterval(() => setTick((n) => n + 1), 30000);
@@ -457,7 +463,9 @@ function VarvApp({ username, onLogout }) {
         updateTask(taskId, { steps: cached });
         return;
       }
-      const steps = await aiBreakdown(title);
+      const result = await streamAgent.run("breakdown", title);
+      if (!result?.steps) throw new Error("Nedbrytning misslyckades");
+      const steps = result.steps.map((st) => ({ id: uid(), title: st.title, minutes: st.minutes, done: false }));
       updateTask(taskId, { steps });
       // Cache for future recurring instances
       setState((st) => ({
@@ -587,7 +595,8 @@ function VarvApp({ username, onLogout }) {
     sync.trackChange('idea', id, 'upsert', refiningIdea);
 
     try {
-      const r = await aiRefineIdea(raw);
+      const r = await streamAgent.run("refine", raw);
+      if (!r) throw new Error("Förfining misslyckades");
       const refinedIdea = { ...updatingIdea, title: r.title, note: r.note, tags: (r.tags || []).slice(0, 3), status: "klar", updatedAt: new Date().toISOString() };
       setState((st) => ({
         ...st,
@@ -679,7 +688,8 @@ function VarvApp({ username, onLogout }) {
     setToast("🤖 sorterar…");
     clearTimeout(toastTimer.current);
     try {
-      const c = await aiClassify(raw);
+      const c = await streamAgent.run("classify", raw);
+      if (!c) throw new Error("Klassificering misslyckades");
       placeClassified(raw, c);
     } catch (e) {
       // felsäkert: ingenting får försvinna — landa som rå idé
@@ -1708,6 +1718,7 @@ function VarvApp({ username, onLogout }) {
 
       {/* ============ toast ============ */}
       {toast && <div style={s.toast}>{toast}</div>}
+      <AgentProgress step={streamAgent.step} text={streamAgent.text} isRunning={streamAgent.isRunning} />
       {undoTask && (
         <div style={{ ...s.toast, background: T.petrol, display: 'flex', gap: 10, alignItems: 'center' }}>
           <span>✓ {undoTask.title}</span>

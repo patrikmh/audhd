@@ -1,5 +1,5 @@
 {
-  "nextId": 17,
+  "nextId": 20,
   "tasks": [
     {
       "id": "6",
@@ -139,6 +139,42 @@
       "blockedBy": [],
       "createdAt": 1784638954007,
       "updatedAt": 1784638954007
+    },
+    {
+      "id": "17",
+      "subject": "Create useAgentStream hook for streaming agent calls",
+      "description": "Create a reusable React hook that wraps AG-UI SSE streaming for the main app flows (classify, refine, breakdown). Shows real-time progress. Replaces direct apiPost calls for agent operations.",
+      "status": "completed",
+      "activeForm": "Creating useAgentStream hook",
+      "metadata": {},
+      "blocks": [],
+      "blockedBy": [],
+      "createdAt": 1784642055074,
+      "updatedAt": 1784642248848
+    },
+    {
+      "id": "18",
+      "subject": "Add AgentProgress component for streaming status",
+      "description": "Create a visible progress indicator that shows agent streaming status (step name, text, loading dots) during capture/refine/breakdown flows. Replaces the simple \"robotar...\" toast.",
+      "status": "completed",
+      "activeForm": "Creating AgentProgress component",
+      "metadata": {},
+      "blocks": [],
+      "blockedBy": [],
+      "createdAt": 1784642088685,
+      "updatedAt": 1784642287317
+    },
+    {
+      "id": "19",
+      "subject": "Wire autoCapture, refineIdea, breakdownTask to streaming",
+      "description": "Replace apiPost('/api/agents/classify'), apiPost('/api/agents/refine'), aiBreakdown() with AG-UI streaming calls. Keep placeClassified logic. Each flow: start stream → show progress → on RUN_FINISHED extract result → persist.",
+      "status": "in_progress",
+      "activeForm": "Wiring capture flows to streaming",
+      "metadata": {},
+      "blocks": [],
+      "blockedBy": [],
+      "createdAt": 1784642108867,
+      "updatedAt": 1784642297478
     }
   ]
 }

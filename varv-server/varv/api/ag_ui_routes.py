@@ -102,7 +102,7 @@ async def _stream_classify(raw: str, user: User, session: Session, encoder: Even
     yield _emit(encoder, E.tool_end(tool_id))
     yield _emit(encoder, E.tool_result(tool_id, json.dumps(output.model_dump(), ensure_ascii=False), message_id=msg_id))
     yield _emit(encoder, E.text_start(msg_id))
-    yield _emit(encoder, E.text_delta(msg_id, f"Klassificerad som: {output.category}"))
+    yield _emit(encoder, E.text_delta(msg_id, f"Klassificerad som: {output.type.value} — {output.title}"))
     yield _emit(encoder, E.text_end(msg_id))
     yield _emit(encoder, E.state_delta([
         {"op": "add", "path": "/lastClassification", "value": output.model_dump()},
@@ -150,7 +150,7 @@ async def _stream_breakdown(title: str, encoder: EventEncoder):
     yield _emit(encoder, E.tool_end(tool_id))
     yield _emit(encoder, E.tool_result(tool_id, json.dumps(output.model_dump(), ensure_ascii=False), message_id=msg_id))
     yield _emit(encoder, E.text_start(msg_id))
-    steps_text = "\n".join(f"{i+1}. {s}" for i, s in enumerate(output.steps))
+    steps_text = "\n".join(f"{i+1}. {s.title} ({s.minutes}min)" for i, s in enumerate(output.steps))
     yield _emit(encoder, E.text_delta(msg_id, f"Bryter ner: {title}\n{steps_text}"))
     yield _emit(encoder, E.text_end(msg_id))
     yield _emit(encoder, E.state_delta([
@@ -308,12 +308,12 @@ async def ag_ui_run_a2ui(
                 result = await agents["sorteraren"].run(payload.input, deps=deps)
                 output = result.output
 
-                for msg in a2ui["classify_result"](output.title, output.category, output.energy, output.icon):
+                for msg in a2ui["classify_result"](output.title, output.type.value, output.energy, None):
                     yield _emit(encoder, E.custom("a2ui_message", msg))
 
                 msg_id = str(uuid.uuid4())
                 yield _emit(encoder, E.text_start(msg_id))
-                yield _emit(encoder, E.text_delta(msg_id, f"Klassificerad: {output.category} — {output.title}"))
+                yield _emit(encoder, E.text_delta(msg_id, f"Klassificerad: {output.type.value} — {output.title}"))
                 yield _emit(encoder, E.text_end(msg_id))
                 yield _emit(encoder, E.step_finished("classify"))
 
@@ -342,13 +342,13 @@ async def ag_ui_run_a2ui(
                 result = await agents["nedbrytaren"].run(payload.input)
                 output = result.output
 
-                for msg in a2ui["breakdown_result"](output.title, output.steps, output.energy):
+                for msg in a2ui["breakdown_result"](payload.input, output.steps, None):
                     yield _emit(encoder, E.custom("a2ui_message", msg))
 
                 msg_id = str(uuid.uuid4())
                 yield _emit(encoder, E.text_start(msg_id))
-                steps_text = "\n".join(f"  {i+1}. {s}" for i, s in enumerate(output.steps))
-                yield _emit(encoder, E.text_delta(msg_id, f"Bryter ner: {output.title}\n{steps_text}"))
+                steps_text = "\n".join(f"  {i+1}. {s.title} ({s.minutes}min)" for i, s in enumerate(output.steps))
+                yield _emit(encoder, E.text_delta(msg_id, f"Bryter ner: {payload.input}\n{steps_text}"))
                 yield _emit(encoder, E.text_end(msg_id))
                 yield _emit(encoder, E.step_finished("breakdown"))
 
@@ -356,7 +356,7 @@ async def ag_ui_run_a2ui(
                 a2ui = _get_a2ui()
 
                 yield _emit(encoder, E.step_started("analyze"))
-                capacity = payload.state.get("capacity", 3)
+                capacity = int(payload.state.get("capacity", 3))
 
                 if capacity <= 1:
                     suggestion = a2ui["observer_suggestion"](
