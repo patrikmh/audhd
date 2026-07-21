@@ -79,6 +79,37 @@ def agent_note(session: Session, user_id: str, agent: str, text: str) -> None:
     session.add(AgentLog(user_id=user_id, agent=agent, text=text[:300]))
 
 
+def redact_idea(session: Session, user_id: str, idea: Idea) -> None:
+    """Wipes an idea's content on deletion. Unlike other soft-deletes, an idea's raw
+    thought is sensitive enough that "deleted" must mean gone, not just hidden — so we
+    also drop the captures and tag links that reference it (a deliberate, idea-only
+    exception to Capture's normal append-only guarantee)."""
+    captures = session.exec(
+        select(Capture).where(
+            Capture.user_id == user_id, Capture.routed_type == CaptureType.idea, Capture.routed_id == idea.id,
+        )
+    ).all()
+    capture_ids = [c.id for c in captures]
+    entity_ids = [idea.id, *capture_ids]
+    links = session.exec(
+        select(TagLink).where(
+            TagLink.user_id == user_id,
+            TagLink.entity_kind.in_(["idea", "capture"]),
+            TagLink.entity_id.in_(entity_ids),
+        )
+    ).all()
+    for link in links:
+        session.delete(link)
+    for cap in captures:
+        session.delete(cap)
+
+    idea.raw = ""
+    idea.title = None
+    idea.note = None
+    idea.image = None
+    idea.tags = []
+
+
 def _route(session: Session, user_id: str, cls: ClassifiedCapture, raw: str) -> tuple[CaptureType, str]:
     if cls.type == CaptureType.shopping:
         lst = session.exec(

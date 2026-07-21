@@ -23,6 +23,7 @@ from varv.schemas import (
     ChangeIn, SyncEnergyEventData, SyncIdeaData, SyncListItemData, SyncShoppingListData,
     SyncTaskData, SyncTaskStepData, SyncWinData,
 )
+from varv.services.capture import redact_idea
 
 SYNCABLE = {
     "task": Task,
@@ -183,6 +184,8 @@ def apply_changes(session: Session, user_id: str, changes: list[ChangeIn]) -> di
                 counts["skipped"] += 1
                 results.append(_result(ch, "idempotent"))
                 continue
+            if ch.kind == "idea":
+                redact_idea(session, user_id, row)
             row.deleted_at = incoming
             row.updated_at = incoming
             counts["deleted"] += 1

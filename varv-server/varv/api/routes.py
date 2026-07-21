@@ -21,7 +21,7 @@ from varv.schemas import (
     IdeaPatch, LoginIn, LoginOut, RefinedIdea, RefineIn, SyncPushOut, TagIn, TaskPatch, TranscriptOut, WeekStats,
 )
 from varv.services import stats, sync
-from varv.services.capture import known_tag_vocabulary, process_capture
+from varv.services.capture import known_tag_vocabulary, process_capture, redact_idea
 from varv.utils import verify_password
 
 auth_router = APIRouter()
@@ -230,6 +230,7 @@ def delete_idea(idea_id: str, user: User = Depends(current_user), session: Sessi
     if not idea or idea.user_id != user.id or idea.deleted_at is not None:
         raise HTTPException(404)
     now = utcnow()
+    redact_idea(session, user.id, idea)
     idea.deleted_at = now
     idea.updated_at = now
     session.commit()

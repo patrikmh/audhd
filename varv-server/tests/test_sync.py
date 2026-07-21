@@ -50,6 +50,27 @@ def test_delete_and_pull(session):
     assert pulled_task["deleted_at"] is not None
 
 
+def test_idea_delete_scrubs_content_not_just_soft_deletes(session):
+    """Ideas hold raw, unfiltered thoughts — deletion must actually wipe the sensitive
+    fields, not just flip deleted_at like every other syncable kind does."""
+    iid = uuid7()
+    now = datetime.now()
+    apply_changes(session, session.user_id, [ChangeIn(
+        kind="idea", id=iid, updated_at=now,
+        data={"raw": "vill lämna jobbet", "title": "lämna jobbet", "note": "hemligt", "tags": ["privat"]},
+    )])
+    apply_changes(session, session.user_id, [ChangeIn(kind="idea", id=iid, op="delete", updated_at=now + timedelta(seconds=1))])
+
+    from varv.db.models import Idea
+    idea = session.get(Idea, iid)
+    assert idea.deleted_at is not None
+    assert idea.raw == "" and idea.title is None and idea.note is None and idea.tags == []
+
+    pulled = pull_changes(session, session.user_id)
+    pulled_idea = next(i for i in pulled["changes"]["idea"] if i["id"] == iid)
+    assert pulled_idea["raw"] == "" and pulled_idea["title"] is None
+
+
 def test_change_cannot_modify_another_users_row(session):
     task_id = uuid7()
     now = datetime.now()

@@ -6,7 +6,7 @@ from sqlmodel import select
 from varv.agents.core import sorteraren
 from varv.db.models import Capture, CaptureType, Idea, TagLink
 from varv.schemas import CaptureIn
-from varv.services.capture import guess_icon, known_tag_vocabulary, process_capture
+from varv.services.capture import guess_icon, known_tag_vocabulary, process_capture, redact_idea
 
 
 @pytest.mark.asyncio
@@ -57,6 +57,39 @@ async def test_tags_are_linked_and_in_vocabulary(session):
 def test_guess_icon_word_prefix():
     assert guess_icon("ring vet") == "📞"
     assert guess_icon("bring laundry") == "🧺"                # inte 📞 — prefixmatchning
+
+
+@pytest.mark.asyncio
+async def test_redact_idea_wipes_content_and_related_rows(session):
+    class Boom:
+        async def run(self, *a, **k):
+            raise RuntimeError("nere")  # tvinga rå-idé-vägen så vi känner exakt routed_id
+
+    from varv.services import capture as mod
+    original = mod.sorteraren
+    mod.sorteraren = Boom()
+    try:
+        out = await process_capture(session, session.user_id, CaptureIn(raw="känsligt: ska ta ut skilsmässa"))
+    finally:
+        mod.sorteraren = original
+
+    from varv.services.capture import link_tags
+
+    idea = session.get(Idea, out.routed_id)
+    idea.tags = ["privat"]
+    link_tags(session, session.user_id, ["privat"], "idea", idea.id)
+    session.add(idea)
+    session.commit()
+
+    redact_idea(session, session.user_id, idea)
+    session.commit()
+
+    assert idea.raw == "" and idea.title is None and idea.note is None
+    assert idea.image is None and idea.tags == []
+    assert session.exec(select(Capture).where(Capture.routed_id == idea.id)).all() == []
+    assert session.exec(
+        select(TagLink).where(TagLink.entity_kind == "idea", TagLink.entity_id == idea.id)
+    ).all() == []
 
 
 @pytest.mark.asyncio
