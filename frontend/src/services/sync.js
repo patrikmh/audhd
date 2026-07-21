@@ -46,14 +46,15 @@ function uuidv7() {
  * Track local changes for sync
  */
 class ChangeTracker {
-  constructor() {
+  constructor(username) {
+    this.storageKey = `varv-sync:${encodeURIComponent(username)}:pending`;
     this.changes = new Map(); // id -> {kind, op, data, updated_at}
     this.loadPending();
   }
 
   loadPending() {
     try {
-      const saved = localStorage.getItem('varv-pending-changes');
+      const saved = localStorage.getItem(this.storageKey);
       if (saved) {
         const parsed = JSON.parse(saved);
         this.changes = new Map(Object.entries(parsed));
@@ -66,7 +67,7 @@ class ChangeTracker {
   savePending() {
     try {
       const obj = Object.fromEntries(this.changes);
-      localStorage.setItem('varv-pending-changes', JSON.stringify(obj));
+      localStorage.setItem(this.storageKey, JSON.stringify(obj));
     } catch (e) {
       console.error('Failed to save pending changes:', e);
     }
@@ -104,16 +105,27 @@ class ChangeTracker {
  * Sync client - handles push/pull operations
  */
 class SyncClient {
-  constructor(apiBase, getAuth) {
+  constructor(apiBase, getAuth, username) {
+    if (!username) throw new Error('Sync requires a username');
     this.apiBase = apiBase;
     this.getAuth = getAuth;
-    this.tracker = new ChangeTracker();
+    this.username = username;
+    this.cursorKey = `varv-sync:${encodeURIComponent(username)}:cursor`;
+    this.abortController = new AbortController();
+    this.tracker = new ChangeTracker(username);
     this.cursor = this.loadCursor();
+  }
+
+  requireAuth() {
+    const auth = this.getAuth();
+    if (!auth?.token) throw new Error('Not authenticated');
+    if (auth.username !== this.username) throw new Error('Authenticated account changed');
+    return auth;
   }
 
   loadCursor() {
     try {
-      return localStorage.getItem('varv-sync-cursor') || null;
+      return localStorage.getItem(this.cursorKey) || null;
     } catch (e) {
       return null;
     }
@@ -121,17 +133,15 @@ class SyncClient {
 
   saveCursor(cursor) {
     try {
-      localStorage.setItem('varv-sync-cursor', cursor || '');
+      localStorage.setItem(this.cursorKey, cursor || '');
+      this.cursor = cursor || null;
     } catch (e) {
       console.error('Failed to save cursor:', e);
     }
   }
 
   async push() {
-    const auth = this.getAuth();
-    if (!auth?.token) {
-      throw new Error('Not authenticated');
-    }
+    const auth = this.requireAuth();
 
     const changes = this.tracker.getPending();
     if (changes.length === 0) {
@@ -144,6 +154,7 @@ class SyncClient {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${auth.token}`
       },
+      signal: this.abortController.signal,
       body: JSON.stringify(changes)
     });
 
@@ -162,10 +173,7 @@ class SyncClient {
   }
 
   async pull() {
-    const auth = this.getAuth();
-    if (!auth?.token) {
-      throw new Error('Not authenticated');
-    }
+    const auth = this.requireAuth();
 
     const url = this.cursor
       ? `${this.apiBase}/api/sync/pull?since=${encodeURIComponent(this.cursor)}`
@@ -174,7 +182,8 @@ class SyncClient {
     const response = await fetch(url, {
       headers: {
         'Authorization': `Bearer ${auth.token}`
-      }
+      },
+      signal: this.abortController.signal,
     });
 
     if (!response.ok) {
@@ -212,6 +221,10 @@ class SyncClient {
     const pushResult = await this.push();
     const pullResult = await this.pull();
     return { push: pushResult, pull: pullResult };
+  }
+
+  dispose() {
+    this.abortController.abort();
   }
 }
 

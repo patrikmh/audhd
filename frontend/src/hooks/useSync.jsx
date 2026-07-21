@@ -6,16 +6,22 @@ import { useCallback, useRef, useEffect } from 'react';
 import { SyncClient, trackStateChange } from '../services/sync';
 import { APIClient } from '../services/api';
 
-export function useSync(apiBase, getAuth, state, setState) {
+export function useSync(apiBase, getAuth, username, state, setState) {
   const syncClientRef = useRef(null);
   const apiClientRef = useRef(null);
   const syncInProgressRef = useRef(false);
 
   // Initialize clients
   useEffect(() => {
-    syncClientRef.current = new SyncClient(apiBase, getAuth);
+    const syncClient = new SyncClient(apiBase, getAuth, username);
+    syncClientRef.current = syncClient;
     apiClientRef.current = new APIClient(apiBase, getAuth);
-  }, [apiBase, getAuth]);
+    return () => {
+      syncClient.dispose();
+      syncClientRef.current = null;
+      apiClientRef.current = null;
+    };
+  }, [apiBase, getAuth, username]);
 
   // Convert server data to local state format
   const serverToLocal = useCallback((serverData) => {

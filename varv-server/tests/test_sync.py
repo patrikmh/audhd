@@ -1,10 +1,10 @@
 """Synkprotokollet: LWW, idempotens och delete."""
 from datetime import datetime, timedelta
 
-from varv.db.models import Task, Win
+from varv.db.models import Task, User, Win
 from varv.schemas import ChangeIn
 from varv.services.sync import apply_changes, pull_changes
-from varv.utils import uuid7
+from varv.utils import hash_password, new_token, uuid7
 
 
 def test_create_then_lww_update(session):
@@ -46,3 +46,33 @@ def test_delete_and_pull(session):
     assert "task" in pulled and "win" in pulled
     pulled_task = next(t for t in pulled["task"] if t["id"] == tid)
     assert pulled_task["deleted_at"] is not None
+
+
+def test_change_cannot_modify_another_users_row(session):
+    task_id = uuid7()
+    now = datetime.now()
+    apply_changes(
+        session,
+        session.user_id,
+        [ChangeIn(kind="task", id=task_id, updated_at=now, data={"title": "Privat"})],
+    )
+    other_user = User(username="other", password_hash=hash_password("test"), token=new_token())
+    session.add(other_user)
+    session.commit()
+
+    result = apply_changes(
+        session,
+        other_user.id,
+        [
+            ChangeIn(
+                kind="task",
+                id=task_id,
+                updated_at=now + timedelta(minutes=1),
+                data={"title": "Övertagen"},
+            )
+        ],
+    )
+
+    session.refresh(session.get(Task, task_id))
+    assert result["skipped"] == 1
+    assert session.get(Task, task_id).title == "Privat"

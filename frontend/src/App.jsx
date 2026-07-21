@@ -155,6 +155,7 @@ function VarvApp({ username, onLogout }) {
   const sync = useSync(
     API_BASE,
     getAuth,
+    username,
     state,
     setState
   );
