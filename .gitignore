@@ -6,6 +6,7 @@ venv/
 *.egg-info/
 .env
 varv-server/varv.db
+varv-server/*.bak
 node_modules/
 dist/
 .playwright-cli/
