@@ -322,6 +322,7 @@ function VarvApp({ username, onLogout }) {
 
   const [undoTask, setUndoTask] = useState(null);
   const undoTimer = useRef(null);
+  const [contextMenu, setContextMenu] = useState(null); // { x, y, items }
 
   const completeTask = (task) => {
     if (task.done) return;
@@ -1146,6 +1147,19 @@ function VarvApp({ username, onLogout }) {
             <div
               key={t.id}
               onClick={() => selectTask(t)}
+              onContextMenu={(e) => {
+                e.preventDefault();
+                setContextMenu({
+                  x: e.clientX, y: e.clientY,
+                  items: [
+                    { icon: "✎", label: "Redigera", action: () => selectTask(t) },
+                    { icon: t.done ? "↩" : "✓", label: t.done ? "Återställ" : "Markera klar", action: () => t.done ? undoCompleteTask(t) : completeTask(t) },
+                    { icon: "📅", label: "Schemalägg", action: () => { selectTask(t); setTool(null); } },
+                    { separator: true },
+                    { icon: "🗑", label: "Ta bort", danger: true, action: () => removeTask(t.id) },
+                  ],
+                });
+              }}
               style={{ cursor: 'pointer' }}
             >
               <TaskCard
@@ -1240,6 +1254,19 @@ function VarvApp({ username, onLogout }) {
                 onToTask={() => ideaToTask(idea)}
                 onRemove={() => removeIdea(idea.id)}
                 onUpdate={updateIdea}
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  setContextMenu({
+                    x: e.clientX, y: e.clientY,
+                    items: [
+                      { icon: "✎", label: "Redigera", action: () => {} },
+                      { icon: "→", label: "Till uppgift", action: () => ideaToTask(idea) },
+                      { icon: "✨", label: "Förfina", action: () => refineIdea(idea.id, idea.raw) },
+                      { separator: true },
+                      { icon: "🗑", label: "Ta bort", danger: true, action: () => removeIdea(idea.id) },
+                    ],
+                  });
+                }}
               />
             ))}
           </section>
@@ -1508,6 +1535,16 @@ function VarvApp({ username, onLogout }) {
         lastSync={state.sync.last}
         onSyncClick={() => runSync()}
       />
+
+      {/* ============ context menu ============ */}
+      {contextMenu && (
+        <ContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          items={contextMenu.items}
+          onClose={() => setContextMenu(null)}
+        />
+      )}
     </div>
   );
 }
@@ -1748,6 +1785,86 @@ function NowMarker() {
       <span style={{ font: "500 12px 'IBM Plex Mono', monospace", color: T.petrolDark }}>{nowHM()}</span>
       <div style={{ flex: 1, height: 1, background: T.petrol, opacity: 0.5 }} />
       <span style={{ fontSize: 11, color: T.petrolDark }}>nu</span>
+    </div>
+  );
+}
+
+/* ============================================================ */
+/* Context menu — right-click on tasks, ideas, list items       */
+/* ============================================================ */
+function ContextMenu({ x, y, items, onClose }) {
+  const menuRef = useRef(null);
+  const s = styles;
+
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) onClose();
+    };
+    const handleKey = (e) => { if (e.key === "Escape") onClose(); };
+    document.addEventListener("mousedown", handleClick);
+    document.addEventListener("keydown", handleKey);
+    return () => {
+      document.removeEventListener("mousedown", handleClick);
+      document.removeEventListener("keydown", handleKey);
+    };
+  }, [onClose]);
+
+  // Keep menu within viewport
+  const [pos, setPos] = useState({ x, y });
+  useEffect(() => {
+    if (!menuRef.current) return;
+    const rect = menuRef.current.getBoundingClientRect();
+    const nx = x + rect.width > window.innerWidth ? x - rect.width : x;
+    const ny = y + rect.height > window.innerHeight ? y - rect.height : y;
+    setPos({ x: Math.max(0, nx), y: Math.max(0, ny) });
+  }, [x, y]);
+
+  return (
+    <div
+      ref={menuRef}
+      style={{
+        position: "fixed",
+        left: pos.x,
+        top: pos.y,
+        zIndex: 1000,
+        background: T.card,
+        border: `1px solid ${T.line}`,
+        borderRadius: 10,
+        boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
+        padding: "6px 0",
+        minWidth: 160,
+        fontFamily: "'Atkinson Hyperlegible', sans-serif",
+        fontSize: 14,
+      }}
+    >
+      {items.map((item, i) => {
+        if (item.separator) {
+          return <div key={i} style={{ height: 1, background: T.line, margin: "4px 0" }} />;
+        }
+        return (
+          <button
+            key={i}
+            onClick={() => { item.action(); onClose(); }}
+            style={{
+              display: "block",
+              width: "100%",
+              textAlign: "left",
+              padding: "8px 16px",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              color: item.danger ? T.warn : T.ink,
+              fontFamily: "inherit",
+              fontSize: "inherit",
+            }}
+            onMouseEnter={(e) => e.target.style.background = T.track}
+            onMouseLeave={(e) => e.target.style.background = "none"}
+          >
+            {item.icon && <span style={{ marginRight: 8 }}>{item.icon}</span>}
+            {item.label}
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -2520,7 +2637,7 @@ function Lists({ lists, onChange }) {
 /* ============================================================ */
 /* Idékort — rå direkt, förfinad när AI:n hunnit, redigerbar */
 /* ============================================================ */
-function IdeaCard({ idea, onRefine, onToTask, onRemove, onUpdate }) {
+function IdeaCard({ idea, onRefine, onToTask, onRemove, onUpdate, onContextMenu }) {
   const [showRaw, setShowRaw] = useState(false);
   const [editing, setEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(idea.title || "");
@@ -2542,9 +2659,7 @@ function IdeaCard({ idea, onRefine, onToTask, onRemove, onUpdate }) {
   };
 
   return (
-    <div style={{ ...s.card, marginTop: 10 }}>
-      {editing ? (
-        /* === Edit mode === */
+    <div style={{ ...s.card, marginTop: 10 }} onContextMenu={onContextMenu}>
         <>
           <div style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.5px", color: T.soft, marginBottom: 6 }}>
             Redigera idé
