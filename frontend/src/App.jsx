@@ -11,6 +11,7 @@ import { SettingsView } from "./components/SettingsView";
 import { T, MODES, ENERGY_LABELS, MOVEMENT_IDEAS, REST_MENU, EDU_CARDS, ICON_CHOICES, WEEKDAYS, ICON_KEYWORDS, PRIORITY_ORDER, API_BASE, AUTH_KEY } from "./constants/tokens";
 import { uid, todayKey, todayWeekday, guessIcon, energyColor, nowHM, hmToMin } from "./utils/helpers";
 import { getAuth, setAuth, clearAuth, login } from "./utils/auth";
+import { INTEGRATIONS } from "./constants/integrations";
 
 /* ============================================================
    VARV — an AuDHD day companion
@@ -146,8 +147,6 @@ function VarvApp({ username, onLogout }) {
   const [unstickBusy, setUnstickBusy] = useState(false);
   const [focusPrefill, setFocusPrefill] = useState(null);
   const [, setTick] = useState(0); // minute tick so time-based UI stays current
-  const [calBusy, setCalBusy] = useState(false);
-  const [mailBusy, setMailBusy] = useState(false);
   const [syncErr, setSyncErr] = useState("");
   const saveTimer = useRef(null);
 
@@ -533,27 +532,6 @@ function VarvApp({ username, onLogout }) {
     }
   };
 
-  /* ---------- Google-synk ----------
-     varv-server har (ännu) ingen Gmail/Calendar/Notion-integration — dessa
-     körde tidigare direkt mot Anthropics mcp_servers utan nyckel, vilket
-     aldrig fungerade utanför artifact-sandlådan. Stubbade tills servern
-     har motsvarande endpoints. */
-  const NOT_WIRED = "Den här integrationen är inte kopplad till servern än.";
-
-  const syncCalendar = async () => {
-    setSyncErr(NOT_WIRED);
-    return "skip";
-  };
-
-  const checkGmail = async () => {
-    setSyncErr(NOT_WIRED);
-    return "skip";
-  };
-
-  const pushTaskToCalendar = async () => {
-    throw new Error(NOT_WIRED);
-  };
-
   /* ---------- Oura + kapacitetsautomatik ---------- */
   const applyCapacityFromScore = (score) => {
     setState((st) => {
@@ -588,15 +566,6 @@ function VarvApp({ username, onLogout }) {
     if (bucket === "<6") applyCapacityFromScore(60);
   };
 
-  /* ---------- Notion-arkiv ---------- */
-  const archiveToNotion = async () => {
-    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
-    const yWins = state.wins.filter((w) => new Date(w.ts).toISOString().slice(0, 10) === yesterday);
-    const yLog = state.energyLog.filter((e) => e.day === yesterday);
-    if (yWins.length === 0 && yLog.length === 0) return "skip";
-    setSyncErr(NOT_WIRED);
-    return "skip";
-  };
 
   /* ---------- agentlogg ---------- */
   const logAgent = (agent, text) =>
@@ -780,18 +749,12 @@ function VarvApp({ username, onLogout }) {
 
       const ouraStatus = await syncOura();
       setState((st) => ({ ...st, sync: { ...st.sync, oura: ouraStatus } }));
-      const calStatus = await syncCalendar();
-      setState((st) => ({ ...st, sync: { ...st.sync, cal: calStatus } }));
-      const mailStatus = await checkGmail();
-      setState((st) => ({ ...st, sync: { ...st.sync, mail: mailStatus } }));
-      const notionStatus = stateRef.current.notionArchivedDay === todayKey() ? "ok" : await archiveToNotion();
-      setState((st) => ({ ...st, sync: { ...st.sync, notion: notionStatus } }));
 
       const syncStats = syncResult.success ?
         `data ${syncResult.push.created + syncResult.push.updated + syncResult.push.deleted} changes` :
         `data sync failed: ${syncResult.reason}`;
 
-      logAgent("Synkaren", `körning klar: ${syncStats}, kalender ${calStatus}, mejl ${mailStatus}, oura ${ouraStatus}, notion ${notionStatus}`);
+      logAgent("Synkaren", `körning klar: ${syncStats}, oura ${ouraStatus}`);
     } catch (error) {
       setSyncErr(error.message);
       logAgent("Synkaren", `körning misslyckades: ${error.message}`);
@@ -1309,7 +1272,6 @@ function VarvApp({ username, onLogout }) {
                 onUpdate={(p) => updateTask(t.id, p)}
                 onRemove={() => removeTask(t.id)}
                 onWin={addWin}
-                onPushCal={pushTaskToCalendar}
                 agentBusy={streamAgent.isRunning && streamAgent.activeInput === t.title}
               />
             </div>
@@ -1450,7 +1412,7 @@ function VarvApp({ username, onLogout }) {
               {[
                 ["classify", "Sorteraren", "Klassar varje fångst som uppgift, idé eller inköp och sätter taggar. Av = allt landar som rå idé."],
                 ["refine", "Förfinaren", "Städar råa idéer i bakgrunden till titel + anteckning. Plockar upp misslyckade, max 3 försök."],
-                ["sync", "Synkaren", "Hämtar kalender, mejl och Oura var 3:e timme och arkiverar gårdagen till Notion."],
+                ["sync", "Synkaren", "Hämtar Oura var 3:e timme. Kalender, Gmail och Notion är inte kopplade till servern än."],
                 ["breakdown", "Nedbrytaren", "Förbereder första steg för A-prioriterade och tunga uppgifter innan du fastnar. Max 3 per dag."],
                 ["observer", "Observatören", "Håller koll på energi, tid och läge — föreslår rätt verktyg från verktygslådan som en avfärdbar banner, öppnar aldrig något åt dig."],
               ].map(([key, name, desc]) => (
@@ -1521,6 +1483,16 @@ function VarvApp({ username, onLogout }) {
                   </button>
                 ))}
               </div>
+
+              <div style={{ ...s.eyebrow, marginTop: 14 }}>Övriga kopplingar</div>
+              {Object.entries(INTEGRATIONS)
+                .filter(([key]) => key !== "oura")
+                .map(([key, info]) => (
+                  <div key={key} style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", fontSize: 13, color: T.soft }}>
+                    <span>{info.label}</span>
+                    <span>{info.available ? "aktiv" : "inte kopplad än"}</span>
+                  </div>
+                ))}
 
               <div style={{ ...s.eyebrow, marginTop: 16 }}>Kör om nu</div>
               <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
@@ -2264,10 +2236,9 @@ function AddTask({ onAdd, defaultDate }) {
 /* ============================================================ */
 /* Task card with AI breakdown                                   */
 /* ============================================================ */
-function TaskCard({ task, onDone, onUpdate, onRemove, onWin, onPushCal, agentBusy }) {
+function TaskCard({ task, onDone, onUpdate, onRemove, onWin, agentBusy }) {
   const [expanded, setExpanded] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [calBusy, setCalBusy] = useState(false);
   const [err, setErr] = useState("");
   const [editing, setEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(task.title);
@@ -2497,21 +2468,6 @@ function TaskCard({ task, onDone, onUpdate, onRemove, onWin, onPushCal, agentBus
             <button style={s.linkBtn} onClick={breakDown} disabled={busy}>
               {busy ? "bryter ner…" : task.steps.length ? "bryt ner igen (AI)" : "bryt ner (AI)"}
             </button>
-            {task.time && !task.synced && onPushCal && (
-              <button
-                style={s.linkBtn}
-                disabled={calBusy}
-                onClick={async () => {
-                  setCalBusy(true);
-                  setErr("");
-                  try { await onPushCal(task); } catch (e) { setErr("Kunde inte lägga i kalendern — testa igen."); }
-                  setCalBusy(false);
-                }}
-              >
-                {calBusy ? "läggs till…" : "lägg i kalendern"}
-              </button>
-            )}
-            {task.synced && <span style={{ fontSize: 13, color: T.moss, alignSelf: "center" }}>✓ i kalendern</span>}
             <button style={{ ...s.linkBtn, color: T.soft }} onClick={onRemove}>ta bort</button>
           </div>
           {err && <div style={{ color: T.warn, fontSize: 13, marginTop: 6 }}>{err}</div>}
