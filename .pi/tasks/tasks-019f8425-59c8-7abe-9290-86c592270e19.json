@@ -204,25 +204,25 @@
       "id": "22",
       "subject": "Richer task editing — time, notes, images",
       "description": "Enhance task editing: (1) Set/modify time on tasks (beyond just date). (2) Add notes/description to tasks. (3) Add images to tasks (need backend storage — base64 in DB or file upload). ContextMenu 'Redigera' should open a full edit sheet with all fields. TaskCard should display time and image thumbnail when present.",
-      "status": "in_progress",
+      "status": "completed",
       "activeForm": "Adding richer task editing",
       "metadata": {},
       "blocks": [],
       "blockedBy": [],
       "createdAt": 1784651975704,
-      "updatedAt": 1784653431024
+      "updatedAt": 1784653794442
     },
     {
       "id": "23",
       "subject": "Richer idea editing — refine, images",
       "description": "Enhance idea editing: (1) Refine ideas (exists via Förfinaren agent). (2) Add images to ideas. (3) Rich notes/body. IdeaCard edit mode already has title+note; add image upload. Backend needs image support on Idea model.",
-      "status": "pending",
+      "status": "completed",
       "activeForm": "Adding richer idea editing",
       "metadata": {},
       "blocks": [],
       "blockedBy": [],
       "createdAt": 1784651981069,
-      "updatedAt": 1784651981069
+      "updatedAt": 1784653879960
     },
     {
       "id": "24",
@@ -240,13 +240,13 @@
       "id": "25",
       "subject": "Auto-generate tags from detailed idea descriptions",
       "description": "When a user adds or refines the detailed description (note/body) of an idea, automatically generate new tags based on the content. Could reuse the Förfinaren/Sorteraren agent to extract keywords/topics from the note, or do lightweight keyword extraction client-side. Update idea.tags with new suggestions (merge, don't overwrite user tags). Trigger on: refine result, manual edit save, and on-demand 'föreslå taggar' button.",
-      "status": "pending",
+      "status": "in_progress",
       "activeForm": "Adding auto-tagging from descriptions",
       "metadata": {},
       "blocks": [],
       "blockedBy": [],
       "createdAt": 1784652079721,
-      "updatedAt": 1784652079721
+      "updatedAt": 1784653888080
     }
   ]
 }

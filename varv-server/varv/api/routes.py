@@ -10,7 +10,7 @@ from functools import partial
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from sqlmodel import Session, select
 
-from varv.agents.core import SortDeps, forfinaren, nedbrytaren, sorteraren
+from varv.agents.core import SortDeps, forfinaren, nedbrytaren, sorteraren, tagaren
 from varv.api.auth import current_user
 from varv.db.engine import get_session
 from varv.db.models import (
@@ -102,6 +102,19 @@ async def agents_refine(payload: RefineIn, user: User = Depends(current_user)) -
 async def agents_breakdown(payload: BreakdownIn, user: User = Depends(current_user)) -> Breakdown:
     result = await nedbrytaren.run(payload.title)
     return result.output
+
+
+class TagIn(BaseModel):
+    title: str
+    note: str | None = None
+
+
+@router.post("/agents/tags", response_model=list[str])
+async def agents_tags(payload: TagIn, user: User = Depends(current_user), session: Session = Depends(get_session)) -> list[str]:
+    text = payload.title + (f"\n{payload.note}" if payload.note else "")
+    deps = SortDeps(known_tags=known_tag_vocabulary(session, user.id))
+    result = await tagaren.run(text, deps=deps)
+    return result.output[:3]
 
 
 # ---------- synk ----------

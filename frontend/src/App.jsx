@@ -647,6 +647,30 @@ function VarvApp({ username, onLogout }) {
     const updatedIdea = { ...idea, ...updates, updatedAt: new Date().toISOString() };
     setState((st) => ({ ...st, ideas: st.ideas.map((i) => (i.id === id ? updatedIdea : i)) }));
     sync.trackChange('idea', id, 'upsert', updatedIdea);
+
+    // When the note is edited and is substantial, auto-suggest tags in the background.
+    // Merge with existing — never overwrite user-set tags.
+    if (updates.note !== undefined && updates.note && updates.note.trim().length >= 10) {
+      const title = updates.title || updatedIdea.title || updatedIdea.raw || "";
+      apiPost("/api/agents/tags", { title, note: updates.note })
+        .then((suggested) => {
+          if (!Array.isArray(suggested) || suggested.length === 0) return;
+          const current = stateRef.current.ideas.find(i => i.id === id);
+          if (!current) return;
+          const existing = new Set(current.tags || []);
+          const merged = [...(current.tags || [])];
+          for (const t of suggested) {
+            if (merged.length >= 4) break;
+            if (!existing.has(t)) { merged.push(t); existing.add(t); }
+          }
+          if (merged.length !== (current.tags || []).length) {
+            const taggedIdea = { ...current, tags: merged, updatedAt: new Date().toISOString() };
+            setState((st) => ({ ...st, ideas: st.ideas.map((i) => (i.id === id ? taggedIdea : i)) }));
+            sync.trackChange('idea', id, 'upsert', taggedIdea);
+          }
+        })
+        .catch(() => { /* tyst — auto-taggning är bonus */ });
+    }
   };
 
   /* ---------- auto-klassificering: agenten sorterar när du inte väljer ---------- */
@@ -2965,8 +2989,34 @@ function IdeaCard({ idea, onRefine, onToTask, onRemove, onUpdate, onContextMenu 
   const [editing, setEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(idea.title || "");
   const [editNote, setEditNote] = useState(idea.note || "");
+  const [imgBusy, setImgBusy] = useState(false);
   const s = styles;
   const refined = idea.status === "klar" && idea.title;
+
+  const compressImage = (file) => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const max = 800;
+        let { width, height } = img;
+        if (width > max || height > max) {
+          const scale = max / Math.max(width, height);
+          width = Math.round(width * scale);
+          height = Math.round(height * scale);
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', 0.7));
+      };
+      img.onerror = reject;
+      img.src = reader.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
 
   const handleSave = () => {
     if (onUpdate) {
@@ -3008,14 +3058,46 @@ function IdeaCard({ idea, onRefine, onToTask, onRemove, onUpdate, onContextMenu 
             />
             <VoiceInputButton onResult={(t) => setEditNote((prev) => prev ? prev + " " + t : t)} style={{ marginTop: 8 }} />
           </div>
-          <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
-            <button style={{ ...s.primaryBtn, flex: 1 }} onClick={handleSave}>Spara</button>
-            <button style={{ ...s.ghostBtn, flex: 1 }} onClick={handleCancel}>Avbryt</button>
+          <div style={{ display: "flex", gap: 8, marginTop: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+            <button style={{ ...s.primaryBtn, flex: 1, minWidth: 100 }} onClick={handleSave}>Spara</button>
+            <button style={{ ...s.ghostBtn }} onClick={handleCancel}>Avbryt</button>
+            <input
+              type="file"
+              accept="image/*"
+              id={`idea-img-${idea.id}`}
+              style={{ display: 'none' }}
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                setImgBusy(true);
+                try {
+                  const data = await compressImage(file);
+                  onUpdate(idea.id, { image: data });
+                } catch (err) { /* ignora */ }
+                setImgBusy(false);
+              }}
+            />
+            <button
+              type="button"
+              style={s.ghostBtn}
+              disabled={imgBusy}
+              onClick={() => document.getElementById(`idea-img-${idea.id}`).click()}
+            >
+              {imgBusy ? '…' : idea.image ? 'byt bild' : '🖼️ bild'}
+            </button>
+            {idea.image && (
+              <button type="button" style={{ ...s.ghostBtn, color: T.warn }} onClick={() => onUpdate(idea.id, { image: null })}>
+                ta bort bild
+              </button>
+            )}
           </div>
         </>
       ) : refined ? (
         /* === Refined view === */
         <>
+          {idea.image && (
+            <img src={idea.image} alt="" style={{ width: '100%', maxHeight: 200, objectFit: 'cover', borderRadius: 10, marginBottom: 10 }} />
+          )}
           <div style={{ fontFamily: "'Fraunces', serif", fontWeight: 500, fontSize: 19 }}>{idea.title}</div>
           {idea.note && (
             <p style={{ ...s.body, color: T.ink, fontSize: 14, marginTop: 6 }}>{idea.note}</p>
