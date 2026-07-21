@@ -1,5 +1,0 @@
-Total messages: 4 (Errors: 0, Warnings: 0)
-Returning 2 messages for level "info"
-
-[INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://localhost:5173/node_modules/.vite/deps/chunk-373CG7ZK.js?v=db4aed72:21548
-[VERBOSE] [DOM] Input elements should have autocomplete attributes (suggested: "current-password"): (More info: https://goo.gl/9p2vKq) %o @ http://localhost:5173/:0

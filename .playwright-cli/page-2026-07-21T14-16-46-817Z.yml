@@ -1,6 +1,0 @@
-- generic [ref=e4]:
-  - generic [ref=e5]: Varv
-  - textbox "Användarnamn" [ref=e6]: patrik
-  - textbox "Lösenord" [ref=e7]: pass123
-  - generic [ref=e9]: Failed to fetch
-  - button "Logga in" [ref=e8]
