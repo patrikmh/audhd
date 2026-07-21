@@ -768,11 +768,17 @@ function VarvApp({ username, onLogout }) {
     }
   };
 
-  // Förfinaren som svepare: plockar upp råa/misslyckade idéer, max 2 per tick, max 3 försök per idé
+  // Förfinaren som svepare: plockar upp råa/misslyckade/fastnade idéer, max 2 per tick, max 3 försök per idé
   const refineSweep = async () => {
     const s = stateRef.current;
     if (!s.agents.refine) return;
-    const pending = s.ideas.filter((i) => (i.status === "raw" || i.status === "fail") && (i.attempts || 0) < 3).slice(0, 2);
+    // 'refining' äldre än 5 min = fastnad (t.ex. avbruten stream) — plocka upp den också
+    const staleRefining = Date.now() - 5 * 60 * 1000;
+    const pending = s.ideas.filter((i) =>
+      ((i.status === "raw" || i.status === "fail") ||
+       (i.status === "refining" && (i.ts || 0) < staleRefining)) &&
+      (i.attempts || 0) < 3
+    ).slice(0, 2);
     for (const i of pending) await refineIdea(i.id, i.raw);
   };
 
