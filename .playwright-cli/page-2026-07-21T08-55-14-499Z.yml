@@ -1,0 +1,74 @@
+- generic [ref=e9]:
+  - generic [ref=e10]:
+    - banner [ref=e11]:
+      - generic [ref=e12]: Varv
+      - generic [ref=e13]: ett varv i taget
+      - button "patrik · logga ut" [ref=e14] [cursor=pointer]
+    - generic [ref=e15]:
+      - img [ref=e18]:
+        - generic [ref=e29]: "20"
+        - generic [ref=e30]: of 20 ⚡
+      - generic [ref=e31]:
+        - button "Stadig" [ref=e32] [cursor=pointer]
+        - button "Lågt batteri" [ref=e33] [cursor=pointer]
+        - button "Återhämtning" [ref=e34] [cursor=pointer]
+      - generic [ref=e35]:
+        - generic [ref=e36]: Medicin idag
+        - generic [ref=e37]:
+          - button "Tagen" [ref=e38] [cursor=pointer]
+          - button "Hoppade över" [ref=e39] [cursor=pointer]
+          - button "Inte idag" [ref=e40] [cursor=pointer]
+    - generic [ref=e41]:
+      - button "🗓️ Hämta kalendern" [ref=e42] [cursor=pointer]
+      - button "✉️ Kolla mejlen" [ref=e43] [cursor=pointer]
+    - generic [ref=e73]: Den här integrationen är inte kopplad till servern än.
+    - generic [ref=e74]: kalender – · mejl – · oura – · notion – · 10:54, sedan var 3:e h
+    - generic [ref=e91]:
+      - generic [ref=e92]:
+        - generic [ref=e93]: Morgonvarv · 2 min
+        - button "hoppa över idag" [ref=e94] [cursor=pointer]
+      - paragraph [ref=e95]: Tryck på upp till tre uppgifter i den ordning de betyder något idag. Första trycket = A, sedan B, sedan C. Resten kan vänta utan skuld.
+      - button "· DB persistence check · inkorg" [ref=e97] [cursor=pointer]:
+        - generic [ref=e98]: ·
+        - generic [ref=e99]: DB persistence check · inkorg
+      - button "Sätt dagen" [disabled] [ref=e100] [cursor=pointer]
+    - generic [ref=e44]:
+      - generic [ref=e45]: En tydlig nästa sak
+      - generic [ref=e101]:
+        - generic [ref=e102]: 📌
+        - generic [ref=e103]: DB persistence check
+        - button "Markera klar" [ref=e104] [cursor=pointer]: ✓
+      - generic [ref=e106]: 2⚡
+      - generic [ref=e107]:
+        - button "Starta ett fokusvarv" [ref=e108] [cursor=pointer]
+        - button "Jag kommer inte igång" [ref=e109] [cursor=pointer]
+    - generic [ref=e47]:
+      - generic [ref=e48]: Nästa halvdag
+      - paragraph [ref=e49]: Inga tidsatta punkter de närmaste timmarna. Oschemalagda uppgifter finns nedanför.
+    - generic [ref=e50]:
+      - generic [ref=e51]: 0 klara idag
+      - generic [ref=e52]: 1 kvar
+      - generic [ref=e53]:
+        - generic [ref=e54]: 0⚡
+        - text: förbrukat ·
+        - generic [ref=e55]: 0⚡
+        - text: återladdat
+      - generic [ref=e56]: 0 vinster
+    - generic [ref=e57]:
+      - generic [ref=e58]:
+        - generic [ref=e59]: Uppgifter
+        - button "+ lägg till" [ref=e60] [cursor=pointer]
+      - generic [ref=e111]:
+        - button "Visa detaljer" [ref=e112] [cursor=pointer]:
+          - generic [ref=e113]: 📌
+          - generic [ref=e114]:
+            - text: DB persistence check
+            - generic [ref=e115]: 2⚡ · tryck för mer
+        - button "Markera klar" [ref=e116] [cursor=pointer]: ✓
+    - contentinfo [ref=e62]: Inga streaks. Varje dag börjar på noll.
+  - navigation [ref=e63]:
+    - button "Idag" [ref=e64] [cursor=pointer]: Idag
+    - button "Idéer" [ref=e66] [cursor=pointer]: Idéer
+    - button "Fånga en tanke" [ref=e68] [cursor=pointer]: +
+    - button "Listor" [ref=e69] [cursor=pointer]: Listor
+    - button "Verktyg" [ref=e71] [cursor=pointer]: Verktyg

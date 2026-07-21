@@ -1,0 +1,29 @@
+{
+  "nextId": 8,
+  "tasks": [
+    {
+      "id": "6",
+      "subject": "Enhance IdeaCard with editable title and body",
+      "description": "Make IdeaCard more advanced with editable header (title) and body (note). Add save functionality for inline editing.",
+      "status": "completed",
+      "activeForm": "Enhancing IdeaCard",
+      "metadata": {},
+      "blocks": [],
+      "blockedBy": [],
+      "createdAt": 1784629681459,
+      "updatedAt": 1784630203247
+    },
+    {
+      "id": "7",
+      "subject": "Add future task scheduling and day view",
+      "description": "Add ability to schedule tasks for future dates and show other days' tasks. Add scheduledDate field to tasks and day selector UI.",
+      "status": "in_progress",
+      "activeForm": "Adding future task scheduling",
+      "metadata": {},
+      "blocks": [],
+      "blockedBy": [],
+      "createdAt": 1784629681460,
+      "updatedAt": 1784630203247
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+- generic [ref=e4]:
+  - generic [ref=e5]: Varv
+  - textbox "Användarnamn" [active] [ref=e6]
+  - textbox "Lösenord" [ref=e7]
+  - button "Logga in" [disabled] [ref=e8]

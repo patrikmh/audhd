@@ -184,6 +184,6 @@ function getTimeAgo(timestamp) {
 
   if (minutes < 1) return 'just nu';
   if (minutes < 60) return `${minutes} min${minutes > 1 ? 'er' : ''} sedan`;
-  if (hours < 24) return `${hours} tim${hours > 1 : 'mar' } sedan`;
-  return `${Math.floor(hours / 24)} dag${Math.floor(hours / 24) > 1 : 'ar'} sedan`;
+  if (hours < 24) return `${hours} tim${hours > 1 ? 'mar' : ''} sedan`;
+  return `${Math.floor(hours / 24)} dag${Math.floor(hours / 24) > 1 ? 'ar' : ''} sedan`;
 }
