@@ -1,0 +1,13 @@
+[   97567ms] [WARNING] [AgentStream] classify stream failed: (sqlite3.IntegrityError) NOT NULL constraint failed: agentlog.text
+[SQL: INSERT INTO agentlog (id, user_id, agent, text, created_at, day) VALUES (?, ?, ?, ?, ?, ?)]
+[parameters: ('019f850b-7590-7ac2-88b8-536672e1a4f6', '019f84dc-cac6-73c4-998b-e66f0d1dde38', 'classify', None, '2026-07-21 16:19:08.560941', '2026-07-21')]
+(Background on this error at: https://sqlalche.me/e/20/gkpj), falling back to legacy @ http://localhost:5173/src/hooks/useAgentStream.js:158
+[  110584ms] [WARNING] [AgentStream] breakdown stream failed: (sqlite3.IntegrityError) NOT NULL constraint failed: agentlog.text
+[SQL: INSERT INTO agentlog (id, user_id, agent, text, created_at, day) VALUES (?, ?, ?, ?, ?, ?)]
+[parameters: ('019f850b-a869-75d4-8443-335c676d8d02', '019f84dc-cac6-73c4-998b-e66f0d1dde38', 'breakdown', None, '2026-07-21 16:19:21.578251', '2026-07-21')]
+(Background on this error at: https://sqlalche.me/e/20/gkpj), falling back to legacy @ http://localhost:5173/src/hooks/useAgentStream.js:158
+[  210551ms] [ERROR] Access to fetch at 'https://varvet.tunn.dev/api/sync/push' from origin 'http://localhost:5173' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource. @ http://localhost:5173/:0
+[  210551ms] [ERROR] Failed to load resource: net::ERR_FAILED @ https://varvet.tunn.dev/api/sync/push:0
+[  210552ms] [ERROR] Sync failed: TypeError: Failed to fetch
+    at SyncClient.push (http://localhost:5173/src/services/sync.js:141:28)
+    at http://localhost:5173/src/hooks/useSync.jsx:159:54 @ http://localhost:5173/src/hooks/useSync.jsx:167

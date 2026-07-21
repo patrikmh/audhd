@@ -168,13 +168,13 @@
       "id": "19",
       "subject": "Wire autoCapture, refineIdea, breakdownTask to streaming",
       "description": "Replace apiPost('/api/agents/classify'), apiPost('/api/agents/refine'), aiBreakdown() with AG-UI streaming calls. Keep placeClassified logic. Each flow: start stream → show progress → on RUN_FINISHED extract result → persist.",
-      "status": "in_progress",
+      "status": "completed",
       "activeForm": "Wiring capture flows to streaming",
       "metadata": {},
       "blocks": [],
       "blockedBy": [],
       "createdAt": 1784642108867,
-      "updatedAt": 1784642297478
+      "updatedAt": 1784642545056
     }
   ]
 }

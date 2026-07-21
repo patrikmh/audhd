@@ -685,8 +685,6 @@ function VarvApp({ username, onLogout }) {
 
   const autoCapture = async (raw) => {
     if (!stateRef.current.agents.classify) { addIdea(raw); return; } // agent av → allt landar som idé
-    setToast("🤖 sorterar…");
-    clearTimeout(toastTimer.current);
     try {
       const c = await streamAgent.run("classify", raw);
       if (!c) throw new Error("Klassificering misslyckades");

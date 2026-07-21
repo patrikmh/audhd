@@ -1,10 +1,11 @@
 /**
  * useAgentStream — streams AG-UI events from the backend for the main app flows.
  *
+ * Falls back to the non-streaming /api/agents/* endpoints if SSE fails.
+ *
  * Usage:
  *   const { run, step, text, isRunning, error } = useAgentStream();
  *   const result = await run("classify", "tvätta bilen");
- *   // result = { type: "task", title: "Tvätta bilen", tags: [...], energy: 2, ... }
  */
 import { useState, useRef, useCallback } from "react";
 import { API_BASE } from "../constants/tokens";
@@ -17,6 +18,13 @@ const RESULT_PATH = {
   breakdown: "/lastBreakdown",
 };
 
+// Legacy non-streaming endpoints (fallback)
+const LEGACY_ENDPOINT = {
+  classify: "/api/agents/classify",
+  refine: "/api/agents/refine",
+  breakdown: "/api/agents/breakdown",
+};
+
 const STEP_LABELS = {
   classify: "Sorteraren klassificerar",
   refine: "Förfinaren städar",
@@ -24,12 +32,32 @@ const STEP_LABELS = {
   observer: "Observatören analyserar",
 };
 
+const STREAM_TIMEOUT_MS = 45000; // 45s max for LLM response
+
 export function useAgentStream() {
-  const [step, setStep] = useState(null);      // current step name
-  const [text, setText] = useState("");        // accumulated text
+  const [step, setStep] = useState(null);
+  const [text, setText] = useState("");
   const [isRunning, setIsRunning] = useState(false);
   const [error, setError] = useState(null);
   const abortRef = useRef(null);
+
+  /** Non-streaming fallback via /api/agents/* */
+  const legacyRun = useCallback(async (agent, input) => {
+    const auth = getAuth();
+    const endpoint = LEGACY_ENDPOINT[agent];
+    const body = agent === "breakdown" ? { title: input } : { raw: input };
+
+    const res = await fetch(`${API_BASE}${endpoint}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(auth?.token ? { Authorization: `Bearer ${auth.token}` } : {}),
+      },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) throw new Error(`Agent ${agent} → ${res.status}`);
+    return res.json();
+  }, []);
 
   const run = useCallback(async (agent, input, agentState = {}) => {
     setIsRunning(true);
@@ -40,8 +68,12 @@ export function useAgentStream() {
     const auth = getAuth();
     const controller = new AbortController();
     abortRef.current = controller;
-
     let result = null;
+
+    // Timeout: abort stream after 45s, fall back to legacy
+    const timeoutId = setTimeout(() => {
+      controller.abort();
+    }, STREAM_TIMEOUT_MS);
 
     try {
       const res = await fetch(`${API_BASE}/api/ag-ui/run`, {
@@ -61,6 +93,8 @@ export function useAgentStream() {
         }),
         signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       if (!res.ok) {
         const errBody = await res.text();
@@ -109,16 +143,37 @@ export function useAgentStream() {
         }
       }
     } catch (e) {
-      if (e.name !== "AbortError") setError(e.message);
-      result = null;
+      clearTimeout(timeoutId);
+      if (e.name === "AbortError") {
+        // Timeout — try legacy non-streaming endpoint
+        console.warn(`[AgentStream] ${agent} stream timed out, falling back to legacy`);
+        try {
+          setStep(`${STEP_LABELS[agent]} (fallback)`);
+          result = await legacyRun(agent, input);
+        } catch (legacyErr) {
+          setError(legacyErr.message);
+          result = null;
+        }
+      } else {
+        // Stream error — try legacy fallback
+        console.warn(`[AgentStream] ${agent} stream failed: ${e.message}, falling back to legacy`);
+        try {
+          setStep(`${STEP_LABELS[agent]} (fallback)`);
+          result = await legacyRun(agent, input);
+        } catch (legacyErr) {
+          setError(legacyErr.message);
+          result = null;
+        }
+      }
     } finally {
+      clearTimeout(timeoutId);
       setIsRunning(false);
       setStep(null);
       abortRef.current = null;
     }
 
     return result;
-  }, []);
+  }, [legacyRun]);
 
   const abort = useCallback(() => {
     abortRef.current?.abort();

@@ -255,8 +255,7 @@ async def ag_ui_run(
             log = AgentLog(
                 user_id=user.id,
                 agent=payload.agent,
-                input_text=payload.input[:200],
-                output_text=f"ag-ui-run:{payload.agent}",
+                text=f"ag-ui: {payload.input[:150]}",
             )
             session.add(log)
             session.commit()
