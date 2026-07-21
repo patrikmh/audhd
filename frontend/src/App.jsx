@@ -432,11 +432,15 @@ function VarvApp({ username, onLogout }) {
     } else {
       if (task.done) return;
       const doneAt = Date.now();
+      // Uppgifter utan schemalagd tid får sin faktiska klockslag ibockat automatiskt
+      // — inget att fylla i manuellt, men mönster ("det här görs alltid på kvällen")
+      // syns ändå i historiken.
+      const autoTime = task.time ? {} : { time: nowHM(new Date(doneAt)) };
       setState((s) => ({
         ...s,
-        tasks: s.tasks.map((t) => (t.id === task.id ? { ...t, done: true, doneAt } : t)),
+        tasks: s.tasks.map((t) => (t.id === task.id ? { ...t, done: true, doneAt, ...autoTime } : t)),
       }));
-      sync.trackChange('task', task.id, 'upsert', { ...task, done: true, doneAt });
+      sync.trackChange('task', task.id, 'upsert', { ...task, done: true, doneAt, ...autoTime });
       logEnergy(task.energy, task.title);
       addWin(`Klart: ${task.title}`);
       setUndoTask(task);
