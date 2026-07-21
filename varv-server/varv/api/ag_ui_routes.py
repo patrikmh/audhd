@@ -163,8 +163,6 @@ async def _stream_observer(state: dict, encoder: EventEncoder):
     """Stream Observatören suggestions as AG-UI events."""
     msg_id = str(uuid.uuid4())
     capacity = state.get("capacity", 3)
-    hour = datetime.now().hour
-
     yield _emit(encoder, E.step_started("analyze"))
     yield _emit(encoder, E.text_start(msg_id))
 

@@ -50,13 +50,13 @@ Som tjänst: `sudo cp systemd/varv.service /etc/systemd/system/ && sudo systemct
 ## Användare
 Varje person har ett eget, helt separat dataset. Skapa en användare:
 ```bash
-python -m scripts.create_user patrik pass123
-python -m scripts.create_user pernilla pass123
+python -m scripts.create_user patrik '<starkt-lösenord>'
+python -m scripts.create_user pernilla '<annat-starkt-lösenord>'
 ```
 Kör igen med samma användarnamn för att byta lösenord. Logga sedan in:
 ```bash
 curl -X POST localhost:8420/api/auth/login -H 'content-type: application/json' \
-  -d '{"username":"patrik","password":"pass123"}'
+  -d '{"username":"patrik","password":"<starkt-lösenord>"}'
 # → {"token":"...","username":"patrik"}
 ```
 Använd token i `Authorization: Bearer <token>` på alla övriga anrop.
@@ -64,7 +64,7 @@ Använd token i `Authorization: Bearer <token>` på alla övriga anrop.
 ## Testa
 ```bash
 TOKEN=$(curl -s -X POST localhost:8420/api/auth/login -H 'content-type: application/json' \
-  -d '{"username":"patrik","password":"pass123"}' | python3 -c "import sys,json;print(json.load(sys.stdin)['token'])")
+  -d '{"username":"patrik","password":"<starkt-lösenord>"}' | python3 -c "import sys,json;print(json.load(sys.stdin)['token'])")
 
 curl -X POST localhost:8420/api/capture -H 'content-type: application/json' -H "Authorization: Bearer $TOKEN" \
   -d '{"raw":"ring vet om kattens provsvar imorgon"}'

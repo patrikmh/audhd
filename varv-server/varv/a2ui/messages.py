@@ -11,7 +11,6 @@ from .catalog import (
     update_components,
     update_data_model,
     text,
-    column,
     card,
     row,
     icon,
@@ -23,7 +22,6 @@ from .catalog import (
     recovery_menu,
     progress_bar,
     quick_capture,
-    spacer,
 )
 
 

@@ -1,8 +1,8 @@
 """Skapar en användare med eget separat dataset + standard-inköpslista.
 
 Körs manuellt, en gång per person:
-    python -m scripts.create_user patrik pass123
-    python -m scripts.create_user pernilla pass123
+    python -m scripts.create_user patrik '<starkt-lösenord>'
+    python -m scripts.create_user pernilla '<annat-starkt-lösenord>'
 
 Byt lösenord direkt efter första inloggning om det behövs — det finns
 inget "byt lösenord"-API än, bara: kör detta igen med samma användarnamn

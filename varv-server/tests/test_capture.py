@@ -51,7 +51,7 @@ async def test_tags_are_linked_and_in_vocabulary(session):
     links = session.exec(select(TagLink)).all()
     vocab = known_tag_vocabulary(session, session.user_id)
     # TestModel genererar schemagiltiga taggar; finns länkar ska de synas i vokabulären
-    assert len(vocab) == len({l.tag_id for l in links}) or (not links and vocab == [])
+    assert len(vocab) == len({link.tag_id for link in links}) or (not links and vocab == [])
 
 
 def test_guess_icon_word_prefix():

@@ -231,7 +231,10 @@ def get_lists(user: User = Depends(current_user), session: Session = Depends(get
     by_list: dict[str, list[ListItem]] = {}
     for it in items:
         by_list.setdefault(it.list_id, []).append(it)
-    return [{**l.model_dump(), "items": [i.model_dump() for i in by_list.get(l.id, [])]} for l in lists]
+    return [
+        {**shopping_list.model_dump(), "items": [item.model_dump() for item in by_list.get(shopping_list.id, [])]}
+        for shopping_list in lists
+    ]
 
 
 @router.patch("/list-items/{item_id}/toggle")

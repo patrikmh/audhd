@@ -64,9 +64,8 @@ fi
 echo "==> Kör migrationer (alembic upgrade head)"
 alembic upgrade head
 
-echo "==> Skapar/uppdaterar användare patrik + pernilla (lösenord: pass123)"
-python -m scripts.create_user patrik pass123
-python -m scripts.create_user pernilla pass123
+echo "==> Användare ändras inte automatiskt"
+echo "    Skapa eller byt lösenord separat: python -m scripts.create_user <namn> '<starkt-lösenord>'"
 
 echo "==> Startar uvicorn på :8420"
 exec uvicorn varv.main:app --host 0.0.0.0 --port 8420 --reload

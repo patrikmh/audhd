@@ -6,7 +6,7 @@ Each event is a typed dict with a `type` discriminator.
 from __future__ import annotations
 
 import uuid
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any
 
