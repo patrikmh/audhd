@@ -81,6 +81,32 @@ class TranscriptOut(BaseModel):
     duration_s: float
 
 
+# ---------- auth ----------
+
+class LoginIn(BaseModel):
+    username: str = Field(min_length=1, max_length=60)
+    password: str = Field(min_length=1, max_length=200)
+
+
+class LoginOut(BaseModel):
+    token: str
+    username: str
+
+
+# ---------- agent-proxy (frontend anropar agenterna direkt, utan att spara) ----------
+
+class ClassifyIn(BaseModel):
+    raw: str = Field(min_length=1, max_length=2000)
+
+
+class RefineIn(BaseModel):
+    raw: str = Field(min_length=1, max_length=2000)
+
+
+class BreakdownIn(BaseModel):
+    title: str = Field(min_length=1, max_length=200)
+
+
 # ---------- synk ----------
 
 class ChangeIn(BaseModel):

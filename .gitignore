@@ -6,3 +6,5 @@ venv/
 *.egg-info/
 .env
 varv-server/varv.db
+node_modules/
+dist/

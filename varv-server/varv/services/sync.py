@@ -25,7 +25,7 @@ APPEND_ONLY = {"win", "energy_event"}
 
 
 # Kolumner klienten aldrig får sätta via synk: identitet, härkomst och serverägd bokföring.
-_PROTECTED = {"id", "created_at", "updated_at", "routed_type", "routed_id", "topic_id"}
+_PROTECTED = {"id", "user_id", "created_at", "updated_at", "routed_type", "routed_id", "topic_id"}
 
 
 def _apply_fields(row, data: dict, model) -> None:
@@ -35,7 +35,7 @@ def _apply_fields(row, data: dict, model) -> None:
             setattr(row, key, value)
 
 
-def apply_changes(session: Session, changes: list[ChangeIn]) -> dict[str, int]:
+def apply_changes(session: Session, user_id: str, changes: list[ChangeIn]) -> dict[str, int]:
     counts = {"created": 0, "updated": 0, "deleted": 0, "skipped": 0}
     for ch in changes:
         model = SYNCABLE.get(ch.kind)
@@ -43,6 +43,9 @@ def apply_changes(session: Session, changes: list[ChangeIn]) -> dict[str, int]:
             counts["skipped"] += 1
             continue
         row = session.get(model, ch.id)
+        if row is not None and row.user_id != user_id:  # tillhör en annan användare — ignorera tyst
+            counts["skipped"] += 1
+            continue
 
         if ch.op == "delete":
             if row is not None:
@@ -53,7 +56,7 @@ def apply_changes(session: Session, changes: list[ChangeIn]) -> dict[str, int]:
             continue
 
         if row is None:
-            row = model(id=ch.id)
+            row = model(id=ch.id, user_id=user_id)
             _apply_fields(row, ch.data, model)
             session.add(row)
             counts["created"] += 1
@@ -80,11 +83,11 @@ def _cursor_column(kind: str, model):
     return model.created_at if kind in APPEND_ONLY else model.updated_at
 
 
-def pull_changes(session: Session, since: datetime | None) -> dict[str, list[dict]]:
+def pull_changes(session: Session, user_id: str, since: datetime | None) -> dict[str, list[dict]]:
     out: dict[str, list[dict]] = {}
     for kind, model in SYNCABLE.items():
         stamp = _cursor_column(kind, model)
-        stmt = select(model).order_by(stamp)
+        stmt = select(model).where(model.user_id == user_id).order_by(stamp)
         if since is not None:
             stmt = stmt.where(stamp > since)
         out[kind] = [row.model_dump(mode="json") for row in session.exec(stmt.limit(500)).all()]

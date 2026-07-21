@@ -33,11 +33,11 @@ Som tjänst: `sudo cp systemd/varv.service /etc/systemd/system/ && sudo systemct
 
 ## Efter arkitektur-reviewen
 - **UUIDv7 överallt** (`varv/utils.py`) — klienter skapar id:n offline
-- **Synkprotokoll** `/api/sync/push` + `/api/sync/pull`: LWW per rad, append-only idempotent
-- **Auth**: sätt `VARV_API_TOKEN`; kör bakom Tailscale i drift
+- **Synkprotokoll** `/api/sync/push` + `/api/sync/pull`: LWW per rad, append-only idempotent, per användare
+- **Auth**: en User per person, bärar-token utfärdad vid `/api/auth/login` (se nedan); kör bakom Tailscale i drift
 - **Alembic**: `alembic upgrade head` (framtida ändringar: `alembic revision --autogenerate`)
-- **Taggvokabulär** matas in i Sorteraren mot tagg-spretning; injektionshärdade prompts
-- **Topic-persistens**: centroid-matchning natt-mot-natt ⇒ stabila topic-id och trender
+- **Taggvokabulär** matas in i Sorteraren mot tagg-spretning (per användare); injektionshärdade prompts
+- **Topic-persistens**: centroid-matchning natt-mot-natt ⇒ stabila topic-id och trender (delad över alla användare)
 - **Worker-lease** i KV ⇒ säkert med `--workers > 1`; Whisper körs i executor
 - **Tester**: `pytest` (TestModel — inga API-anrop) · **Evals**: `python -m evals.eval_sorteraren`
 
@@ -45,11 +45,29 @@ Som tjänst: `sudo cp systemd/varv.service /etc/systemd/system/ && sudo systemct
 1. Fångsten sparas alltid rått innan agenten får röra den.
 2. Fallerar Sorteraren → rå idé. Inget försvinner.
 3. Auto-kapacitet växlar bara nedåt och aldrig förbi användarens dagsval.
+4. Varje persons data (uppgifter, idéer, energilogg, listor) är helt separat — inget delas mellan användare.
+
+## Användare
+Varje person har ett eget, helt separat dataset. Skapa en användare:
+```bash
+python -m scripts.create_user patrik pass123
+python -m scripts.create_user pernilla pass123
+```
+Kör igen med samma användarnamn för att byta lösenord. Logga sedan in:
+```bash
+curl -X POST localhost:8420/api/auth/login -H 'content-type: application/json' \
+  -d '{"username":"patrik","password":"pass123"}'
+# → {"token":"...","username":"patrik"}
+```
+Använd token i `Authorization: Bearer <token>` på alla övriga anrop.
 
 ## Testa
 ```bash
-curl -X POST localhost:8420/api/capture -H 'content-type: application/json' \
+TOKEN=$(curl -s -X POST localhost:8420/api/auth/login -H 'content-type: application/json' \
+  -d '{"username":"patrik","password":"pass123"}' | python3 -c "import sys,json;print(json.load(sys.stdin)['token'])")
+
+curl -X POST localhost:8420/api/capture -H 'content-type: application/json' -H "Authorization: Bearer $TOKEN" \
   -d '{"raw":"ring vet om kattens provsvar imorgon"}'
-curl -X POST localhost:8420/api/capture/voice -F file=@memo.webm
-curl localhost:8420/api/stats/week
+curl -X POST localhost:8420/api/capture/voice -H "Authorization: Bearer $TOKEN" -F file=@memo.webm
+curl localhost:8420/api/stats/week -H "Authorization: Bearer $TOKEN"
 ```

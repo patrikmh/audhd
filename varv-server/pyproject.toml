@@ -22,6 +22,9 @@ dev = ["pytest>=8.0", "pytest-asyncio>=0.24", "httpx>=0.27", "ruff>=0.6", "pydan
 line-length = 110
 target-version = "py311"
 
+[tool.setuptools]
+packages = ["varv", "varv.agents", "varv.api", "varv.db", "varv.services", "scripts"]
+
 [build-system]
 requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"

@@ -31,9 +31,20 @@ class IdeaStatus(StrEnum):
     fail = "fail"
 
 
+class User(SQLModel, table=True):
+    """En person med eget, helt separat dataset. Inget delas mellan användare
+    utom systemdrift (worker-lease, BERTopic-teman)."""
+    id: str = Field(default_factory=uuid7, primary_key=True)
+    username: str = Field(index=True, unique=True)
+    password_hash: str
+    token: str = Field(index=True, unique=True)       # bärar-token, satt vid inloggning/skapande
+    created_at: datetime = Field(default_factory=datetime.now)
+
+
 class Capture(SQLModel, table=True):
     """Varje inkommande tanke, oavsett väg in. Append-only."""
     id: str = Field(default_factory=uuid7, primary_key=True)
+    user_id: str = Field(foreign_key="user.id", index=True)
     raw: str
     source: str = "text"                      # text | voice | mail
     routed_type: CaptureType | None = None
@@ -45,6 +56,7 @@ class Capture(SQLModel, table=True):
 
 class Task(SQLModel, table=True):
     id: str = Field(default_factory=uuid7, primary_key=True)
+    user_id: str = Field(foreign_key="user.id", index=True)
     title: str
     icon: str = "📌"
     trigger: str = ""
@@ -64,6 +76,7 @@ class Task(SQLModel, table=True):
 
 class TaskStep(SQLModel, table=True):
     id: str = Field(default_factory=uuid7, primary_key=True)
+    user_id: str = Field(foreign_key="user.id", index=True)
     task_id: str = Field(foreign_key="task.id", index=True)
     title: str
     minutes: int = 5
@@ -74,6 +87,7 @@ class TaskStep(SQLModel, table=True):
 
 class Idea(SQLModel, table=True):
     id: str = Field(default_factory=uuid7, primary_key=True)
+    user_id: str = Field(foreign_key="user.id", index=True)
     raw: str
     title: str | None = None
     note: str | None = None
@@ -85,13 +99,16 @@ class Idea(SQLModel, table=True):
 
 
 class ShoppingList(SQLModel, table=True):
+    __table_args__ = (UniqueConstraint("user_id", "slug", name="uq_shoppinglist_user_slug"),)
     id: str = Field(default_factory=uuid7, primary_key=True)
+    user_id: str = Field(foreign_key="user.id", index=True)
     name: str
-    slug: str = Field(index=True, unique=True)
+    slug: str = Field(index=True)
 
 
 class ListItem(SQLModel, table=True):
     id: str = Field(default_factory=uuid7, primary_key=True)
+    user_id: str = Field(foreign_key="user.id", index=True)
     list_id: str = Field(foreign_key="shoppinglist.id", index=True)
     text: str
     done: bool = False
@@ -100,14 +117,17 @@ class ListItem(SQLModel, table=True):
 
 
 class Tag(SQLModel, table=True):
+    __table_args__ = (UniqueConstraint("user_id", "name", name="uq_tag_user_name"),)
     id: str = Field(default_factory=uuid7, primary_key=True)
-    name: str = Field(index=True, unique=True)
+    user_id: str = Field(foreign_key="user.id", index=True)
+    name: str = Field(index=True)
 
 
 class TagLink(SQLModel, table=True):
     """Koppling tag ↔ (task|idea|capture). Unik per (tag, entitet) så statistiken inte dubbelräknas."""
     __table_args__ = (UniqueConstraint("tag_id", "entity_kind", "entity_id", name="uq_taglink"),)
     id: str = Field(default_factory=uuid7, primary_key=True)
+    user_id: str = Field(foreign_key="user.id", index=True)
     tag_id: str = Field(foreign_key="tag.id", index=True)
     entity_kind: str = Field(index=True)
     entity_id: str = Field(index=True)
@@ -117,6 +137,7 @@ class TagLink(SQLModel, table=True):
 class Win(SQLModel, table=True):
     """Append-only."""
     id: str = Field(default_factory=uuid7, primary_key=True)
+    user_id: str = Field(foreign_key="user.id", index=True)
     text: str
     created_at: datetime = Field(default_factory=datetime.now)
     day: str = Field(default_factory=today, index=True)
@@ -125,6 +146,7 @@ class Win(SQLModel, table=True):
 class EnergyEvent(SQLModel, table=True):
     """Append-only."""
     id: str = Field(default_factory=uuid7, primary_key=True)
+    user_id: str = Field(foreign_key="user.id", index=True)
     delta: int
     label: str
     created_at: datetime = Field(default_factory=datetime.now)
@@ -133,6 +155,7 @@ class EnergyEvent(SQLModel, table=True):
 
 class AgentLog(SQLModel, table=True):
     id: str = Field(default_factory=uuid7, primary_key=True)
+    user_id: str = Field(foreign_key="user.id", index=True)
     agent: str = Field(index=True)
     text: str
     created_at: datetime = Field(default_factory=datetime.now)

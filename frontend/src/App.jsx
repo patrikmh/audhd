@@ -85,83 +85,64 @@ const guessIcon = (title) => {
 };
 const energyColor = (e) => (e <= 2 ? T.moss : e === 3 ? T.petrol : T.warn);
 
-async function aiBreakdown(title) {
-  const response = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model: "claude-sonnet-4-6",
-      max_tokens: 1000,
-      messages: [
-        {
-          role: "user",
-          content: `Bryt ner denna uppgift i 3–6 pyttesmå konkreta steg i jag-form, på svenska, för någon med ADHD/autism som fryser vid vaga uppgifter. Varje steg under 10 minuter, börja med den allra första fysiska handlingen. Uppgift: "${title}". Svara ENDAST med JSON, inga markdown-staket, i formen: {"steps":[{"title":"...","minutes":5}]}`,
-        },
-      ],
-    }),
-  });
-  const data = await response.json();
-  const text = data.content.filter((b) => b.type === "text").map((b) => b.text).join("\n");
-  const cleaned = text.replace(/```json|```/g, "").trim();
-  const m = cleaned.match(/\{[\s\S]*\}/);
-  const parsed = JSON.parse(m ? m[0] : cleaned);
-  return parsed.steps.map((st) => ({ id: uid(), title: st.title, minutes: st.minutes, done: false }));
+// Backend nås via en tunnel till Raspberry Pi:n (varv-server). Sätts vid
+// bygge via Vite-miljövariabler, se frontend/.env.example.
+const API_BASE = import.meta.env.VITE_API_BASE_URL || "https://TUNNEL_ADDRESS";
+const AUTH_KEY = "varv-auth"; // { token, username } — per person, satt vid inloggning
+
+function getAuth() {
+  try {
+    const raw = localStorage.getItem(AUTH_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    return null;
+  }
 }
-async function aiRefineIdea(raw) {
-  const response = await fetch("https://api.anthropic.com/v1/messages", {
+function setAuth(auth) {
+  localStorage.setItem(AUTH_KEY, JSON.stringify(auth));
+}
+function clearAuth() {
+  localStorage.removeItem(AUTH_KEY);
+}
+
+async function login(username, password) {
+  const response = await fetch(`${API_BASE}/api/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model: "claude-sonnet-4-6",
-      max_tokens: 1000,
-      messages: [
-        {
-          role: "user",
-          content: `Du får en snabbt intalad eller nedskriven idé på svenska eller engelska, ofta ostrukturerad med utfyllnadsord. Gör den till en tydlig anteckning: behåll personens röst, mening och alla sakuppgifter, men ta bort utfyllnad, upprepningar och falska starter. Svara på samma språk som idén. Svara ENDAST med JSON, inga markdown-staket: {"title":"kort titel, max 6 ord","note":"städad version i 1–3 meningar","tags":["max","tre","taggar"]}. Idé: "${raw.replace(/"/g, "'")}"`,
-        },
-      ],
-    }),
+    body: JSON.stringify({ username, password }),
   });
-  const data = await response.json();
-  const text = data.content.filter((b) => b.type === "text").map((b) => b.text).join("\n");
-  const cleaned = text.replace(/```json|```/g, "").trim();
-  const m = cleaned.match(/\{[\s\S]*\}/);
-  return JSON.parse(m ? m[0] : cleaned);
+  if (!response.ok) throw new Error(response.status === 401 ? "Fel användarnamn eller lösenord" : `login → ${response.status}`);
+  return response.json(); // { token, username }
+}
+
+async function apiPost(path, body) {
+  const auth = getAuth();
+  const response = await fetch(`${API_BASE}${path}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(auth?.token ? { Authorization: `Bearer ${auth.token}` } : {}),
+    },
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) throw new Error(`varv-server ${path} → ${response.status}`);
+  return response.json();
+}
+
+// Agenterna (Nedbrytaren/Förfinaren/Sorteraren) körs server-side mot
+// OpenRouter — frontend anropar bara varv-server, aldrig LLM-API:et direkt.
+async function aiBreakdown(title) {
+  const data = await apiPost("/api/agents/breakdown", { title });
+  return data.steps.map((st) => ({ id: uid(), title: st.title, minutes: st.minutes, done: false }));
+}
+
+async function aiRefineIdea(raw) {
+  return apiPost("/api/agents/refine", { raw });
 }
 
 async function aiClassify(raw) {
-  const response = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model: "claude-sonnet-4-6",
-      max_tokens: 1000,
-      messages: [
-        {
-          role: "user",
-          content: `Du är en klassificeringsagent för snabbt infångade tankar (svenska eller engelska, ofta taligenkända och ostrukturerade). Avgör vilken sort tanken är:
-- "task": något som ska GÖRAS (ringa, boka, skicka, fixa, betala, svara)
-- "shopping": något som ska KÖPAS (vara, ingrediens, sak)
-- "idea": en tanke, insikt, projektidé eller något att minnas som inte är en direkt handling
-Svara ENDAST med JSON, inga markdown-staket:
-{"type":"task"|"idea"|"shopping","title":"kort städad titel max 8 ord, samma språk som tanken","note":"för idea: städad version i 1–2 meningar, annars null","tags":["1-3 korta taggar på svenska, gemener"],"energy":1-5 eller null,"time":"HH:MM" eller null}
-energy: uppskattad energikostnad om task (1 lätt – 5 mycket tung). time: endast om ett klockslag nämns uttryckligen. Tanke: "${raw.replace(/"/g, "'")}"`,
-        },
-      ],
-    }),
-  });
-  const data = await response.json();
-  const text = data.content.filter((b) => b.type === "text").map((b) => b.text).join("\n");
-  const cleaned = text.replace(/```json|```/g, "").trim();
-  const m = cleaned.match(/\{[\s\S]*\}/);
-  return JSON.parse(m ? m[0] : cleaned);
+  return apiPost("/api/agents/classify", { raw });
 }
-
-const MCP = {
-  gmail: { type: "url", url: "https://gmailmcp.googleapis.com/mcp/v1", name: "gmail" },
-  gcal: { type: "url", url: "https://calendarmcp.googleapis.com/mcp/v1", name: "google-calendar" },
-  notion: { type: "url", url: "https://mcp.notion.com/mcp", name: "notion" },
-};
 
 async function fetchOura(token) {
   const today = todayKey();
@@ -177,27 +158,6 @@ async function fetchOura(token) {
     sleepScore: sleep.data?.[0]?.score ?? null,
     readiness: ready.data?.[0]?.score ?? null,
   };
-}
-
-async function callClaudeMcp(prompt, servers) {
-  const response = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model: "claude-sonnet-4-6",
-      max_tokens: 1000,
-      messages: [{ role: "user", content: prompt }],
-      mcp_servers: servers,
-    }),
-  });
-  const data = await response.json();
-  const text = data.content
-    .filter((b) => b.type === "text")
-    .map((b) => b.text)
-    .join("\n");
-  const cleaned = text.replace(/```json|```/g, "").trim();
-  const m = cleaned.match(/\{[\s\S]*\}/);
-  return JSON.parse(m ? m[0] : cleaned);
 }
 
 const nowHM = () => {
@@ -237,7 +197,8 @@ const DEFAULT_STATE = {
 
 const PRIORITY_ORDER = { A: 0, B: 1, C: 2 };
 
-export default function Varv() {
+function VarvApp({ username, onLogout }) {
+  const storageKey = `varv-state:${username}`;
   const [state, setState] = useState(DEFAULT_STATE);
   const [loaded, setLoaded] = useState(false);
   const [tool, setTool] = useState(null); // 'focus' | 'move' | 'checkin' | 'wins' | 'sleep'
@@ -272,13 +233,13 @@ export default function Varv() {
     return () => document.head.removeChild(l);
   }, []);
 
-  /* ---------- load / save ---------- */
+  /* ---------- load / save (localStorage — vanlig webbläsare, ingen sandlåda) ---------- */
   useEffect(() => {
     (async () => {
       try {
-        const r = await window.storage.get("varv-state");
-        if (r && r.value) {
-          const s = JSON.parse(r.value);
+        const raw = localStorage.getItem(storageKey);
+        if (raw) {
+          const s = JSON.parse(raw);
           if (s.day !== todayKey()) {
             s.day = todayKey();
             const cutoff = new Date(Date.now() - 14 * 86400000).toISOString().slice(0, 10);
@@ -310,10 +271,10 @@ export default function Varv() {
   useEffect(() => {
     if (!loaded) return;
     clearTimeout(saveTimer.current);
-    saveTimer.current = setTimeout(async () => {
+    saveTimer.current = setTimeout(() => {
       try {
         const { _selIdea, ...persist } = state; // transienta UI-nycklar sparas inte
-        await window.storage.set("varv-state", JSON.stringify(persist));
+        localStorage.setItem(storageKey, JSON.stringify(persist));
       } catch (e) {
         console.error("Could not save", e);
       }
@@ -401,58 +362,25 @@ export default function Varv() {
 
   const removeTask = (id) => setState((s) => ({ ...s, tasks: s.tasks.filter((t) => t.id !== id) }));
 
-  /* ---------- Google-synk via MCP ---------- */
+  /* ---------- Google-synk ----------
+     varv-server har (ännu) ingen Gmail/Calendar/Notion-integration — dessa
+     körde tidigare direkt mot Anthropics mcp_servers utan nyckel, vilket
+     aldrig fungerade utanför artifact-sandlådan. Stubbade tills servern
+     har motsvarande endpoints. */
+  const NOT_WIRED = "Den här integrationen är inte kopplad till servern än.";
+
   const syncCalendar = async () => {
-    setCalBusy(true);
-    setSyncErr("");
-    let status = "ok";
-    try {
-      const res = await callClaudeMcp(
-        `Använd Google Calendar-verktygen för att hämta alla mina händelser idag (${todayKey()}). Svara sedan ENDAST med JSON, inga andra ord, i formen: {"events":[{"title":"...","start":"HH:MM","end":"HH:MM"}]}. Använd 24-timmarsformat i min lokala tidszon. Hoppa över heldagshändelser.`,
-        [MCP.gcal]
-      );
-      setState((st) => ({ ...st, gcal: { day: todayKey(), events: (res.events || []).slice(0, 20) } }));
-    } catch (e) {
-      setSyncErr("Kalenderhämtningen misslyckades — testa igen om en stund.");
-      status = "fail";
-    }
-    setCalBusy(false);
-    return status;
+    setSyncErr(NOT_WIRED);
+    return "skip";
   };
 
   const checkGmail = async () => {
-    setMailBusy(true);
-    setSyncErr("");
-    let status = "ok";
-    try {
-      const res = await callClaudeMcp(
-        `Använd Gmail-verktygen för att titta på mina olästa mejl från de senaste 2 dagarna. Identifiera max 5 som kräver en handling av mig (svara, boka, betala, skicka något). Formulera varje som en kort uppgift på svenska i jag-form, t.ex. "Svara Josefin om Geely-rollen". Svara sedan ENDAST med JSON, inga andra ord: {"suggestions":[{"title":"...","from":"avsändare","subject":"ämnesrad"}]}. Om inget kräver handling: {"suggestions":[]}.`,
-        [MCP.gmail]
-      );
-      setState((st) => {
-        const dismissed = st.mailSug.day === todayKey() ? st.mailSug.dismissed || [] : [];
-        const items = (res.suggestions || [])
-          .filter((x) => !dismissed.includes(`${x.from}|${x.subject}`))
-          .slice(0, 5)
-          .map((x) => ({ ...x, id: uid() }));
-        return { ...st, mailSug: { day: todayKey(), items, dismissed } };
-      });
-    } catch (e) {
-      setSyncErr("Mejlkollen misslyckades — testa igen om en stund.");
-      status = "fail";
-    }
-    setMailBusy(false);
-    return status;
+    setSyncErr(NOT_WIRED);
+    return "skip";
   };
 
-  const pushTaskToCalendar = async (task) => {
-    const res = await callClaudeMcp(
-      `Använd Google Calendar-verktygen för att skapa en händelse i min primära kalender idag (${todayKey()}) kl ${task.time}, längd 30 minuter, med titeln "${task.title}". Svara sedan ENDAST med JSON: {"ok":true}`,
-      [MCP.gcal]
-    );
-    if (!res.ok) throw new Error("no ok");
-    updateTask(task.id, { synced: true });
-    addWin(`I kalendern: ${task.title}`);
+  const pushTaskToCalendar = async () => {
+    throw new Error(NOT_WIRED);
   };
 
   /* ---------- Oura + kapacitetsautomatik ---------- */
@@ -495,20 +423,8 @@ export default function Varv() {
     const yWins = state.wins.filter((w) => new Date(w.ts).toISOString().slice(0, 10) === yesterday);
     const yLog = state.energyLog.filter((e) => e.day === yesterday);
     if (yWins.length === 0 && yLog.length === 0) return "skip";
-    const spentY = yLog.filter((e) => e.delta > 0).reduce((a, e) => a + e.delta, 0);
-    const rechY = yLog.filter((e) => e.delta < 0).reduce((a, e) => a - e.delta, 0);
-    const winLines = yWins.slice(0, 10).map((w) => w.text).join("; ");
-    try {
-      const res = await callClaudeMcp(
-        `Använd Notion-verktygen. Hitta en sida med titeln "Varv – logg" (skapa den om den inte finns). Lägg till ett nytt stycke längst ner med exakt denna text: "${yesterday} · ${yWins.length} vinster · ${spentY}⚡ förbrukat · ${rechY}⚡ återladdat · ${winLines}". Svara sedan ENDAST med JSON: {"ok":true}`,
-        [MCP.notion]
-      );
-      if (!res.ok) return "fail";
-      setState((st) => ({ ...st, notionArchivedDay: todayKey() }));
-      return "ok";
-    } catch (e) {
-      return "fail";
-    }
+    setSyncErr(NOT_WIRED);
+    return "skip";
   };
 
   /* ---------- agentlogg ---------- */
@@ -692,6 +608,9 @@ export default function Varv() {
         <header style={s.header}>
           <div style={s.wordmark}>Varv</div>
           <div style={s.tagline}>{view === "today" ? "ett varv i taget" : view === "ideas" ? "tänk högt" : view === "lists" ? "ut ur huvudet" : "verktygslådan"}</div>
+          <button style={{ ...s.linkBtn, marginLeft: "auto", fontSize: 12, color: T.soft }} onClick={onLogout}>
+            {username} · logga ut
+          </button>
         </header>
 
         {/* ============ wind-down banner ============ */}
@@ -1338,6 +1257,76 @@ export default function Varv() {
         )}
       </nav>
     </div>
+  );
+}
+
+/* ============================================================ */
+/* Inloggning — varje person har eget separat dataset            */
+/* ============================================================ */
+function Login({ onLoggedIn }) {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setBusy(true);
+    setErr("");
+    try {
+      const { token, username: u } = await login(username.trim(), password);
+      setAuth({ token, username: u });
+      onLoggedIn(u);
+    } catch (e) {
+      setErr(e.message || "Kunde inte logga in");
+    }
+    setBusy(false);
+  };
+
+  return (
+    <div style={{ minHeight: "100vh", background: T.paper, display: "grid", placeItems: "center", fontFamily: "'Atkinson Hyperlegible', sans-serif" }}>
+      <form onSubmit={submit} style={{ background: T.card, padding: 28, borderRadius: 16, width: 280, display: "flex", flexDirection: "column", gap: 12 }}>
+        <div style={{ fontFamily: "'Fraunces', serif", fontWeight: 300, fontSize: 28, color: T.ink }}>Varv</div>
+        <input
+          autoFocus
+          placeholder="Användarnamn"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          style={{ padding: "10px 12px", borderRadius: 10, border: `1.5px solid ${T.line}`, fontSize: 15 }}
+        />
+        <input
+          type="password"
+          placeholder="Lösenord"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          style={{ padding: "10px 12px", borderRadius: 10, border: `1.5px solid ${T.line}`, fontSize: 15 }}
+        />
+        {err && <div style={{ color: T.warn, fontSize: 13 }}>{err}</div>}
+        <button
+          type="submit"
+          disabled={busy || !username || !password}
+          style={{ padding: "10px 12px", borderRadius: 10, border: "none", background: T.spruce, color: T.card, fontSize: 15, fontWeight: 700, opacity: busy ? 0.6 : 1 }}
+        >
+          {busy ? "loggar in…" : "Logga in"}
+        </button>
+      </form>
+    </div>
+  );
+}
+
+export default function Varv() {
+  const [username, setUsername] = useState(() => getAuth()?.username || null);
+
+  if (!username) return <Login onLoggedIn={setUsername} />;
+
+  return (
+    <VarvApp
+      username={username}
+      onLogout={() => {
+        clearAuth();
+        setUsername(null);
+      }}
+    />
   );
 }
 

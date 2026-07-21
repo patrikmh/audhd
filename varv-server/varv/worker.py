@@ -14,7 +14,7 @@ from sqlmodel import func, select
 from varv.agents.core import forfinaren, nedbrytaren
 from varv.config import get_settings
 from varv.db.engine import session_scope
-from varv.db.models import AgentLog, Idea, IdeaStatus, KV, Task, TaskStep
+from varv.db.models import AgentLog, Idea, IdeaStatus, KV, Task, TaskStep, User
 from varv.services.capture import agent_note
 from varv.services.capture import link_tags
 from varv.services.topics import run_topics
@@ -57,8 +57,8 @@ async def refine_sweep() -> None:
                 out = result.output
                 idea.title, idea.note, idea.status = out.title, out.note, IdeaStatus.klar
                 idea.updated_at = datetime.now()
-                link_tags(session, out.tags, "idea", idea.id)
-                agent_note(session, "forfinaren", f'städade "{out.title[:50]}"')
+                link_tags(session, idea.user_id, out.tags, "idea", idea.id)
+                agent_note(session, idea.user_id, "forfinaren", f'städade "{out.title[:50]}"')
             except Exception:
                 log.exception("Förfinaren fallerade för idé %s", idea.id)
                 idea.status = IdeaStatus.fail
@@ -69,38 +69,45 @@ async def breakdown_sweep() -> None:
     s = get_settings()
     today = date.today().isoformat()
     with session_scope() as session:
-        used = session.exec(
-            select(func.count()).select_from(AgentLog)
-            .where(AgentLog.agent == "nedbrytaren", AgentLog.day == today)
-        ).one()
-        if used >= s.breakdown_daily_budget:
-            return
-        has_steps = select(TaskStep.task_id).distinct()
-        # Kandidater: öppna, stegfria uppgifter som faktiskt behöver igångsättningshjälp
-        # (A-prioriterade eller tunga). Väljs sedan i den ordning användaren möter dem.
-        candidates = session.exec(
-            select(Task)
-            .where(Task.done == False, Task.id.not_in(has_steps))  # noqa: E712
-            .where((Task.priority == "A") | (Task.energy >= 4))
-        ).all()
-        if not candidates:
-            return
+        # Budget och kandidat väljs per användare — separata dataset, separata budgetar.
+        for user in session.exec(select(User)).all():
+            used = session.exec(
+                select(func.count()).select_from(AgentLog)
+                .where(AgentLog.user_id == user.id, AgentLog.agent == "nedbrytaren", AgentLog.day == today)
+            ).one()
+            if used >= s.breakdown_daily_budget:
+                continue
+            has_steps = select(TaskStep.task_id).distinct()
+            # Kandidater: öppna, stegfria uppgifter som faktiskt behöver igångsättningshjälp
+            # (A-prioriterade eller tunga). Väljs sedan i den ordning användaren möter dem.
+            candidates = session.exec(
+                select(Task)
+                .where(Task.user_id == user.id, Task.done == False, Task.id.not_in(has_steps))  # noqa: E712
+                .where((Task.priority == "A") | (Task.energy >= 4))
+            ).all()
+            if not candidates:
+                continue
 
-        def _order(t: Task) -> tuple:
-            # 1) tidsatta först, i tidsordning  2) A före B/C  3) tyngre först
-            has_time = 0 if t.time else 1
-            prio_rank = {"A": 0, "B": 1, "C": 2}.get(t.priority or "", 3)
-            return (has_time, t.time or "99:99", prio_rank, -t.energy)
+            def _order(t: Task) -> tuple:
+                # 1) tidsatta först, i tidsordning  2) A före B/C  3) tyngre först
+                has_time = 0 if t.time else 1
+                prio_rank = {"A": 0, "B": 1, "C": 2}.get(t.priority or "", 3)
+                return (has_time, t.time or "99:99", prio_rank, -t.energy)
 
-        candidate = sorted(candidates, key=_order)[0]
-        try:
-            result = await nedbrytaren.run(candidate.title)
-            for pos, step in enumerate(result.output.steps):
-                session.add(TaskStep(task_id=candidate.id, title=step.title, minutes=step.minutes, position=pos))
-            agent_note(session, "nedbrytaren", f'förberedde {len(result.output.steps)} steg för "{candidate.title[:50]}"')
-            session.commit()
-        except Exception:
-            log.exception("Nedbrytaren fallerade för uppgift %s", candidate.id)
+            candidate = sorted(candidates, key=_order)[0]
+            try:
+                result = await nedbrytaren.run(candidate.title)
+                for pos, step in enumerate(result.output.steps):
+                    session.add(TaskStep(
+                        user_id=user.id, task_id=candidate.id, title=step.title, minutes=step.minutes, position=pos,
+                    ))
+                agent_note(
+                    session, user.id, "nedbrytaren",
+                    f'förberedde {len(result.output.steps)} steg för "{candidate.title[:50]}"',
+                )
+                session.commit()
+            except Exception:
+                log.exception("Nedbrytaren fallerade för uppgift %s", candidate.id)
 
 
 def _topics_due() -> bool:

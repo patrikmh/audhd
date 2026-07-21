@@ -2,10 +2,9 @@
 from collections.abc import Iterator
 from contextlib import contextmanager
 
-from sqlmodel import Session, SQLModel, create_engine, select
+from sqlmodel import Session, SQLModel, create_engine
 
 from varv.config import get_settings
-from varv.db.models import ShoppingList
 
 _settings = get_settings()
 _connect_args = {"check_same_thread": False} if _settings.database_url.startswith("sqlite") else {}
@@ -13,12 +12,10 @@ engine = create_engine(_settings.database_url, connect_args=_connect_args)
 
 
 def init_db() -> None:
-    """Dev-bootstrap. I drift: `alembic upgrade head` istället (migrations/)."""
+    """Dev-bootstrap. I drift: `alembic upgrade head` istället (migrations/).
+    Skapar bara tabeller — användare (och deras Inköp-lista) skapas via
+    scripts/create_user.py, se varv-server/README.md."""
     SQLModel.metadata.create_all(engine)
-    with Session(engine) as s:
-        if not s.exec(select(ShoppingList).where(ShoppingList.slug == "shopping")).first():
-            s.add(ShoppingList(name="Inköp", slug="shopping"))
-            s.commit()
 
 
 def get_session() -> Iterator[Session]:

@@ -1,16 +1,20 @@
-"""Auth: enkel bearer-token för en-användar-API. Tom token = av (LAN-utveckling).
+"""Auth: bärar-token per användare. Varje användare har sin egen token,
+utfärdad vid inloggning (/api/auth/login) — se varv/utils.py för hashning.
 
-I drift: sätt VARV_API_TOKEN och kör hela Pi:n bakom Tailscale — då är trafiken
-krypterad och nätet privat utan portöppningar; tokenen är bältet till hängslena.
+I drift: kör hela Pi:n bakom Tailscale ändå — tokenen är bältet till hängslena.
 """
-from fastapi import Header, HTTPException
+from fastapi import Depends, Header, HTTPException
+from sqlmodel import Session, select
 
-from varv.config import get_settings
+from varv.db.engine import get_session
+from varv.db.models import User
 
 
-def require_token(authorization: str | None = Header(default=None)) -> None:
-    token = get_settings().api_token
-    if not token:
-        return
-    if authorization != f"Bearer {token}":
-        raise HTTPException(status_code=401, detail="Ogiltig eller saknad token")
+def current_user(authorization: str | None = Header(default=None), session: Session = Depends(get_session)) -> User:
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Saknar token")
+    token = authorization.removeprefix("Bearer ")
+    user = session.exec(select(User).where(User.token == token)).first()
+    if not user:
+        raise HTTPException(status_code=401, detail="Ogiltig token")
+    return user

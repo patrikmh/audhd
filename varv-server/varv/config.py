@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     database_url: str = "sqlite:///./varv.db"  # byt till postgresql+psycopg://... på Pi:n vid behov
 
     # --- agenter ---
-    agent_model: str = "anthropic:claude-sonnet-4-6"
+    agent_model: str = "openrouter:anthropic/claude-sonnet-5"
     # För lokal inferens via LM Studio: agent_model="openai:qwen3-..." + OPENAI_BASE_URL i miljön.
     breakdown_daily_budget: int = 3          # Nedbrytaren: max auto-nedbrytningar per dag
     refine_max_attempts: int = 3             # Förfinaren: max försök per idé
@@ -29,7 +29,7 @@ class Settings(BaseSettings):
     embedding_model: str = "paraphrase-multilingual-MiniLM-L12-v2"  # sv+en blandat
 
     # --- API ---
-    api_token: str = ""               # tomt = auth av (LAN-dev). Sätt + kör bakom Tailscale i drift.
+    # Auth är nu per användare (User.token, se varv/api/auth.py) — inte längre en enda delad nyckel.
     cors_origins: list[str] = ["*"]          # snäva åt när PWA:ns origin är känd
 
 

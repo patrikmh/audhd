@@ -6,7 +6,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from varv.api.routes import router
+from varv.api.routes import auth_router, router
 from varv.config import get_settings
 from varv.db.engine import init_db
 from varv.worker import agent_loop
@@ -31,6 +31,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.include_router(auth_router, prefix="/api")
 app.include_router(router, prefix="/api")
 
 
