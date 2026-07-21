@@ -595,8 +595,8 @@ function VarvApp({ username, onLogout }) {
     setState((st) => ({ ...st, agentLog: [{ ts: Date.now(), agent, text }, ...st.agentLog].slice(0, 30) }));
 
   /* ---------- idéer: spara direkt, förfina i bakgrunden ---------- */
-  const refineIdea = async (id, raw) => {
-    const updatingIdea = stateRef.current.ideas.find(i => i.id === id);
+  const refineIdea = async (id, raw, ideaOverride = null) => {
+    const updatingIdea = ideaOverride || stateRef.current.ideas.find(i => i.id === id);
     if (!updatingIdea) return;
     const refiningIdea = { ...updatingIdea, status: "refining", attempts: (updatingIdea.attempts || 0) + 1, updatedAt: new Date().toISOString() };
 
@@ -631,7 +631,7 @@ function VarvApp({ username, onLogout }) {
     setToast(`💡 Sparad — förfinas i bakgrunden`);
     clearTimeout(toastTimer.current);
     toastTimer.current = setTimeout(() => setToast(null), 2200);
-    refineIdea(id, raw); // fire-and-forget: fångsten väntar aldrig på AI
+    refineIdea(id, raw, newIdea); // fire-and-forget: fångsten väntar aldrig på AI — skicka idéobjektet direkt eftersom stateRef ännu inte uppdaterats
   };
 
   const ideaToTask = (idea) => {
