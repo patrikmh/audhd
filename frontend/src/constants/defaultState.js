@@ -18,7 +18,20 @@ export const DEFAULT_STATE = {
     winddown: "22:00",
     ouraToken: "",
     autoSync: true,
-    voiceLang: "sv-SE"
+    voiceLang: "sv-SE",
+    defaultCapacity: "steady",
+    visibleTools: {
+      focus: true,
+      movement: true,
+      checkin: true,
+      wins: true,
+      sleep: true,
+      breathing: true,
+      week: true,
+      why: false,
+      agents: true,
+      connections: true
+    }
   },
   lists: [{ id: "shopping", name: "Inköp", items: [] }],
   ideas: [], // {id, raw, title, note, tags, ts, status: 'refining'|'klar'|'fail'}

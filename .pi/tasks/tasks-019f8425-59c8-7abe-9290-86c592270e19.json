@@ -228,25 +228,25 @@
       "id": "24",
       "subject": "Richer profile with preferences",
       "description": "Expand user profile/preferences: baseline energy capacity, wake/winddown times (exist), ADD: preferred/visible tools on landing, theme/density preference, notification prefs, default task duration, breathing pace, which sections to show on today view. Store server-side (extend User model + /api/me PATCH). New profile/settings view.",
-      "status": "pending",
+      "status": "in_progress",
       "activeForm": "Building richer profile",
       "metadata": {},
       "blocks": [],
       "blockedBy": [],
       "createdAt": 1784651986811,
-      "updatedAt": 1784651986811
+      "updatedAt": 1784654023375
     },
     {
       "id": "25",
       "subject": "Auto-generate tags from detailed idea descriptions",
       "description": "When a user adds or refines the detailed description (note/body) of an idea, automatically generate new tags based on the content. Could reuse the Förfinaren/Sorteraren agent to extract keywords/topics from the note, or do lightweight keyword extraction client-side. Update idea.tags with new suggestions (merge, don't overwrite user tags). Trigger on: refine result, manual edit save, and on-demand 'föreslå taggar' button.",
-      "status": "in_progress",
+      "status": "completed",
       "activeForm": "Adding auto-tagging from descriptions",
       "metadata": {},
       "blocks": [],
       "blockedBy": [],
       "createdAt": 1784652079721,
-      "updatedAt": 1784653888080
+      "updatedAt": 1784654014458
     }
   ]
 }

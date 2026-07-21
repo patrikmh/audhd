@@ -7,6 +7,7 @@ import DailyCheckin from "./components/DailyCheckin";
 import { TaskInitiationSupport } from "./components/TaskInitiationSupport";
 import { useAgentStream } from "./hooks/useAgentStream";
 import { AgentProgress } from "./components/AgentProgress";
+import { SettingsView } from "./components/SettingsView";
 import { T, MODES, ENERGY_LABELS, MOVEMENT_IDEAS, REST_MENU, EDU_CARDS, ICON_CHOICES, WEEKDAYS, ICON_KEYWORDS, PRIORITY_ORDER, API_BASE, AUTH_KEY } from "./constants/tokens";
 import { uid, todayKey, todayWeekday, guessIcon, energyColor, nowHM, hmToMin } from "./utils/helpers";
 import { getAuth, setAuth, clearAuth, login } from "./utils/auth";
@@ -255,6 +256,7 @@ function VarvApp({ username, onLogout }) {
   const remaining = Math.max(0, Math.min(mode.budget, mode.budget - spent + recharged));
   const overBudget = spent - recharged > mode.budget;
   const winsToday = state.wins.filter((w) => new Date(w.ts).toDateString() === new Date().toDateString());
+  const vt = state.settings.visibleTools || {}; // vilka verktyg som visas i verktygsvyn
 
   // Selected date for viewing tasks (default: today)
   const [selectedDate, setSelectedDate] = useState(todayKey());
@@ -376,6 +378,7 @@ function VarvApp({ username, onLogout }) {
   const undoTimer = useRef(null);
   const [contextMenu, setContextMenu] = useState(null); // { x, y, items }
   const [showSetup, setShowSetup] = useState(() => !state.setupDone);
+  const [showSettings, setShowSettings] = useState(false);
   const [showCheckin, setShowCheckin] = useState(() => {
     if (!state.setupDone) return false;
     return state.lastCheckinDate !== todayKey();
@@ -1416,18 +1419,18 @@ function VarvApp({ username, onLogout }) {
         {view === "tools" && (
           <section style={{ marginTop: 4 }}>
           <div style={s.toolGrid}>
-            <ToolBtn active={tool === "focus" || lapRunning} onClick={() => setTool(tool === "focus" ? null : "focus")} label="Fokusvarv" sub={lapRunning ? "pågår…" : "timer + mål"} />
-            <ToolBtn active={tool === "move"} onClick={() => setTool(tool === "move" ? null : "move")} label="Rörelsepaus" sub="5 min, +2⚡" />
-            <ToolBtn active={tool === "checkin"} onClick={() => setTool(tool === "checkin" ? null : "checkin")} label="Tankekoll" sub="en snällare läsning" />
-            <ToolBtn active={tool === "wins"} onClick={() => setTool(tool === "wins" ? null : "wins")} label="Vinster" sub={`${winsToday.length} idag`} />
-            <ToolBtn active={tool === "sleep"} onClick={() => setTool(tool === "sleep" ? null : "sleep")} label="Sömnankare" sub={`vakna ${state.settings.wake}`} />
-            <ToolBtn active={tool === "ground"} onClick={() => setTool(tool === "ground" ? null : "ground")} label="Andningsankare" sub="3 min, +1⚡" />
-            <ToolBtn active={tool === "week"} onClick={() => setTool(tool === "week" ? null : "week")} label="Veckoöversikt" sub="energimönster" />
-            <ToolBtn active={tool === "edu"} onClick={() => setTool(tool === "edu" ? null : "edu")} label="Varför det funkar" sub="evidensen" />
-            <ToolBtn active={tool === "connect"} onClick={() => setTool(tool === "connect" ? null : "connect")} label="Kopplingar" sub="Oura ring" />
-            <ToolBtn active={tool === "agents"} onClick={() => setTool(tool === "agents" ? null : "agents")} label="Agenter" sub={`${Object.values(state.agents).filter(Boolean).length}/5 aktiva`} />
+            {vt.focus !== false && <ToolBtn active={tool === "focus" || lapRunning} onClick={() => setTool(tool === "focus" ? null : "focus")} label="Fokusvarv" sub={lapRunning ? "pågår…" : "timer + mål"} />}
+            {vt.movement !== false && <ToolBtn active={tool === "move"} onClick={() => setTool(tool === "move" ? null : "move")} label="Rörelsepaus" sub="5 min, +2⚡" />}
+            {vt.checkin !== false && <ToolBtn active={tool === "checkin"} onClick={() => setTool(tool === "checkin" ? null : "checkin")} label="Tankekoll" sub="en snällare läsning" />}
+            {vt.wins !== false && <ToolBtn active={tool === "wins"} onClick={() => setTool(tool === "wins" ? null : "wins")} label="Vinster" sub={`${winsToday.length} idag`} />}
+            {vt.sleep !== false && <ToolBtn active={tool === "sleep"} onClick={() => setTool(tool === "sleep" ? null : "sleep")} label="Sömnankare" sub={`vakna ${state.settings.wake}`} />}
+            {vt.breathing !== false && <ToolBtn active={tool === "ground"} onClick={() => setTool(tool === "ground" ? null : "ground")} label="Andningsankare" sub="3 min, +1⚡" />}
+            {vt.week !== false && <ToolBtn active={tool === "week"} onClick={() => setTool(tool === "week" ? null : "week")} label="Veckoöversikt" sub="energimönster" />}
+            {vt.why === true && <ToolBtn active={tool === "edu"} onClick={() => setTool(tool === "edu" ? null : "edu")} label="Varför det funkar" sub="evidensen" />}
+            {vt.connections !== false && <ToolBtn active={tool === "connect"} onClick={() => setTool(tool === "connect" ? null : "connect")} label="Kopplingar" sub="Oura ring" />}
+            {vt.agents !== false && <ToolBtn active={tool === "agents"} onClick={() => setTool(tool === "agents" ? null : "agents")} label="Agenter" sub={`${Object.values(state.agents).filter(Boolean).length}/5 aktiva`} />}
             <ToolBtn onClick={() => setShowCheckin(true)} label="Morgoncheck" sub="översikt + energi" />
-            <ToolBtn onClick={() => setShowSetup(true)} label="Inställningar" sub="guidad setup" />
+            <ToolBtn onClick={() => setShowSettings(true)} label="Inställningar" sub="preferenser" />
           </div>
 
           {tool === "agents" && (
@@ -1629,6 +1632,16 @@ function VarvApp({ username, onLogout }) {
 
       {/* ============ setup wizard ============ */}
       {showSetup && <SetupWizard onComplete={handleSetupComplete} />}
+
+      {/* ============ settings / preferences ============ */}
+      {showSettings && (
+        <SettingsView
+          state={{ ...state, username }}
+          onPatch={(patch) => setState((st) => ({ ...st, ...patch }))}
+          onLogout={() => { setShowSettings(false); onLogout(); }}
+          onClose={() => setShowSettings(false)}
+        />
+      )}
 
       {/* ============ daily check-in ============ */}
       {showCheckin && !showSetup && (
