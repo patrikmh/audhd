@@ -203,7 +203,13 @@ function VarvApp({ username, onLogout }) {
             // rensas bort som en engångsuppgift.
             const today = todayWeekday();
             s.tasks = (s.tasks || [])
-              .map((t) => ((t.repeatDays || []).includes(today) ? { ...t, done: false } : t))
+              .map((t) => {
+                // Migration: tasks without day/scheduled_date get their creation day
+                const withDay = (!t.day && !t.scheduled_date && !(t.repeatDays || []).length)
+                  ? { ...t, day: (t.createdAt || new Date().toISOString()).slice(0, 10) }
+                  : t;
+                return (withDay.repeatDays || []).includes(today) ? { ...withDay, done: false } : withDay;
+              })
               .filter((t) => (t.repeatDays || []).length > 0 || !t.done);
           }
           s.settings = { ...DEFAULT_STATE.settings, ...(s.settings || {}) };
