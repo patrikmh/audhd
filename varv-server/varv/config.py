@@ -1,6 +1,8 @@
 """Central konfiguration. Allt läses från miljövariabler / .env — inga hemligheter i kod."""
+import os
 from functools import lru_cache
 
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -19,10 +21,17 @@ class Settings(BaseSettings):
     agent_tick_seconds: int = 300            # bakgrundsloopens intervall
 
     # --- transkribering (web API med lokal fallback) ---
-    openai_api_key: str | None = None    # OPENAI_API_KEY för web-transkribering
+    openai_api_key: str | None = None    # VARV_OPENAI_API_KEY eller OPENAI_API_KEY
     whisper_model: str = "KBLab/kb-whisper-tiny"  # fallback: lokal modell
     whisper_device: str = "cpu"
     whisper_compute_type: str = "int8"       # int8 = Pi-vänligt
+
+    @model_validator(mode="after")
+    def _check_openai_key(self) -> "Settings":
+        # Also check unprefixed OPENAI_API_KEY if VARV_OPENAI_API_KEY not set
+        if not self.openai_api_key:
+            self.openai_api_key = os.environ.get("OPENAI_API_KEY")
+        return self
 
     # --- BERTopic ---
     topics_min_docs: int = 30                # kör inte klustring på för lite data
