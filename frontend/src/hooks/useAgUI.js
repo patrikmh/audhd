@@ -12,23 +12,23 @@ import { useState, useRef, useCallback } from "react";
 import { getAuth } from "../utils/auth";
 import { API_BASE } from "../constants/tokens";
 
-// AG-UI event types we handle
+// AG-UI event types as sent by the backend (SCREAMING_SNAKE_CASE)
 const EVENT_TYPES = {
-  RUN_STARTED: "RunStarted",
-  RUN_FINISHED: "RunFinished",
-  RUN_ERROR: "RunError",
-  STEP_STARTED: "StepStarted",
-  STEP_FINISHED: "StepFinished",
-  TEXT_MESSAGE_START: "TextMessageStart",
-  TEXT_MESSAGE_CONTENT: "TextMessageContent",
-  TEXT_MESSAGE_END: "TextMessageEnd",
-  TOOL_CALL_START: "ToolCallStart",
-  TOOL_CALL_ARGS: "ToolCallArgs",
-  TOOL_CALL_END: "ToolCallEnd",
-  TOOL_CALL_RESULT: "ToolCallResult",
-  STATE_SNAPSHOT: "StateSnapshot",
-  STATE_DELTA: "StateDelta",
-  CUSTOM: "Custom",
+  RUN_STARTED: "RUN_STARTED",
+  RUN_FINISHED: "RUN_FINISHED",
+  RUN_ERROR: "RUN_ERROR",
+  STEP_STARTED: "STEP_STARTED",
+  STEP_FINISHED: "STEP_FINISHED",
+  TEXT_MESSAGE_START: "TEXT_MESSAGE_START",
+  TEXT_MESSAGE_CONTENT: "TEXT_MESSAGE_CONTENT",
+  TEXT_MESSAGE_END: "TEXT_MESSAGE_END",
+  TOOL_CALL_START: "TOOL_CALL_START",
+  TOOL_CALL_ARGS: "TOOL_CALL_ARGS",
+  TOOL_CALL_END: "TOOL_CALL_END",
+  TOOL_CALL_RESULT: "TOOL_CALL_RESULT",
+  STATE_SNAPSHOT: "STATE_SNAPSHOT",
+  STATE_DELTA: "STATE_DELTA",
+  CUSTOM: "CUSTOM",
 };
 
 export function useAgUI() {
@@ -147,12 +147,12 @@ export function useAgUI() {
     }
 
     if (t === EVENT_TYPES.STEP_STARTED) {
-      setSteps((s) => [...s, { name: event.name, status: "active" }]);
+      setSteps((s) => [...s, { name: event.step_name || event.name, status: "active" }]);
     }
     if (t === EVENT_TYPES.STEP_FINISHED) {
       setSteps((s) =>
         s.map((step) =>
-          step.name === event.name ? { ...step, status: "done" } : step
+          step.name === (event.step_name || event.name) ? { ...step, status: "done" } : step
         )
       );
     }
