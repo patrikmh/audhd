@@ -298,7 +298,6 @@ function VarvApp({ username, onLogout }) {
   );
 
   const medToday = state.meds.find((m) => m.day === todayKey());
-  const lapDoneToday = state.morningLapDay === todayKey();
   const pastWinddown = hmToMin(nowHM()) >= hmToMin(state.settings?.winddown || "22:00");
 
   // Observatören: föreslår ett verktyg utifrån läge/tid, aldrig påtvingat — bara en
@@ -997,25 +996,6 @@ function VarvApp({ username, onLogout }) {
               </div>
             ))}
           </section>
-        )}
-
-        {/* ============ morning lap ============ */}
-        {!recoveryTint && !lapDoneToday && visibleTasks.length > 0 && (
-          <MorningLap
-            tasks={visibleTasks}
-            onSkip={() => patch({ morningLapDay: todayKey() })}
-            onDone={(ranked) => {
-              setState((st) => ({
-                ...st,
-                morningLapDay: todayKey(),
-                tasks: st.tasks.map((t) => {
-                  const idx = ranked.indexOf(t.id);
-                  return { ...t, priority: idx === 0 ? "A" : idx === 1 ? "B" : idx === 2 ? "C" : t.priority, inbox: false };
-                }),
-              }));
-              addWin("Morgonvarv: dagen planerad");
-            }}
-          />
         )}
 
         {/* ============ recovery rest menu ============ */}
@@ -2493,43 +2473,6 @@ function TaskCard({ task, onDone, onUpdate, onRemove, onWin, onPushCal, agentBus
 /* ============================================================ */
 /* Morning lap — the daily planning ritual (Safren-style)        */
 /* ============================================================ */
-function MorningLap({ tasks, onDone, onSkip }) {
-  const [ranked, setRanked] = useState([]);
-  const s = styles;
-  const toggle = (id) => {
-    setRanked((r) => (r.includes(id) ? r.filter((x) => x !== id) : r.length < 3 ? [...r, id] : r));
-  };
-  return (
-    <section style={{ ...s.card, borderLeft: `4px solid ${T.moss}` }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-        <div style={s.eyebrow}>Morgonvarv · 2 min</div>
-        <button style={{ ...s.linkBtn, color: T.soft, fontSize: 13 }} onClick={onSkip}>hoppa över idag</button>
-      </div>
-      <p style={s.body}>Tryck på upp till tre uppgifter i den ordning de betyder något idag. Första trycket = A, sedan B, sedan C. Resten kan vänta utan skuld.</p>
-      <div style={{ marginTop: 10 }}>
-        {tasks.slice(0, 8).map((t) => {
-          const idx = ranked.indexOf(t.id);
-          return (
-            <button key={t.id} style={s.lapRow} onClick={() => toggle(t.id)}>
-              <span style={{ ...s.lapBadge, background: idx >= 0 ? T.spruce : "transparent", color: idx >= 0 ? T.card : T.soft }}>
-                {idx >= 0 ? ["A", "B", "C"][idx] : "·"}
-              </span>
-              <span style={{ textAlign: "left" }}>{t.title}{t.inbox ? <span style={{ color: T.soft }}> · inkorg</span> : null}</span>
-            </button>
-          );
-        })}
-      </div>
-      <button
-        style={{ ...s.primaryBtn, marginTop: 12, opacity: ranked.length ? 1 : 0.5 }}
-        disabled={!ranked.length}
-        onClick={() => onDone(ranked)}
-      >
-        Sätt dagen
-      </button>
-    </section>
-  );
-}
-
 /* ============================================================ */
 /* Sleep anchors — CBT-I basics: fixed wake, wind-down cue       */
 /* ============================================================ */
