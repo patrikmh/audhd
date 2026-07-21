@@ -44,6 +44,29 @@ async function apiPost(path, body) {
   return response.json();
 }
 
+async function apiPatch(path, body) {
+  const auth = getAuth();
+  const response = await fetch(`${API_BASE}${path}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      ...(auth?.token ? { Authorization: `Bearer ${auth.token}` } : {}),
+    },
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) throw new Error(`varv-server ${path} error ${response.status}`);
+  return response.json();
+}
+
+async function apiGet(path) {
+  const auth = getAuth();
+  const response = await fetch(`${API_BASE}${path}`, {
+    headers: { ...(auth?.token ? { Authorization: `Bearer ${auth.token}` } : {}) },
+  });
+  if (!response.ok) throw new Error(`varv-server ${path} error ${response.status}`);
+  return response.json();
+}
+
 // Agenterna (Nedbrytaren/Förfinaren/Sorteraren) körs server-side mot
 // OpenRouter — frontend anropar bara varv-server, aldrig LLM-API:et direkt.
 async function aiBreakdown(title) {
@@ -186,6 +209,15 @@ function VarvApp({ username, onLogout }) {
         /* first run — nothing stored yet */
       }
       setLoaded(true);
+      // Sync setupDone / lastCheckinDate from server (survives device switch)
+      try {
+        const me = await apiGet("/api/me");
+        setState((s) => ({
+          ...s,
+          setupDone: me.setup_done || s.setupDone,
+          lastCheckinDate: me.last_checkin_date || s.lastCheckinDate,
+        }));
+      } catch (_) { /* offline or first run */ }
     })();
   }, []);
 
@@ -365,6 +397,8 @@ function VarvApp({ username, onLogout }) {
     }));
     setShowSetup(false);
     setShowCheckin(true);
+    // Persist to server
+    apiPatch("/api/me", { setup_done: true, capacity }).catch(() => {});
   };
 
   /* --- Daily check-in --- */
@@ -374,6 +408,8 @@ function VarvApp({ username, onLogout }) {
   const handleCheckinDismiss = () => {
     setState((s) => ({ ...s, lastCheckinDate: todayKey() }));
     setShowCheckin(false);
+    // Persist to server
+    apiPatch("/api/me", { last_checkin_date: todayKey(), capacity: state.capacity }).catch(() => {});
   };
 
   const updateTask = (id, p) => {

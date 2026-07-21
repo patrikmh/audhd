@@ -263,6 +263,35 @@ def capacity(
     return {"capacity": stats.get_capacity(session, user.id)}
 
 
+@router.get("/me")
+def get_me(user: User = Depends(current_user)):
+    return {
+        "username": user.username,
+        "capacity": user.capacity,
+        "setup_done": user.setup_done,
+        "last_checkin_date": user.last_checkin_date,
+    }
+
+
+@router.patch("/me")
+def patch_me(payload: dict, user: User = Depends(current_user), session: Session = Depends(get_session)):
+    if "setup_done" in payload:
+        user.setup_done = bool(payload["setup_done"])
+    if "last_checkin_date" in payload:
+        user.last_checkin_date = payload["last_checkin_date"]
+    if "capacity" in payload and payload["capacity"] in ("steady", "low", "recovery"):
+        stats.set_capacity(session, user.id, payload["capacity"], "user")
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+    return {
+        "username": user.username,
+        "capacity": user.capacity,
+        "setup_done": user.setup_done,
+        "last_checkin_date": user.last_checkin_date,
+    }
+
+
 @router.get("/wins")
 def wins(day: str | None = None, user: User = Depends(current_user), session: Session = Depends(get_session)):
     d = day or date.today().isoformat()

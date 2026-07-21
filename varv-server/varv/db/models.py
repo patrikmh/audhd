@@ -54,6 +54,8 @@ class User(SQLModel, table=True):
     capacity: str = "steady"                          # steady | low | recovery
     capacity_set_day: str | None = None                # dagen då nuvarande värde sattes
     capacity_set_by: str | None = None                 # "user" | "auto" — user vinner alltid samma dag
+    setup_done: bool = False                           # wizard genomförd
+    last_checkin_date: str | None = None               # senaste morgoncheckin (YYYY-MM-DD)
     created_at: datetime = Field(default_factory=datetime.now)
 
 
