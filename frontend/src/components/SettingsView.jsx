@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { T } from "../constants/tokens";
 import { todayKey } from "../utils/helpers";
+import { useModalDialog } from "../hooks/useModalDialog";
 
 /**
  * SettingsView — full settings/preferences panel.
@@ -34,6 +35,7 @@ const CAPACITY_OPTIONS = [
 export function SettingsView({ state, onPatch, onToggleExternalAi, onLogout, onClose }) {
   const s = state.settings || {};
   const [tab, setTab] = useState("dag");
+  const dialogRef = useModalDialog(onClose);
 
   const patchSettings = (updates) => onPatch({ settings: { ...s, ...updates } });
   const patchVisibleTools = (key) =>
@@ -75,11 +77,15 @@ export function SettingsView({ state, onPatch, onToggleExternalAi, onLogout, onC
   const toggle = (active, label, desc, onClick) => (
     <button
       onClick={onClick}
+      role="switch"
+      aria-checked={active}
+      aria-label={label}
       style={{
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
         gap: 12,
+        minHeight: 44,
         padding: "10px 0",
         background: "none",
         border: "none",
@@ -136,6 +142,10 @@ export function SettingsView({ state, onPatch, onToggleExternalAi, onLogout, onC
       onClick={onClose}
     >
       <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Inställningar"
         style={{
           background: T.paper,
           width: "100%",
@@ -151,6 +161,7 @@ export function SettingsView({ state, onPatch, onToggleExternalAi, onLogout, onC
           <h2 style={{ fontFamily: "'Fraunces', serif", fontSize: 22, margin: 0, color: T.ink }}>Inställningar</h2>
           <button
             onClick={onClose}
+            aria-label="Stäng inställningar"
             style={{
               background: "none",
               border: "none",
@@ -158,6 +169,11 @@ export function SettingsView({ state, onPatch, onToggleExternalAi, onLogout, onC
               color: T.soft,
               cursor: "pointer",
               fontFamily: "inherit",
+              width: 44,
+              height: 44,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
             }}
           >
             ✕

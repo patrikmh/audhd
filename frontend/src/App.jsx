@@ -12,6 +12,7 @@ import { T, MODES, ENERGY_LABELS, MOVEMENT_IDEAS, REST_MENU, EDU_CARDS, ICON_CHO
 import { uid, todayKey, todayWeekday, guessIcon, energyColor, nowHM, hmToMin } from "./utils/helpers";
 import { getAuth, setAuth, clearAuth, login } from "./utils/auth";
 import { INTEGRATIONS } from "./constants/integrations";
+import { useModalDialog } from "./hooks/useModalDialog";
 
 /* ============================================================
    VARV — an AuDHD day companion
@@ -1222,7 +1223,7 @@ function VarvApp({ username, onLogout }) {
           <div style={{ display: "flex", gap: 6, marginBottom: 8, alignItems: "center" }}>
             <button
               onClick={() => setWeekOffset((w) => w - 1)}
-              style={{ ...s.linkBtn, padding: "4px 8px", fontSize: 14 }}
+              style={{ ...s.linkBtn, minWidth: 44, minHeight: 44, fontSize: 14 }}
               aria-label="Föregående vecka"
             >‹</button>
             <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4, flex: 1 }}>
@@ -1237,8 +1238,13 @@ function VarvApp({ username, onLogout }) {
                   <button
                     key={dateStr}
                     onClick={() => setSelectedDate(dateStr)}
+                    aria-current={isSelected ? "date" : undefined}
+                    aria-label={`${dayName} ${dayNum}${isTodayDate ? " (idag)" : ""}`}
                     style={{
                       padding: '6px 10px',
+                      minWidth: 44,
+                      minHeight: 44,
+                      boxSizing: 'border-box',
                       borderRadius: 8,
                       border: `1px solid ${isSelected ? T.petrol : '#E8E7E2'}`,
                       background: isSelected ? T.petrol : 'transparent',
@@ -1258,7 +1264,7 @@ function VarvApp({ username, onLogout }) {
             </div>
             <button
               onClick={() => setWeekOffset((w) => w + 1)}
-              style={{ ...s.linkBtn, padding: "4px 8px", fontSize: 14 }}
+              style={{ ...s.linkBtn, minWidth: 44, minHeight: 44, fontSize: 14 }}
               aria-label="Nästa vecka"
             >›</button>
           </div>
@@ -1372,7 +1378,7 @@ function VarvApp({ username, onLogout }) {
                   {entry.doneAt && (
                     <span style={{ fontSize: 12, color: T.soft }}>{new Date(entry.doneAt).toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" })}</span>
                   )}
-                  <button style={{ ...s.linkBtn, fontSize: 12, padding: "4px 8px" }} onClick={() => reopenTask(entry)}>
+                  <button style={{ ...s.linkBtn, fontSize: 12, minHeight: 44, padding: "4px 8px" }} onClick={() => reopenTask(entry)}>
                     öppna igen
                   </button>
                 </div>
@@ -1843,7 +1849,8 @@ function CaptureSheet({ onClose, onTask, onListItem, onIdea, onAuto, onTranscrib
   const recRef = useRef(null);
   const streamRef = useRef(null);
   const s = styles;
-  useEffect(() => { ref.current && ref.current.focus(); }, []);
+  const dialogRef = useModalDialog(onClose);
+  useEffect(() => { ref.current && ref.current.focus(); }, []); // vinner över dialogens auto-fokus på första knappen
   useEffect(() => () => {
     try { recRef.current && recRef.current.state !== "inactive" && recRef.current.stop(); } catch (e) {}
     try { streamRef.current && streamRef.current.getTracks().forEach((t) => t.stop()); } catch (e) {}
@@ -1895,7 +1902,7 @@ function CaptureSheet({ onClose, onTask, onListItem, onIdea, onAuto, onTranscrib
 
   return (
     <div style={s.sheetBackdrop} onClick={onClose}>
-      <div style={s.sheet} onClick={(e) => e.stopPropagation()}>
+      <div ref={dialogRef} style={s.sheet} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Fånga en tanke">
         <div style={s.sheetHandle} />
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: -6 }}>
           <button
@@ -3265,7 +3272,16 @@ function IdeaMap({ ideas, onSelect, selectedId }) {
                 const right = Math.cos(la) >= 0;
                 const sel = idea.id === selectedId;
                 return (
-                  <g key={idea.id} onClick={() => onSelect(idea.id)} style={{ cursor: "pointer" }}>
+                  <g
+                    key={idea.id}
+                    onClick={() => onSelect(idea.id)}
+                    onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSelect(idea.id); } }}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={idea.title || idea.raw}
+                    aria-pressed={sel}
+                    style={{ cursor: "pointer" }}
+                  >
                     <line x1={bx} y1={by} x2={lx} y2={ly} stroke={T.track} strokeWidth="1" />
                     <circle cx={lx} cy={ly} r={sel ? 6 : 4.5} fill={sel ? T.petrol : T.moss} />
                     <text
@@ -3352,8 +3368,8 @@ const styles = {
   bufferWarn: { fontSize: 12, color: T.warn },
   toolGrid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 12 },
   toolBtn: { border: `1px solid ${T.line}`, borderRadius: 14, padding: "13px 12px", textAlign: "left", cursor: "pointer", fontFamily: "inherit" },
-  doneBtn: { width: 42, height: 42, borderRadius: 21, border: `1.5px solid ${T.moss}`, background: "transparent", color: T.spruce, fontSize: 18, cursor: "pointer", flexShrink: 0 },
-  stepRow: { display: "flex", gap: 10, alignItems: "flex-start", width: "100%", background: "none", border: "none", padding: "9px 0", cursor: "pointer", fontSize: 14, fontFamily: "inherit" },
+  doneBtn: { width: 44, height: 44, borderRadius: 22, border: `1.5px solid ${T.moss}`, background: "transparent", color: T.spruce, fontSize: 18, cursor: "pointer", flexShrink: 0 },
+  stepRow: { display: "flex", gap: 10, alignItems: "flex-start", width: "100%", minHeight: 44, boxSizing: "border-box", background: "none", border: "none", padding: "12px 0", cursor: "pointer", fontSize: 14, fontFamily: "inherit" },
   stepBox: { width: 22, height: 22, borderRadius: 6, border: `1.5px solid ${T.moss}`, color: "#fff", fontSize: 13, display: "grid", placeItems: "center", flexShrink: 0, marginTop: 0 },
   restItem: { display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", background: "#FFFFFF", border: `1px solid ${T.line}`, borderRadius: 12, padding: "12px 12px", marginTop: 8, fontSize: 14, cursor: "pointer", fontFamily: "inherit", color: T.ink, textAlign: "left", gap: 10 },
   restPlus: { font: "500 13px 'IBM Plex Mono', monospace", color: T.moss, flexShrink: 0 },

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { T, MODES, ENERGY_LABELS } from "../constants/tokens";
 import { todayKey, todayWeekday } from "../utils/helpers";
+import { useModalDialog } from "../hooks/useModalDialog";
 
 /**
  * Daily Morning Check-in — shows on first load each day.
@@ -42,6 +43,7 @@ export default function DailyCheckin({ state, onSetEnergy, onDismiss, onAddTask 
     onSetEnergy(energy);
     onDismiss();
   };
+  const dialogRef = useModalDialog(handleFinish);
 
   const steps = [
     /* 0 — Energy */
@@ -190,6 +192,10 @@ export default function DailyCheckin({ state, onSetEnergy, onDismiss, onAddTask 
 
   return (
     <div
+      ref={dialogRef}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Morgoncheck"
       style={{
         position: "fixed",
         inset: 0,

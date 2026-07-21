@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { T, MODES, ICON_CHOICES, WEEKDAYS } from "../constants/tokens";
 import { uid, guessIcon } from "../utils/helpers";
+import { useModalDialog } from "../hooks/useModalDialog";
 
 /**
  * Setup Wizard — first-launch onboarding.
@@ -8,6 +9,9 @@ import { uid, guessIcon } from "../utils/helpers";
  */
 export default function SetupWizard({ onComplete }) {
   const [step, setStep] = useState(0);
+  // Ingen Escape-utväg — det här är ett obligatoriskt förstagångsflöde, inte en
+  // avfärdbar dialog. Fokusfälla + initialt fokus gäller ändå.
+  const dialogRef = useModalDialog(() => {});
   const [wake, setWake] = useState("07:00");
   const [winddown, setWinddown] = useState("22:00");
   const [capacity, setCapacity] = useState("steady");
@@ -299,6 +303,10 @@ export default function SetupWizard({ onComplete }) {
 
   return (
     <div
+      ref={dialogRef}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Varv-guiden"
       style={{
         position: "fixed",
         inset: 0,
