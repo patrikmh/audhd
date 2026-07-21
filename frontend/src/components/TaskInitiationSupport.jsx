@@ -225,38 +225,6 @@ export function TaskInitiationSupport({ task, onStartStep, onSetTrigger }) {
         </div>
       )}
 
-      {/* Body Doubling Option */}
-      <div style={{
-        background: T.paper,
-        padding: '10px',
-        borderRadius: '6px',
-        border: `1px solid ${T.line}`,
-        textAlign: 'center'
-      }}>
-        <div style={{
-          fontSize: '0.8rem',
-          fontFamily: 'Atkinson Hyperlegible',
-          color: T.soft,
-          marginBottom: '4px'
-        }}>
-          Vill du ha sällskap under uppgiften?
-        </div>
-        <button
-          style={{
-            background: 'transparent',
-            color: T.petrol,
-            border: `1px dashed ${T.petrol}`,
-            borderRadius: '4px',
-            padding: '4px 10px',
-            fontSize: '0.8rem',
-            fontFamily: 'Atkinson Hyperlegible',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease'
-          }}
-        >
-          Aktivera fokus-buddy 
-        </button>
-      </div>
     </div>
   );
 }
