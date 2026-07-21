@@ -14,6 +14,7 @@ import { getAuth, setAuth, clearAuth, login } from "./utils/auth";
 import { INTEGRATIONS } from "./constants/integrations";
 import { useModalDialog } from "./hooks/useModalDialog";
 import { useTheme } from "./hooks/useTheme";
+import { GhostTextarea } from "./components/GhostTextarea";
 // Cytoscape.js is ~230kb gzipped — split it into its own chunk so opening the
 // app (or the Ideas list view) never pays for it; only "karta" mode does.
 const IdeaGraph = lazy(() => import("./components/IdeaGraph").then((m) => ({ default: m.IdeaGraph })));
@@ -335,15 +336,21 @@ function VarvApp({ username, onLogout }) {
 
   const observerSuggestion = useMemo(() => {
     if (!state.agents.observer) return null;
+    // Local heuristics only, gated to major milestones — not fine-grained enough
+    // to fire on every click (toggling a step, editing text) or it'd just nag.
+    const allDoneToday = isToday && visibleTasks.length === 0 && doneForSelectedDate.length > 0;
+    const halfwaySpentNoRecharge = !overBudget && mode.budget > 0 && spent >= mode.budget / 2 && recharged === 0;
     const candidates = [
       pastWinddown && { key: "winddown", tool: "sleep", text: "Nedvarvningstid — dags att förbereda sömnen?", cta: "Öppna sömnankaret" },
       state.capacity === "recovery" && { key: "recovery-ground", tool: "ground", text: "Återhämtningsläge — en kort andningspaus?", cta: "Öppna andningsankaret" },
       overBudget && { key: "overbudget-move", tool: "move", text: "Energin är över budget — en rörelsepaus kan hjälpa.", cta: "Öppna rörelsepausen" },
       (!checkedInToday && hmToMin(nowHM()) >= hmToMin("14:00")) && { key: "checkin-1400", tool: "checkin", text: "Ingen tankekoll idag än — hur går dagen?", cta: "Öppna tankekoll" },
+      allDoneToday && { key: `all-done-${todayKey()}`, tool: "wins", text: "Allt klart för idag — värt att se vad som blev gjort?", cta: "Öppna vinster" },
+      halfwaySpentNoRecharge && { key: `halfway-${todayKey()}`, tool: "move", text: "Halva energibudgeten förbrukad utan återhämtning än — en kort paus nu kan skydda resten av dagen.", cta: "Öppna rörelsepausen" },
     ].filter(Boolean);
     return candidates.find((c) => !dismissedToday(c.key)) || null;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.agents.observer, pastWinddown, state.capacity, overBudget, checkedInToday, state.observerDismissed]);
+  }, [state.agents.observer, pastWinddown, state.capacity, overBudget, checkedInToday, state.observerDismissed, isToday, visibleTasks.length, doneForSelectedDate.length, spent, recharged, mode.budget]);
 
   const dismissObserverSuggestion = (key) =>
     setState((st) => ({
@@ -922,6 +929,22 @@ function VarvApp({ username, onLogout }) {
         input, button, select { -webkit-tap-highlight-color: transparent; }
         @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
         html { -webkit-font-smoothing: antialiased; }
+
+        /* Sober micro-interactions: a quiet press-down on tap, a quiet lift on hover
+           (desktop only — "hover: hover" keeps touch devices from getting a stuck
+           hover state), nothing bouncy or attention-seeking. */
+        button:not(:disabled) { transition: transform 0.12s ease, box-shadow 0.15s ease, opacity 0.15s ease; }
+        button:not(:disabled):active { transform: scale(0.97); }
+        @media (hover: hover) {
+          .card-hoverable:hover { box-shadow: 0 2px 10px rgba(51,57,59,0.08); transform: translateY(-1px); }
+        }
+        .card-hoverable { transition: box-shadow 0.18s ease, transform 0.18s ease; }
+
+        @keyframes checkPop { 0% { transform: scale(1); } 45% { transform: scale(1.18); } 100% { transform: scale(1); } }
+        .check-pop { animation: checkPop 0.28s ease; }
+
+        @keyframes rowSettle { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+        .row-settle { animation: rowSettle 0.25s ease; }
       `}</style>
       <div style={s.shell}>
         {/* ============ header ============ */}
@@ -1263,6 +1286,7 @@ function VarvApp({ username, onLogout }) {
                       flexShrink: 0,
                       fontFamily: "inherit",
                       textAlign: 'center',
+                      transition: 'background 0.15s ease, border-color 0.15s ease, color 0.15s ease',
                     }}
                   >
                     <div style={{ fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.03em', opacity: isSelected ? 0.9 : 0.7 }}>{dayName}</div>
@@ -1369,6 +1393,7 @@ function VarvApp({ username, onLogout }) {
                 onUpdate={(p) => updateTask(t.id, p)}
                 onRemove={() => removeTask(t.id)}
                 onWin={addWin}
+                aiEnabled={state.externalAiEnabled}
                 agentBusy={streamAgent.isRunning && streamAgent.activeInput === t.title}
               />
             </div>
@@ -1452,6 +1477,7 @@ function VarvApp({ username, onLogout }) {
                 onToTask={() => ideaToTask(state.ideas.find((i) => i.id === state._selIdea))}
                 onRemove={() => { removeIdea(state._selIdea); setState((st) => ({ ...st, _selIdea: null })); }}
                 onUpdate={updateIdea}
+                aiEnabled={state.externalAiEnabled}
               />
             )}
             {ideaMode === "list" && state.ideas.map((idea) => (
@@ -1462,6 +1488,7 @@ function VarvApp({ username, onLogout }) {
                 onToTask={() => ideaToTask(idea)}
                 onRemove={() => removeIdea(idea.id)}
                 onUpdate={updateIdea}
+                aiEnabled={state.externalAiEnabled}
                 onContextMenu={(e) => {
                   e.preventDefault();
                   setContextMenu({
@@ -2373,7 +2400,7 @@ function AddTask({ onAdd, defaultDate }) {
 /* ============================================================ */
 /* Task card with AI breakdown                                   */
 /* ============================================================ */
-function TaskCard({ task, onDone, onUpdate, onRemove, onWin, agentBusy }) {
+function TaskCard({ task, onDone, onUpdate, onRemove, onWin, agentBusy, aiEnabled }) {
   const [expanded, setExpanded] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
@@ -2442,9 +2469,15 @@ function TaskCard({ task, onDone, onUpdate, onRemove, onWin, agentBusy }) {
   };
 
   const stepsLeft = (task.steps || []).filter((st) => !st.done).length;
+  const [popping, setPopping] = useState(false);
+  const handleDone = () => {
+    setPopping(true);
+    setTimeout(() => setPopping(false), 280);
+    onDone();
+  };
 
   return (
-    <div style={{ ...s.card, marginTop: 10, padding: expanded ? 16 : "12px 16px" }}>
+    <div className="card-hoverable row-settle" style={{ ...s.card, marginTop: 10, padding: expanded ? 16 : "12px 16px" }}>
       {/* collapsed row — the whole row is the expand toggle */}
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
         <button
@@ -2485,7 +2518,7 @@ function TaskCard({ task, onDone, onUpdate, onRemove, onWin, agentBusy }) {
             </span>
           </span>
         </button>
-        <button style={s.doneBtn} onClick={onDone} aria-label="Markera klar">✓</button>
+        <button className={popping ? "check-pop" : ""} style={s.doneBtn} onClick={handleDone} aria-label="Markera klar">✓</button>
       </div>
 
       {/* expanded details */}
@@ -2522,11 +2555,13 @@ function TaskCard({ task, onDone, onUpdate, onRemove, onWin, agentBusy }) {
                 style={{ fontSize: 14, fontFamily: 'Fraunces', fontWeight: 600, padding: '6px 8px', border: `1px solid ${T.line}`, borderRadius: 6, background: T.card }}
                 placeholder="Rubrik…"
               />
-              <textarea
+              <GhostTextarea
                 value={editNote}
-                onChange={(e) => setEditNote(e.target.value)}
+                onChange={setEditNote}
+                context={task.title}
+                enabled={aiEnabled}
                 rows={3}
-                style={{ fontSize: 13, fontFamily: 'Atkinson Hyperlegible', padding: '6px 8px', border: `1px solid ${T.line}`, borderRadius: 6, background: T.card, resize: 'vertical' }}
+                style={{ fontSize: 13, fontFamily: 'Atkinson Hyperlegible', border: `1px solid ${T.line}`, borderRadius: 6, background: T.card, resize: 'vertical' }}
                 placeholder="Anteckning…"
               />
               <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
@@ -3181,7 +3216,7 @@ function Lists({ lists, onChange }) {
 /* ============================================================ */
 /* Idékort — rå direkt, förfinad när AI:n hunnit, redigerbar */
 /* ============================================================ */
-function IdeaCard({ idea, onRefine, onToTask, onRemove, onUpdate, onContextMenu }) {
+function IdeaCard({ idea, onRefine, onToTask, onRemove, onUpdate, onContextMenu, aiEnabled }) {
   const [showRaw, setShowRaw] = useState(false);
   const [editing, setEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(idea.title || "");
@@ -3229,7 +3264,7 @@ function IdeaCard({ idea, onRefine, onToTask, onRemove, onUpdate, onContextMenu 
   };
 
   return (
-    <div style={{ ...s.card, marginTop: 10 }} onContextMenu={onContextMenu}>
+    <div className="card-hoverable" style={{ ...s.card, marginTop: 10 }} onContextMenu={onContextMenu}>
       {editing ? (
         /* === Edit mode === */
         <>
@@ -3247,11 +3282,14 @@ function IdeaCard({ idea, onRefine, onToTask, onRemove, onUpdate, onContextMenu 
             <VoiceInputButton onResult={(t) => setEditTitle((prev) => prev ? prev + " " + t : t)} />
           </div>
           <div style={{ display: "flex", alignItems: "flex-start", gap: 8, marginTop: 8 }}>
-            <textarea
-              style={{ ...s.input, minHeight: 80, marginTop: 0, flex: 1, resize: "vertical", fontFamily: "'Atkinson Hyperlegible', sans-serif" }}
+            <GhostTextarea
+              containerStyle={{ flex: 1 }}
+              style={{ ...s.input, minHeight: 80, marginTop: 0, resize: "vertical", fontFamily: "'Atkinson Hyperlegible', sans-serif" }}
               placeholder="Beskriv idén mer detaljerat…"
               value={editNote}
-              onChange={(e) => setEditNote(e.target.value)}
+              onChange={setEditNote}
+              context={editTitle || idea.raw}
+              enabled={aiEnabled}
             />
             <VoiceInputButton onResult={(t) => setEditNote((prev) => prev ? prev + " " + t : t)} style={{ marginTop: 8 }} />
           </div>

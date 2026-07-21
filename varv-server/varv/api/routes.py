@@ -8,16 +8,17 @@ from datetime import date
 from functools import partial
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
+from fastapi.responses import StreamingResponse
 from sqlmodel import Session, select
 
-from varv.agents.core import SortDeps, forfinaren, nedbrytaren, sorteraren, tagaren
+from varv.agents.core import SortDeps, forfinaren, kompletteraren, nedbrytaren, sorteraren, tagaren
 from varv.api.auth import current_user
 from varv.db.engine import get_session
 from varv.db.models import (
     AgentLog, Capture, EnergyEvent, Idea, ListItem, ShoppingList, Task, TaskStep, Topic, User, Win, utcnow,
 )
 from varv.schemas import (
-    Breakdown, BreakdownIn, CaptureIn, CaptureOut, ChangeIn, ClassifiedCapture, ClassifyIn,
+    Breakdown, BreakdownIn, CaptureIn, CaptureOut, ChangeIn, ClassifiedCapture, ClassifyIn, CompleteIn,
     IdeaPatch, LoginIn, LoginOut, RefinedIdea, RefineIn, SyncPushOut, TagIn, TaskPatch, TranscriptOut, WeekStats,
 )
 from varv.services import stats, sync
@@ -123,6 +124,29 @@ async def agents_tags(payload: TagIn, user: User = Depends(current_user), sessio
     deps = SortDeps(known_tags=known_tag_vocabulary(session, user.id))
     result = await tagaren.run(text, deps=deps)
     return result.output[:3]
+
+
+@router.post("/agents/complete")
+async def agents_complete(payload: CompleteIn, user: User = Depends(current_user)) -> StreamingResponse:
+    """Ghost-text continuation, streamed as plain SSE text deltas (not the AG-UI
+    protocol — this is a narrow, single-purpose stream, not a multi-agent run)."""
+    _require_ai_consent(user)
+    prompt = f"{payload.context}\n\n{payload.text}" if payload.context else payload.text
+
+    async def stream():
+        try:
+            async with kompletteraren.run_stream(prompt) as result:
+                async for chunk in result.stream_text(delta=True):
+                    yield f"data: {chunk}\n\n"
+        except Exception:
+            pass  # ghost text is a nicety — end the stream quietly, never surface a 500 mid-typing
+        yield "data: [DONE]\n\n"
+
+    return StreamingResponse(
+        stream(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "Connection": "keep-alive", "X-Accel-Buffering": "no"},
+    )
 
 
 # ---------- synk ----------

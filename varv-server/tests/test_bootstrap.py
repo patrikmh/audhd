@@ -14,9 +14,11 @@ import sqlite3
 
 import pytest
 from fastapi.testclient import TestClient
+from pydantic_ai.models.test import TestModel
 from sqlalchemy.engine import Engine
-from sqlmodel import Session, SQLModel, create_engine
+from sqlmodel import Session, SQLModel, create_engine, select
 
+from varv.agents.core import kompletteraren
 from varv.db.engine import get_session, init_db
 from varv.db.models import Task, User
 from varv.utils import hash_password
@@ -123,6 +125,26 @@ def test_unauthenticated_sync_push_does_not_write_task(fresh_database_client):
     assert response.status_code == 401
     with Session(engine) as session:
         assert session.get(Task, task_id) is None
+
+
+def test_ghost_completion_requires_consent_then_streams_a_suggestion(fresh_database_client):
+    client, engine, token = fresh_database_client
+    headers = {"Authorization": f"Bearer {token}"}
+
+    blocked = client.post("/api/agents/complete", headers=headers, json={"text": "Jag ska"})
+    assert blocked.status_code == 403
+
+    with Session(engine) as session:
+        user = session.exec(select(User).where(User.token == token)).first()
+        user.external_ai_enabled = True
+        session.add(user)
+        session.commit()
+
+    with kompletteraren.override(model=TestModel(custom_output_text="handla mjölk och ägg")):
+        response = client.post("/api/agents/complete", headers=headers, json={"text": "Jag ska"})
+    assert response.status_code == 200
+    assert "handla mjölk och ägg" in response.text
+    assert response.text.strip().endswith("data: [DONE]")
 
 
 def test_reset_database_archives_old_bytes_before_creating_current_schema(tmp_path: Path):

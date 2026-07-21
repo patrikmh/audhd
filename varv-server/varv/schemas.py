@@ -125,6 +125,11 @@ class BreakdownIn(BaseModel):
     title: str = Field(min_length=1, max_length=200)
 
 
+class CompleteIn(BaseModel):
+    text: str = Field(min_length=1, max_length=2000)
+    context: str | None = Field(default=None, max_length=500, description="e.g. the task/idea title, for grounding")
+
+
 # ---------- synk ----------
 
 class StrictSyncData(BaseModel):
