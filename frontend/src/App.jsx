@@ -188,7 +188,8 @@ const DEFAULT_STATE = {
   lists: [{ id: "shopping", name: "Inköp", items: [] }],
   ideas: [], // {id, raw, title, note, tags, ts, status: 'refining'|'klar'|'fail'}
   tagLog: [], // {day, tag} — för statistik och organisering
-  agents: { classify: true, refine: true, sync: true, breakdown: true },
+  agents: { classify: true, refine: true, sync: true, breakdown: true, observer: true },
+  observerDismissed: { day: null, keys: [] }, // vilka förslag som avfärdats idag
   agentLog: [], // {ts, agent, text} — senaste agentaktivitet
   breakdownBudget: { day: null, n: 0 }, // max 3 auto-nedbrytningar per dag
   gcal: { day: null, events: [] }, // {title, start "HH:MM", end "HH:MM"}
@@ -322,6 +323,35 @@ function VarvApp({ username, onLogout }) {
   const medToday = state.meds.find((m) => m.day === todayKey());
   const lapDoneToday = state.morningLapDay === todayKey();
   const pastWinddown = hmToMin(nowHM()) >= hmToMin(state.settings?.winddown || "22:00");
+
+  // Observatören: föreslår ett verktyg utifrån läge/tid, aldrig påtvingat — bara en
+  // avfärdbar banner i huvudvyn. Prioritetsordning, första träff vinner. Avfärdat
+  // förslag döljs resten av dagen (observerDismissed), inte permanent.
+  const dismissedToday = (key) =>
+    state.observerDismissed.day === todayKey() && (state.observerDismissed.keys || []).includes(key);
+
+  const checkedInToday = state.checkins.some((c) => new Date(c.ts).toDateString() === new Date().toDateString());
+
+  const observerSuggestion = useMemo(() => {
+    if (!state.agents.observer) return null;
+    const candidates = [
+      pastWinddown && { key: "winddown", tool: "sleep", text: "Nedvarvningstid — dags att förbereda sömnen?", cta: "Öppna sömnankaret" },
+      state.capacity === "recovery" && { key: "recovery-ground", tool: "ground", text: "Återhämtningsläge — en kort andningspaus?", cta: "Öppna andningsankaret" },
+      overBudget && { key: "overbudget-move", tool: "move", text: "Energin är över budget — en rörelsepaus kan hjälpa.", cta: "Öppna rörelsepausen" },
+      (!checkedInToday && hmToMin(nowHM()) >= hmToMin("14:00")) && { key: "checkin-1400", tool: "checkin", text: "Ingen tankekoll idag än — hur går dagen?", cta: "Öppna tankekoll" },
+    ].filter(Boolean);
+    return candidates.find((c) => !dismissedToday(c.key)) || null;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.agents.observer, pastWinddown, state.capacity, overBudget, checkedInToday, state.observerDismissed]);
+
+  const dismissObserverSuggestion = (key) =>
+    setState((st) => ({
+      ...st,
+      observerDismissed: {
+        day: todayKey(),
+        keys: [...(st.observerDismissed.day === todayKey() ? st.observerDismissed.keys : []), key],
+      },
+    }));
 
   const scheduled = useMemo(() => {
     const nowM = hmToMin(nowHM());
@@ -682,6 +712,27 @@ function VarvApp({ username, onLogout }) {
 
         {view === "today" && (
           <>
+        {/* ============ observatören: kontextuellt verktygsförslag ============ */}
+        {observerSuggestion && (
+          <div style={s.nudge}>
+            {observerSuggestion.text}
+            <span style={{ display: "flex", gap: 10, marginTop: 6 }}>
+              <button
+                style={s.linkBtn}
+                onClick={() => { setView("tools"); setTool(observerSuggestion.tool); }}
+              >
+                {observerSuggestion.cta}
+              </button>
+              <button
+                style={{ ...s.linkBtn, color: T.soft }}
+                onClick={() => dismissObserverSuggestion(observerSuggestion.key)}
+              >
+                ej nu
+              </button>
+            </span>
+          </div>
+        )}
+
         {/* ============ hero: state of the day ============ */}
         <section style={s.hero}>
           <div style={{ display: "grid", placeItems: "center" }}>
@@ -1125,7 +1176,7 @@ function VarvApp({ username, onLogout }) {
             <ToolBtn active={tool === "week"} onClick={() => setTool(tool === "week" ? null : "week")} label="Veckoöversikt" sub="energimönster" />
             <ToolBtn active={tool === "edu"} onClick={() => setTool(tool === "edu" ? null : "edu")} label="Varför det funkar" sub="evidensen" />
             <ToolBtn active={tool === "connect"} onClick={() => setTool(tool === "connect" ? null : "connect")} label="Kopplingar" sub="Google · Notion · Oura" />
-            <ToolBtn active={tool === "agents"} onClick={() => setTool(tool === "agents" ? null : "agents")} label="Agenter" sub={`${Object.values(state.agents).filter(Boolean).length}/4 aktiva`} />
+            <ToolBtn active={tool === "agents"} onClick={() => setTool(tool === "agents" ? null : "agents")} label="Agenter" sub={`${Object.values(state.agents).filter(Boolean).length}/5 aktiva`} />
           </div>
 
           {tool === "agents" && (
@@ -1135,6 +1186,7 @@ function VarvApp({ username, onLogout }) {
                 ["refine", "Förfinaren", "Städar råa idéer i bakgrunden till titel + anteckning. Plockar upp misslyckade, max 3 försök."],
                 ["sync", "Synkaren", "Hämtar kalender, mejl och Oura var 3:e timme och arkiverar gårdagen till Notion."],
                 ["breakdown", "Nedbrytaren", "Förbereder första steg för A-prioriterade och tunga uppgifter innan du fastnar. Max 3 per dag."],
+                ["observer", "Observatören", "Håller koll på energi, tid och läge — föreslår rätt verktyg från verktygslådan som en avfärdbar banner, öppnar aldrig något åt dig."],
               ].map(([key, name, desc]) => (
                 <div key={key} style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "10px 0", borderBottom: `1px solid ${T.line}` }}>
                   <input
