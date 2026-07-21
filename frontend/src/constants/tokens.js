@@ -2,19 +2,22 @@
  * Design tokens and constants
  */
 
+// Färgvärden lever som CSS-variabler i index.html (ljust/mörkt/system) — de här
+// är bara namn som pekar dit, så useTheme() kan byta färgschema utan att röra
+// någon av de hundratals inline style-referenserna till T.* i resten av appen.
 export const T = {
-  paper: "#F2F1EC",
-  card: "#FAF9F5",
-  ink: "#33393B",
-  soft: "#6C7370",
-  spruce: "#46564F",
-  petrol: "#4C6E75",
-  petrolDark: "#3D5960",
-  moss: "#8A977F",
-  track: "#DFDED6",
-  line: "#E4E2DA",
-  warn: "#A66A4F",
-  rest: "#EFEDE4",
+  paper: "var(--paper)",
+  card: "var(--card)",
+  ink: "var(--ink)",
+  soft: "var(--soft)",
+  spruce: "var(--spruce)",
+  petrol: "var(--petrol)",
+  petrolDark: "var(--petrol-dark)",
+  moss: "var(--moss)",
+  track: "var(--track)",
+  line: "var(--line)",
+  warn: "var(--warn)",
+  rest: "var(--rest)",
 };
 
 export const MODES = {

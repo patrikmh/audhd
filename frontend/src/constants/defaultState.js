@@ -20,6 +20,10 @@ export const DEFAULT_STATE = {
     autoSync: true,
     voiceLang: "sv-SE",
     defaultCapacity: "steady",
+    theme: "system", // 'system' | 'light' | 'dark'
+    displayName: "",
+    avatarEmoji: "🌀",
+    defaultFocusMinutes: 25,
     visibleTools: {
       focus: true,
       movement: true,

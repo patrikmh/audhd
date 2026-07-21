@@ -13,6 +13,7 @@ import { uid, todayKey, todayWeekday, guessIcon, energyColor, nowHM, hmToMin } f
 import { getAuth, setAuth, clearAuth, login } from "./utils/auth";
 import { INTEGRATIONS } from "./constants/integrations";
 import { useModalDialog } from "./hooks/useModalDialog";
+import { useTheme } from "./hooks/useTheme";
 
 /* ============================================================
    VARV — an AuDHD day companion
@@ -135,6 +136,7 @@ function VarvApp({ username, onLogout }) {
   const storageKey = `varv-state:${username}`;
   const [state, setState] = useState(DEFAULT_STATE);
   const [loaded, setLoaded] = useState(false);
+  useTheme(state.settings?.theme);
   const [tool, setTool] = useState(null); // 'focus' | 'move' | 'checkin' | 'wins' | 'sleep'
   const [showAdd, setShowAdd] = useState(false);
   const [lapRunning, setLapRunning] = useState(false);
@@ -917,7 +919,7 @@ function VarvApp({ username, onLogout }) {
           <div style={s.wordmark}>Varv</div>
           <div style={s.tagline}>{view === "today" ? "ett varv i taget" : view === "ideas" ? "tänk högt" : view === "lists" ? "ut ur huvudet" : "verktygslådan"}</div>
           <button style={{ ...s.linkBtn, marginLeft: "auto", fontSize: 12, color: T.soft }} onClick={onLogout}>
-            {username} · logga ut
+            {state.settings.avatarEmoji || "🌀"} {state.settings.displayName || username} · logga ut
           </button>
         </header>
 
@@ -1635,7 +1637,7 @@ function VarvApp({ username, onLogout }) {
             key={focusPrefill ? focusPrefill.goal : "default"}
             taskTitle={nextTask?.title}
             initialGoal={focusPrefill?.goal}
-            initialMins={focusPrefill?.mins}
+            initialMins={focusPrefill?.mins || state.settings.defaultFocusMinutes}
             persisted={state.activeFocus}
             mini={lapRunning && !(view === "tools" && tool === "focus")}
             onExpand={() => { setView("tools"); setTool("focus"); }}

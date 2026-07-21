@@ -32,6 +32,14 @@ const CAPACITY_OPTIONS = [
   { key: "recovery", label: "Återhämtning", desc: "bara det nödvändiga" },
 ];
 
+const THEME_OPTIONS = [
+  { key: "system", label: "System" },
+  { key: "light", label: "Ljust" },
+  { key: "dark", label: "Mörkt" },
+];
+
+const AVATAR_CHOICES = ["🌀", "🌿", "🌊", "🔥", "⭐", "🦉", "🐈", "🌙"];
+
 export function SettingsView({ state, onPatch, onToggleExternalAi, onLogout, onClose }) {
   const s = state.settings || {};
   const [tab, setTab] = useState("dag");
@@ -183,34 +191,60 @@ export function SettingsView({ state, onPatch, onToggleExternalAi, onLogout, onC
         {/* Account row */}
         <div
           style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
             padding: "10px 12px",
             background: T.card,
             borderRadius: 10,
             marginBottom: 16,
           }}
         >
-          <div>
-            <div style={{ fontSize: 11, color: T.soft, textTransform: "uppercase", letterSpacing: "0.5px" }}>inloggad</div>
-            <div style={{ fontSize: 15, fontWeight: 600, color: T.ink }}>{state.username || "—"}</div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{ display: "flex", gap: 4 }}>
+                {AVATAR_CHOICES.map((emoji) => (
+                  <button
+                    key={emoji}
+                    onClick={() => patchSettings({ avatarEmoji: emoji })}
+                    aria-label={`Välj avatar ${emoji}`}
+                    aria-pressed={(s.avatarEmoji || "🌀") === emoji}
+                    style={{
+                      width: 32, height: 32, fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center",
+                      borderRadius: 8, cursor: "pointer", fontFamily: "inherit",
+                      border: (s.avatarEmoji || "🌀") === emoji ? `1.5px solid ${T.petrol}` : "1px solid transparent",
+                      background: (s.avatarEmoji || "🌀") === emoji ? T.paper : "transparent",
+                    }}
+                  >
+                    {emoji}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <button
+              onClick={onLogout}
+              style={{
+                background: "none",
+                border: `1px solid ${T.line}`,
+                borderRadius: 8,
+                padding: "6px 12px",
+                fontSize: 13,
+                color: T.warn,
+                cursor: "pointer",
+                fontFamily: "inherit",
+              }}
+            >
+              logga ut
+            </button>
           </div>
-          <button
-            onClick={onLogout}
-            style={{
-              background: "none",
-              border: `1px solid ${T.line}`,
-              borderRadius: 8,
-              padding: "6px 12px",
-              fontSize: 13,
-              color: T.warn,
-              cursor: "pointer",
-              fontFamily: "inherit",
-            }}
-          >
-            logga ut
-          </button>
+          <div style={{ marginTop: 10 }}>
+            <div style={{ fontSize: 11, color: T.soft, textTransform: "uppercase", letterSpacing: "0.5px" }}>inloggad som {state.username || "—"}</div>
+            <input
+              style={{ ...inputStyle, marginTop: 4 }}
+              value={s.displayName || ""}
+              onChange={(e) => patchSettings({ displayName: e.target.value })}
+              placeholder="visningsnamn (valfritt, används i hälsningar)"
+              aria-label="Visningsnamn"
+              maxLength={40}
+            />
+          </div>
         </div>
 
         {/* Tabs */}
@@ -239,7 +273,30 @@ export function SettingsView({ state, onPatch, onToggleExternalAi, onLogout, onC
         {/* Day tab */}
         {tab === "dag" && (
           <div>
-            <label style={labelStyle}>väckningstid</label>
+            <label style={labelStyle}>utseende</label>
+            <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
+              {THEME_OPTIONS.map((t) => (
+                <button
+                  key={t.key}
+                  onClick={() => patchSettings({ theme: t.key })}
+                  aria-pressed={(s.theme || "system") === t.key}
+                  style={{
+                    flex: 1,
+                    padding: "8px",
+                    borderRadius: 8,
+                    border: (s.theme || "system") === t.key ? `1.5px solid ${T.petrol}` : `1px solid ${T.line}`,
+                    background: (s.theme || "system") === t.key ? T.petrol : T.card,
+                    color: (s.theme || "system") === t.key ? "white" : T.ink,
+                    cursor: "pointer",
+                    fontFamily: "inherit",
+                  }}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+
+            <label style={{ ...labelStyle, marginTop: 18 }}>väckningstid</label>
             <input
               type="time"
               style={inputStyle}
@@ -306,6 +363,29 @@ export function SettingsView({ state, onPatch, onToggleExternalAi, onLogout, onC
                   }}
                 >
                   {l === "sv-SE" ? "Svenska" : "English"}
+                </button>
+              ))}
+            </div>
+
+            <label style={{ ...labelStyle, marginTop: 18 }}>standardlängd för fokusvarv</label>
+            <div style={{ display: "flex", gap: 8 }}>
+              {[10, 25, 45].map((m) => (
+                <button
+                  key={m}
+                  onClick={() => patchSettings({ defaultFocusMinutes: m })}
+                  aria-pressed={(s.defaultFocusMinutes || 25) === m}
+                  style={{
+                    flex: 1,
+                    padding: "8px",
+                    borderRadius: 8,
+                    border: (s.defaultFocusMinutes || 25) === m ? `1.5px solid ${T.petrol}` : `1px solid ${T.line}`,
+                    background: (s.defaultFocusMinutes || 25) === m ? T.petrol : T.card,
+                    color: (s.defaultFocusMinutes || 25) === m ? "white" : T.ink,
+                    cursor: "pointer",
+                    fontFamily: "inherit",
+                  }}
+                >
+                  {m} min
                 </button>
               ))}
             </div>

@@ -49,7 +49,7 @@ export function WorkingMemoryDisplay({ state, settings, onWinddownClick }) {
           margin: '0 0 4px 0',
           color: T.ink
         }}>
-          Hej! Idag är {todayWeekday() === 'mon' ? 'måndag' :
+          Hej{settings.displayName ? ` ${settings.displayName}` : ''}! Idag är {todayWeekday() === 'mon' ? 'måndag' :
                       todayWeekday() === 'tue' ? 'tisdag' :
                       todayWeekday() === 'wed' ? 'onsdag' :
                       todayWeekday() === 'thu' ? 'torsdag' :
