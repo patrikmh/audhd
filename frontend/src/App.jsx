@@ -190,13 +190,13 @@ function VarvApp({ username, onLogout }) {
             .filter((t) => t.title && t.id) // drop corrupted tasks (stale-closure bug created titleless entries)
             .map((t) =>
               (!t.day && !t.scheduled_date && !(t.repeatDays || []).length)
-                ? { ...t, day: (t.createdAt || new Date().toISOString()).slice(0, 10) }
+                ? { ...t, day: t.createdAt ? todayKey(new Date(t.createdAt)) : todayKey() }
                 : t
             );
           if (s.day !== todayKey()) {
             s.day = todayKey();
-            const cutoff = new Date(Date.now() - 14 * 86400000).toISOString().slice(0, 10);
-            const medCutoff = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
+            const cutoff = todayKey(new Date(Date.now() - 14 * 86400000));
+            const medCutoff = todayKey(new Date(Date.now() - 30 * 86400000));
             s.energyLog = (s.energyLog || []).filter((e) => e.day >= cutoff);
             s.meds = (s.meds || []).filter((m) => m.day >= medCutoff);
             s.tagLog = (s.tagLog || []).filter((t) => t.day >= medCutoff);
@@ -258,7 +258,7 @@ function VarvApp({ username, onLogout }) {
   const recharged = todayLog.filter((e) => e.delta < 0).reduce((a, e) => a - e.delta, 0);
   const remaining = Math.max(0, Math.min(mode.budget, mode.budget - spent + recharged));
   const overBudget = spent - recharged > mode.budget;
-  const winsToday = state.wins.filter((w) => new Date(w.ts).toDateString() === new Date().toDateString());
+  const winsToday = state.wins.filter((w) => todayKey(new Date(w.ts)) === todayKey());
   const vt = state.settings.visibleTools || {}; // vilka verktyg som visas i verktygsvyn
 
   // Selected date for viewing tasks (default: today)
@@ -291,7 +291,7 @@ function VarvApp({ username, onLogout }) {
   }, [state.tasks, state.capacity, selectedDate, isToday]);
 
   const doneToday = useMemo(
-    () => state.tasks.filter((t) => t.done && t.doneAt && new Date(t.doneAt).toDateString() === new Date().toDateString()),
+    () => state.tasks.filter((t) => t.done && t.doneAt && todayKey(new Date(t.doneAt)) === todayKey()),
     [state.tasks]
   );
 
@@ -304,7 +304,7 @@ function VarvApp({ username, onLogout }) {
   const dismissedToday = (key) =>
     state.observerDismissed.day === todayKey() && (state.observerDismissed.keys || []).includes(key);
 
-  const checkedInToday = state.checkins.some((c) => new Date(c.ts).toDateString() === new Date().toDateString());
+  const checkedInToday = state.checkins.some((c) => todayKey(new Date(c.ts)) === todayKey());
 
   const observerSuggestion = useMemo(() => {
     if (!state.agents.observer) return null;
@@ -1153,13 +1153,12 @@ function VarvApp({ username, onLogout }) {
             >‹</button>
             <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4, flex: 1 }}>
               {[-2, -1, 0, 1, 2, 3].map((offset) => {
-                const d = new Date();
-                d.setDate(d.getDate() + offset + weekOffset * 7);
-                const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                const d = new Date(Date.now() + (offset + weekOffset * 7) * 86400000);
+                const dateStr = todayKey(d);
                 const isSelected = dateStr === selectedDate;
                 const isTodayDate = dateStr === todayKey();
-                const dayName = d.toLocaleDateString('sv-SE', { weekday: 'short' });
-                const dayNum = d.getDate();
+                const dayName = d.toLocaleDateString('sv-SE', { weekday: 'short', timeZone: 'Europe/Stockholm' });
+                const dayNum = Number(dateStr.slice(-2));
                 return (
                   <button
                     key={dateStr}
@@ -2707,7 +2706,7 @@ function WinsList({ wins, calibration = [] }) {
       ) : (
         wins.slice(0, 12).map((w) => {
           const d = new Date(w.ts);
-          const isToday = d.toDateString() === new Date().toDateString();
+          const isToday = todayKey(d) === todayKey();
           return (
             <div key={w.id} style={{ padding: "7px 0", borderBottom: `1px solid ${T.line}`, fontSize: 14 }}>
               {w.text}
@@ -2787,20 +2786,20 @@ function BreathingSpace({ onDone }) {
 /* ============================================================ */
 function WeekReview({ energyLog, wins, tagLog = [] }) {
   const s = styles;
-  const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
+  const weekAgo = todayKey(new Date(Date.now() - 7 * 86400000));
   const tagCounts = {};
   tagLog.filter((t) => t.day >= weekAgo).forEach((t) => { tagCounts[t.tag] = (tagCounts[t.tag] || 0) + 1; });
   const topTags = Object.entries(tagCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
   const days = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(Date.now() - (6 - i) * 86400000);
-    const key = d.toISOString().slice(0, 10);
+    const key = todayKey(d);
     const log = energyLog.filter((e) => e.day === key);
     return {
       key,
-      label: d.toLocaleDateString("sv-SE", { weekday: "short" }),
+      label: d.toLocaleDateString("sv-SE", { weekday: "short", timeZone: "Europe/Stockholm" }),
       spent: log.filter((e) => e.delta > 0).reduce((a, e) => a + e.delta, 0),
       rech: log.filter((e) => e.delta < 0).reduce((a, e) => a - e.delta, 0),
-      wins: wins.filter((w) => new Date(w.ts).toISOString().slice(0, 10) === key).length,
+      wins: wins.filter((w) => todayKey(new Date(w.ts)) === key).length,
     };
   });
   const max = Math.max(4, ...days.map((d) => d.spent + d.rech));

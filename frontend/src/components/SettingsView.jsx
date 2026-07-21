@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { T } from "../constants/tokens";
+import { todayKey } from "../utils/helpers";
 
 /**
  * SettingsView — full settings/preferences panel.
@@ -368,7 +369,7 @@ export function SettingsView({ state, onPatch, onToggleExternalAi, onLogout, onC
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement("a");
                 a.href = url;
-                a.download = `varv-${new Date().toISOString().slice(0, 10)}.json`;
+                a.download = `varv-${todayKey()}.json`;
                 a.click();
                 URL.revokeObjectURL(url);
               }}

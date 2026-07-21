@@ -17,11 +17,7 @@ export default function DailyCheckin({ state, onSetEnergy, onDismiss, onAddTask 
   const s = styles;
 
   const today = todayKey();
-  const yesterday = (() => {
-    const d = new Date();
-    d.setDate(d.getDate() - 1);
-    return d.toISOString().split("T")[0];
-  })();
+  const yesterday = todayKey(new Date(Date.now() - 86400000));
 
   const yesterdayTasks = state.tasks.filter(
     (t) => (t.day === yesterday || t.scheduled_date === yesterday) && t.done
@@ -33,10 +29,7 @@ export default function DailyCheckin({ state, onSetEnergy, onDismiss, onAddTask 
     if (!t.scheduled_date && !t.day && t.repeatDays?.includes(todayWeekday())) return true;
     return false;
   });
-  const yesterdayWins = state.wins.filter((w) => {
-    const d = w.ts ? new Date(w.ts).toISOString().split("T")[0] : null;
-    return d === yesterday;
-  });
+  const yesterdayWins = state.wins.filter((w) => (w.ts ? todayKey(new Date(w.ts)) : null) === yesterday);
   const budget = MODES[energy]?.budget || 20;
 
   const handleCapture = () => {
