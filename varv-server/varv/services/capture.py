@@ -117,14 +117,18 @@ def _route(session: Session, user_id: str, cls: ClassifiedCapture, raw: str) -> 
     return CaptureType.idea, idea.id
 
 
-async def process_capture(session: Session, user_id: str, payload: CaptureIn) -> CaptureOut:
-    # Garanti 1: spara rått först.
+async def process_capture(session: Session, user_id: str, payload: CaptureIn, ai_enabled: bool = True) -> CaptureOut:
+    # Garanti 1: spara rått först — och committa direkt, innan agenten ens tillfrågas,
+    # så en LLM-krasch aldrig kan förlora eller rulla tillbaka den ursprungliga tanken.
     capture = Capture(user_id=user_id, raw=payload.raw, source=payload.source)
     session.add(capture)
-    session.flush()
+    session.commit()
+    session.refresh(capture)
 
     if payload.override:
         cls = ClassifiedCapture(type=payload.override, title=payload.raw[:120], tags=[])
+    elif not ai_enabled:
+        cls = ClassifiedCapture(type=CaptureType.idea, title="", tags=[])
     else:
         try:
             deps = SortDeps(known_tags=known_tag_vocabulary(session, user_id))
@@ -138,7 +142,7 @@ async def process_capture(session: Session, user_id: str, payload: CaptureIn) ->
     capture.routed_type, capture.routed_id = routed_type, routed_id
     link_tags(session, user_id, cls.tags, "capture", capture.id)
 
-    if not payload.override:
+    if not payload.override and ai_enabled:
         agent_note(
             session, user_id, "sorteraren",
             f"→ {routed_type.value}: \"{(cls.title or payload.raw)[:60]}\" {cls.tags}",

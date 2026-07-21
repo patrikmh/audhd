@@ -28,6 +28,11 @@ auth_router = APIRouter()
 router = APIRouter()
 
 
+def _require_ai_consent(user: User) -> None:
+    if not user.external_ai_enabled:
+        raise HTTPException(status_code=403, detail="Externa AI-agenter är avstängda för det här kontot")
+
+
 @auth_router.post("/auth/login", response_model=LoginOut)
 def login(payload: LoginIn, session: Session = Depends(get_session)) -> LoginOut:
     user = session.exec(select(User).where(User.username == payload.username)).first()
@@ -54,13 +59,14 @@ async def _transcribe_upload(file: UploadFile, language: str | None) -> Transcri
 async def capture(
     payload: CaptureIn, user: User = Depends(current_user), session: Session = Depends(get_session)
 ) -> CaptureOut:
-    return await process_capture(session, user.id, payload)
+    return await process_capture(session, user.id, payload, ai_enabled=user.external_ai_enabled)
 
 
 @router.post("/transcribe", response_model=TranscriptOut)
 async def transcribe(
     file: UploadFile = File(...), language: str | None = Form(None), user: User = Depends(current_user)
 ) -> TranscriptOut:
+    _require_ai_consent(user)
     return await _transcribe_upload(file, language)
 
 
@@ -72,10 +78,13 @@ async def capture_voice(
     session: Session = Depends(get_session),
 ) -> CaptureOut:
     """Röst hela vägen: KB-Whisper → Sorteraren → rätt tabell. Ett anrop från appen."""
+    _require_ai_consent(user)
     transcript = await _transcribe_upload(file, language)
     if not transcript.text:
         raise HTTPException(status_code=422, detail="Tomt transkript")
-    return await process_capture(session, user.id, CaptureIn(raw=transcript.text, source="voice"))
+    return await process_capture(
+        session, user.id, CaptureIn(raw=transcript.text, source="voice"), ai_enabled=True
+    )
 
 
 # ---------- agent-proxy ----------
@@ -87,6 +96,7 @@ async def capture_voice(
 async def agents_classify(
     payload: ClassifyIn, user: User = Depends(current_user), session: Session = Depends(get_session)
 ) -> ClassifiedCapture:
+    _require_ai_consent(user)
     deps = SortDeps(known_tags=known_tag_vocabulary(session, user.id))
     result = await sorteraren.run(payload.raw, deps=deps)
     return result.output
@@ -94,18 +104,21 @@ async def agents_classify(
 
 @router.post("/agents/refine", response_model=RefinedIdea)
 async def agents_refine(payload: RefineIn, user: User = Depends(current_user)) -> RefinedIdea:
+    _require_ai_consent(user)
     result = await forfinaren.run(payload.raw)
     return result.output
 
 
 @router.post("/agents/breakdown", response_model=Breakdown)
 async def agents_breakdown(payload: BreakdownIn, user: User = Depends(current_user)) -> Breakdown:
+    _require_ai_consent(user)
     result = await nedbrytaren.run(payload.title)
     return result.output
 
 
 @router.post("/agents/tags", response_model=list[str])
 async def agents_tags(payload: TagIn, user: User = Depends(current_user), session: Session = Depends(get_session)) -> list[str]:
+    _require_ai_consent(user)
     text = payload.title + (f"\n{payload.note}" if payload.note else "")
     deps = SortDeps(known_tags=known_tag_vocabulary(session, user.id))
     result = await tagaren.run(text, deps=deps)
@@ -284,6 +297,7 @@ def get_me(user: User = Depends(current_user)):
         "capacity": user.capacity,
         "setup_done": user.setup_done,
         "last_checkin_date": user.last_checkin_date,
+        "external_ai_enabled": user.external_ai_enabled,
     }
 
 
@@ -293,6 +307,8 @@ def patch_me(payload: dict, user: User = Depends(current_user), session: Session
         user.setup_done = bool(payload["setup_done"])
     if "last_checkin_date" in payload:
         user.last_checkin_date = payload["last_checkin_date"]
+    if "external_ai_enabled" in payload:
+        user.external_ai_enabled = bool(payload["external_ai_enabled"])
     if "capacity" in payload and payload["capacity"] in ("steady", "low", "recovery"):
         stats.set_capacity(session, user.id, payload["capacity"], "user")
     session.add(user)
@@ -303,6 +319,7 @@ def patch_me(payload: dict, user: User = Depends(current_user), session: Session
         "capacity": user.capacity,
         "setup_done": user.setup_done,
         "last_checkin_date": user.last_checkin_date,
+        "external_ai_enabled": user.external_ai_enabled,
     }
 
 
@@ -323,8 +340,9 @@ def week_stats(user: User = Depends(current_user), session: Session = Depends(ge
 
 @router.get("/topics")
 def topics(user: User = Depends(current_user), session: Session = Depends(get_session)):
-    # BERTopic-teman klustras över alla användares fångster ihop (delad, systemomfattande analys).
-    return session.exec(select(Topic).order_by(Topic.size.desc())).all()
+    return session.exec(
+        select(Topic).where(Topic.user_id == user.id).order_by(Topic.size.desc())
+    ).all()
 
 
 @router.get("/agents/log")

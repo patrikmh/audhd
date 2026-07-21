@@ -43,12 +43,14 @@ def _hold_lease() -> bool:
 async def refine_sweep() -> None:
     s = get_settings()
     with session_scope() as session:
+        consenting_user_ids = select(User.id).where(User.external_ai_enabled == True)  # noqa: E712
         pending = session.exec(
             select(Idea)
             .where(
                 Idea.status.in_([IdeaStatus.raw, IdeaStatus.fail]),
                 Idea.attempts < s.refine_max_attempts,
                 Idea.deleted_at.is_(None),
+                Idea.user_id.in_(consenting_user_ids),
             )
             .limit(s.refine_batch)
         ).all()
@@ -75,7 +77,7 @@ async def breakdown_sweep() -> None:
     today = date.today().isoformat()
     with session_scope() as session:
         # Budget och kandidat väljs per användare — separata dataset, separata budgetar.
-        for user in session.exec(select(User)).all():
+        for user in session.exec(select(User).where(User.external_ai_enabled == True)).all():  # noqa: E712
             used = session.exec(
                 select(func.count()).select_from(AgentLog)
                 .where(AgentLog.user_id == user.id, AgentLog.agent == "nedbrytaren", AgentLog.day == today)
@@ -132,8 +134,17 @@ async def topics_job() -> None:
         return
     loop = asyncio.get_running_loop()
     with session_scope() as session:
-        result = await loop.run_in_executor(None, run_topics, session)  # CPU-tungt → blockera inte API:et
-        log.info("BERTopic: %s", result)
+        for user in session.exec(select(User).where(User.external_ai_enabled == True)).all():  # noqa: E712
+            # CPU-tungt → blockera inte API:et
+            result = await loop.run_in_executor(None, run_topics, session, user.id)
+            log.info("BERTopic user=%s: %s", user.id, result)
+        kv = session.get(KV, "topics_last_run")
+        stamp = date.today().isoformat()
+        if kv:
+            kv.value = stamp
+        else:
+            session.add(KV(key="topics_last_run", value=stamp))
+        session.commit()
 
 
 async def agent_loop(stop: asyncio.Event) -> None:

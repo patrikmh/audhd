@@ -14,7 +14,7 @@ import json
 import uuid
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from sqlmodel import Session
@@ -80,6 +80,11 @@ def _get_a2ui():
 
 def _emit(encoder: EventEncoder, event) -> str:
     return encoder.encode(event)
+
+
+def _require_ai_consent(user: User) -> None:
+    if not user.external_ai_enabled:
+        raise HTTPException(status_code=403, detail="Externa AI-agenter är avstängda för det här kontot")
 
 
 # ── AG-UI streaming generators ──────────────────────────────────────────────
@@ -224,6 +229,7 @@ async def ag_ui_run(
     session: Session = Depends(get_session),
 ):
     """Run an agent with AG-UI event streaming (SSE)."""
+    _require_ai_consent(user)
     accept = request.headers.get("accept", "text/event-stream")
     encoder = EventEncoder(accept=accept)
     thread_id = payload.thread_id or str(uuid.uuid4())
@@ -286,6 +292,7 @@ async def ag_ui_run_a2ui(
     Same as /ag-ui/run but agents also emit A2UI component trees
     via Custom events. The frontend renders these as native Varv widgets.
     """
+    _require_ai_consent(user)
     accept = request.headers.get("accept", "text/event-stream")
     encoder = EventEncoder(accept=accept)
     thread_id = payload.thread_id or str(uuid.uuid4())

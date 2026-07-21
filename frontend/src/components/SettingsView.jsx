@@ -30,7 +30,7 @@ const CAPACITY_OPTIONS = [
   { key: "recovery", label: "Återhämtning", desc: "bara det nödvändiga" },
 ];
 
-export function SettingsView({ state, onPatch, onLogout, onClose }) {
+export function SettingsView({ state, onPatch, onToggleExternalAi, onLogout, onClose }) {
   const s = state.settings || {};
   const [tab, setTab] = useState("dag");
 
@@ -325,22 +325,34 @@ export function SettingsView({ state, onPatch, onLogout, onClose }) {
         {tab === "agenter" && (
           <div>
             <p style={{ fontSize: 13, color: T.soft, marginTop: 0 }}>
-              Bakgrundsagenter som hjälper dig automatiskt. Stäng av dem om du vill ha mer kontroll.
+              Externa AI-agenter är avstängda som standard. Slå på dem här för att låta Varv
+              skicka dina tankar och uppgifter till en språkmodell för sortering, städning och nedbrytning.
             </p>
-            {[
-              ["classify", "Sorteraren", "sorterar infångade tankar"],
-              ["refine", "Förfinaren", "städar råa idéer"],
-              ["breakdown", "Nedbrytaren", "bryter ner tunga uppgifter"],
-              ["sync", "Synkaren", "hämtar kalender/mejl/Oura"],
-              ["observer", "Observatören", "foreslår verktyg under dagen"],
-            ].map(([key, label, desc]) =>
-              toggle(
-                state.agents?.[key] !== false,
-                label,
-                desc,
-                () => patchAgents(key)
-              )
+            {toggle(
+              !!state.externalAiEnabled,
+              "Externa AI-agenter",
+              "krävs för sortering, förfining, nedbrytning, röst och AG-UI",
+              onToggleExternalAi
             )}
+            <p style={{ fontSize: 12, color: T.soft, marginTop: 18, marginBottom: 4 }}>
+              Vilka agenter som körs när det är påslaget:
+            </p>
+            <div style={{ opacity: state.externalAiEnabled ? 1 : 0.4, pointerEvents: state.externalAiEnabled ? "auto" : "none" }}>
+              {[
+                ["classify", "Sorteraren", "sorterar infångade tankar"],
+                ["refine", "Förfinaren", "städar råa idéer"],
+                ["breakdown", "Nedbrytaren", "bryter ner tunga uppgifter"],
+                ["sync", "Synkaren", "hämtar kalender/mejl/Oura"],
+                ["observer", "Observatören", "foreslår verktyg under dagen"],
+              ].map(([key, label, desc]) =>
+                toggle(
+                  state.agents?.[key] !== false,
+                  label,
+                  desc,
+                  () => patchAgents(key)
+                )
+              )}
+            </div>
           </div>
         )}
 

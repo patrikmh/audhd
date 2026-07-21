@@ -55,6 +55,7 @@ export const DEFAULT_STATE = {
   day: todayKey(),
   setupDone: false,
   lastCheckinDate: null,
+  externalAiEnabled: false,
 };
 
 export const DEFAULT_TASK = {

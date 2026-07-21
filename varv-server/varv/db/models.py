@@ -62,6 +62,7 @@ class User(SQLModel, table=True):
     capacity_set_by: str | None = None                 # "user" | "auto" — user vinner alltid samma dag
     setup_done: bool = False                           # wizard genomförd
     last_checkin_date: str | None = None               # senaste morgoncheckin (YYYY-MM-DD)
+    external_ai_enabled: bool = False                   # samtycke krävs innan LLM-agenter körs för kontot
     created_at: datetime = Field(default_factory=utcnow)
 
 
@@ -212,9 +213,10 @@ class AgentLog(SQLModel, table=True):
 
 class Topic(SQLModel, table=True):
     """BERTopic-kluster med persistent identitet: centroid sparas och matchas natt mot natt,
-    så topic_id är stabilt över tid ⇒ trender blir möjliga. Delad över alla användare med flit
-    — en systemomfattande analys, inte personlig data."""
+    så topic_id är stabilt över tid ⇒ trender blir möjliga. Per användare — klustring och trender
+    är personlig data, inte en systemomfattande analys."""
     id: str = Field(default_factory=uuid7, primary_key=True)
+    user_id: str = Field(foreign_key="user.id", ondelete="CASCADE", index=True)
     label: str
     size: int = 0
     centroid: str | None = None               # JSON-lista: normaliserad embeddingcentroid

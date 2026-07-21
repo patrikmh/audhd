@@ -20,14 +20,6 @@ def upgrade() -> None:
     sa.Column('value', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.PrimaryKeyConstraint('key')
     )
-    op.create_table('topic',
-    sa.Column('id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-    sa.Column('label', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-    sa.Column('size', sa.Integer(), nullable=False),
-    sa.Column('centroid', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
-    sa.Column('updated_at', sa.DateTime(), nullable=False),
-    sa.PrimaryKeyConstraint('id')
-    )
     op.create_table('user',
     sa.Column('id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('username', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
@@ -38,6 +30,7 @@ def upgrade() -> None:
     sa.Column('capacity_set_by', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
     sa.Column('setup_done', sa.Boolean(), nullable=False),
     sa.Column('last_checkin_date', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+    sa.Column('external_ai_enabled', sa.Boolean(), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
@@ -56,22 +49,6 @@ def upgrade() -> None:
     op.create_index(op.f('ix_agentlog_agent'), 'agentlog', ['agent'], unique=False)
     op.create_index(op.f('ix_agentlog_day'), 'agentlog', ['day'], unique=False)
     op.create_index(op.f('ix_agentlog_user_id'), 'agentlog', ['user_id'], unique=False)
-    op.create_table('capture',
-    sa.Column('id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-    sa.Column('user_id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-    sa.Column('raw', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-    sa.Column('source', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-    sa.Column('routed_type', sa.Enum('task', 'idea', 'shopping', name='capturetype'), nullable=True),
-    sa.Column('routed_id', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
-    sa.Column('topic_id', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
-    sa.Column('created_at', sa.DateTime(), nullable=False),
-    sa.Column('day', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-    sa.ForeignKeyConstraint(['topic_id'], ['topic.id'], ),
-    sa.ForeignKeyConstraint(['user_id'], ['user.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id')
-    )
-    op.create_index(op.f('ix_capture_day'), 'capture', ['day'], unique=False)
-    op.create_index(op.f('ix_capture_user_id'), 'capture', ['user_id'], unique=False)
     op.create_table('energyevent',
     sa.Column('id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('user_id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
@@ -181,6 +158,17 @@ def upgrade() -> None:
     op.create_index(op.f('ix_task_sync_version'), 'task', ['sync_version'], unique=False)
     op.create_index(op.f('ix_task_updated_at'), 'task', ['updated_at'], unique=False)
     op.create_index(op.f('ix_task_user_id'), 'task', ['user_id'], unique=False)
+    op.create_table('topic',
+    sa.Column('id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.Column('user_id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.Column('label', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.Column('size', sa.Integer(), nullable=False),
+    sa.Column('centroid', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+    sa.Column('updated_at', sa.DateTime(), nullable=False),
+    sa.ForeignKeyConstraint(['user_id'], ['user.id'], ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index(op.f('ix_topic_user_id'), 'topic', ['user_id'], unique=False)
     op.create_table('win',
     sa.Column('id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('user_id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
@@ -194,6 +182,22 @@ def upgrade() -> None:
     op.create_index(op.f('ix_win_day'), 'win', ['day'], unique=False)
     op.create_index(op.f('ix_win_sync_version'), 'win', ['sync_version'], unique=False)
     op.create_index(op.f('ix_win_user_id'), 'win', ['user_id'], unique=False)
+    op.create_table('capture',
+    sa.Column('id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.Column('user_id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.Column('raw', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.Column('source', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.Column('routed_type', sa.Enum('task', 'idea', 'shopping', name='capturetype'), nullable=True),
+    sa.Column('routed_id', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+    sa.Column('topic_id', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+    sa.Column('created_at', sa.DateTime(), nullable=False),
+    sa.Column('day', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.ForeignKeyConstraint(['topic_id'], ['topic.id'], ),
+    sa.ForeignKeyConstraint(['user_id'], ['user.id'], ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index(op.f('ix_capture_day'), 'capture', ['day'], unique=False)
+    op.create_index(op.f('ix_capture_user_id'), 'capture', ['user_id'], unique=False)
     op.create_table('listitem',
     sa.Column('id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('user_id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
@@ -269,10 +273,15 @@ def downgrade() -> None:
     op.drop_index(op.f('ix_listitem_sync_version'), table_name='listitem')
     op.drop_index(op.f('ix_listitem_list_id'), table_name='listitem')
     op.drop_table('listitem')
+    op.drop_index(op.f('ix_capture_user_id'), table_name='capture')
+    op.drop_index(op.f('ix_capture_day'), table_name='capture')
+    op.drop_table('capture')
     op.drop_index(op.f('ix_win_user_id'), table_name='win')
     op.drop_index(op.f('ix_win_sync_version'), table_name='win')
     op.drop_index(op.f('ix_win_day'), table_name='win')
     op.drop_table('win')
+    op.drop_index(op.f('ix_topic_user_id'), table_name='topic')
+    op.drop_table('topic')
     op.drop_index(op.f('ix_task_user_id'), table_name='task')
     op.drop_index(op.f('ix_task_updated_at'), table_name='task')
     op.drop_index(op.f('ix_task_sync_version'), table_name='task')
@@ -300,9 +309,6 @@ def downgrade() -> None:
     op.drop_index(op.f('ix_energyevent_sync_version'), table_name='energyevent')
     op.drop_index(op.f('ix_energyevent_day'), table_name='energyevent')
     op.drop_table('energyevent')
-    op.drop_index(op.f('ix_capture_user_id'), table_name='capture')
-    op.drop_index(op.f('ix_capture_day'), table_name='capture')
-    op.drop_table('capture')
     op.drop_index(op.f('ix_agentlog_user_id'), table_name='agentlog')
     op.drop_index(op.f('ix_agentlog_day'), table_name='agentlog')
     op.drop_index(op.f('ix_agentlog_agent'), table_name='agentlog')
@@ -310,6 +316,5 @@ def downgrade() -> None:
     op.drop_index(op.f('ix_user_username'), table_name='user')
     op.drop_index(op.f('ix_user_token'), table_name='user')
     op.drop_table('user')
-    op.drop_table('topic')
     op.drop_table('kv')
     # ### end Alembic commands ###

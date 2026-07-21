@@ -7,12 +7,11 @@ teman lämnas kvar som historik; nya kluster får nya rader.
 """
 import json
 import logging
-from datetime import datetime
 
 from sqlmodel import Session, select
 
 from varv.config import get_settings
-from varv.db.models import AgentLog, Capture, KV, Topic, utcnow
+from varv.db.models import AgentLog, Capture, Topic, utcnow
 
 log = logging.getLogger(__name__)
 
@@ -26,9 +25,15 @@ def _cosine(a: list[float], b: list[float]) -> float:
     return num / (da * db) if da and db else 0.0
 
 
-def run_topics(session: Session) -> str:
+def run_topics(session: Session, user_id: str) -> str:
+    """Klustrar en enda användares fångster — teman är personlig data, inte delad över konton."""
     s = get_settings()
-    captures = session.exec(select(Capture).order_by(Capture.created_at.desc()).limit(500)).all()
+    captures = session.exec(
+        select(Capture)
+        .where(Capture.user_id == user_id)
+        .order_by(Capture.created_at.desc())
+        .limit(500)
+    ).all()
     docs = [c.raw for c in captures]
     if len(docs) < s.topics_min_docs:
         return f"skip: {len(docs)} fångster < {s.topics_min_docs}"
@@ -44,7 +49,9 @@ def run_topics(session: Session) -> str:
     model = BERTopic(embedding_model=embedder, min_topic_size=3, verbose=False)
     assignments, _ = model.fit_transform(docs, embeddings)
 
-    existing = session.exec(select(Topic).where(Topic.centroid.is_not(None))).all()
+    existing = session.exec(
+        select(Topic).where(Topic.user_id == user_id, Topic.centroid.is_not(None))
+    ).all()
     existing_centroids = [(t, json.loads(t.centroid)) for t in existing]
 
     id_map: dict[int, str] = {}
@@ -71,7 +78,7 @@ def run_topics(session: Session) -> str:
             existing_centroids = [(t, c) for t, c in existing_centroids if t.id != best.id]  # en match per tema
             matched += 1
         else:
-            topic = Topic(label=label, size=size, centroid=json.dumps(centroid))
+            topic = Topic(user_id=user_id, label=label, size=size, centroid=json.dumps(centroid))
             session.add(topic)
             session.flush()
             id_map[cluster_id] = topic.id
@@ -80,12 +87,9 @@ def run_topics(session: Session) -> str:
     for capture, assignment in zip(captures, assignments):
         capture.topic_id = id_map.get(assignment)
 
-    kv = session.get(KV, "topics_last_run")
-    stamp = datetime.now().isoformat(timespec="minutes")
-    if kv:
-        kv.value = stamp
-    else:
-        session.add(KV(key="topics_last_run", value=stamp))
-    session.add(AgentLog(agent="topics", text=f"{len(docs)} fångster → {matched} bevarade + {created} nya teman"))
+    session.add(AgentLog(
+        user_id=user_id, agent="topics",
+        text=f"{len(docs)} fångster → {matched} bevarade + {created} nya teman",
+    ))
     session.commit()
     return f"ok: {matched} bevarade, {created} nya"

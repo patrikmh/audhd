@@ -233,6 +233,7 @@ function VarvApp({ username, onLogout }) {
           ...s,
           setupDone: me.setup_done || s.setupDone,
           lastCheckinDate: me.last_checkin_date || s.lastCheckinDate,
+          externalAiEnabled: !!me.external_ai_enabled,
         }));
       } catch (_) { /* offline or first run */ }
     })();
@@ -430,6 +431,14 @@ function VarvApp({ username, onLogout }) {
     setShowCheckin(true);
     // Persist to server
     apiPatch("/api/me", { setup_done: true, capacity }).catch(() => {});
+  };
+
+  const handleToggleExternalAi = () => {
+    const next = !state.externalAiEnabled;
+    setState((s) => ({ ...s, externalAiEnabled: next }));
+    apiPatch("/api/me", { external_ai_enabled: next }).catch(() => {
+      setState((s) => ({ ...s, externalAiEnabled: !next })); // rollback vid nätverksfel
+    });
   };
 
   /* --- Daily check-in --- */
@@ -1641,6 +1650,7 @@ function VarvApp({ username, onLogout }) {
         <SettingsView
           state={{ ...state, username }}
           onPatch={(patch) => setState((st) => ({ ...st, ...patch }))}
+          onToggleExternalAi={handleToggleExternalAi}
           onLogout={() => { setShowSettings(false); onLogout(); }}
           onClose={() => setShowSettings(false)}
         />
