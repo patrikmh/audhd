@@ -120,9 +120,8 @@ export function useSync(apiBase, getAuth, state, setState) {
         }
         itemsByList[item.list_id].push({
           id: item.id,
-          title: item.title,
+          text: item.text,
           done: item.done,
-          position: item.position,
           updatedAt: item.updated_at,
           deletedAt: item.deleted_at
         });
@@ -130,7 +129,7 @@ export function useSync(apiBase, getAuth, state, setState) {
 
       localState.lists = Object.entries(itemsByList).map(([listId, items]) => ({
         id: listId,
-        name: listId === 'shopping' ? 'Inköp' : listId,
+        name: listId === 'shopping' ? 'Inköp' : 'Lista',
         items
       }));
     }
@@ -184,9 +183,20 @@ export function useSync(apiBase, getAuth, state, setState) {
           .sort((a, b) => (b.ts || '').localeCompare(a.ts || ''));
       }
 
-      // Merge lists
+      // Merge lists — keep local names, only update items from server
       if (serverLocal.lists.length > 0) {
-        merged.lists = serverLocal.lists;
+        const localNames = new Map(prevState.lists.map((l) => [l.id, l.name]));
+        const serverIds = new Set(serverLocal.lists.map((l) => l.id));
+        const mergedLists = serverLocal.lists.map((sl) => ({
+          ...sl,
+          name: localNames.get(sl.id) || (sl.id === 'shopping' ? 'Inköp' : sl.name),
+          items: sl.items.filter((i) => !i.deletedAt),
+        }));
+        // Keep local-only lists that the server doesn't know about yet
+        for (const l of prevState.lists) {
+          if (!serverIds.has(l.id)) mergedLists.push(l);
+        }
+        merged.lists = mergedLists;
       }
 
       return merged;
