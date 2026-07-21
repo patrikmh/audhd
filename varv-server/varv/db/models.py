@@ -119,6 +119,24 @@ class TaskStep(SQLModel, table=True):
     sync_version: int = Field(default=0, index=True)
 
 
+class TaskOccurrence(SQLModel, table=True):
+    """One dated instance of a recurring Task template. The template (title, steps,
+    repeat_days) stays immutable history-wise — editing it changes future occurrences,
+    never past ones — because completion state and a steps snapshot live here instead
+    of being mutated in place on the template row, one per (task_id, date)."""
+    __table_args__ = (UniqueConstraint("task_id", "date", name="uq_task_occurrence_date"),)
+    id: str = Field(default_factory=uuid7, primary_key=True)
+    user_id: str = Field(foreign_key="user.id", ondelete="CASCADE", index=True)
+    task_id: str = Field(foreign_key="task.id", ondelete="CASCADE", index=True)
+    date: str = Field(index=True)              # YYYY-MM-DD — vilken dag detta varv gäller
+    done: bool = False
+    done_at: datetime | None = None
+    steps_snapshot: list[dict] = Field(default_factory=list, sa_column=Column(JSON, nullable=False))
+    updated_at: datetime = Field(default_factory=utcnow, index=True)
+    deleted_at: datetime | None = None
+    sync_version: int = Field(default=0, index=True)
+
+
 class Idea(SQLModel, table=True):
     id: str = Field(default_factory=uuid7, primary_key=True)
     user_id: str = Field(foreign_key="user.id", ondelete="CASCADE", index=True)
@@ -241,7 +259,7 @@ class SyncTombstone(SQLModel, table=True):
     sync_version: int = Field(default=0, index=True)
 
 
-SYNC_VERSIONED_TYPES = (Task, TaskStep, Idea, ShoppingList, ListItem, Win, EnergyEvent, SyncTombstone)
+SYNC_VERSIONED_TYPES = (Task, TaskStep, TaskOccurrence, Idea, ShoppingList, ListItem, Win, EnergyEvent, SyncTombstone)
 
 
 @event.listens_for(SQLAlchemySession, "before_flush")

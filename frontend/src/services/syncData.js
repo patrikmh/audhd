@@ -40,6 +40,16 @@ export function toWireStep(step, taskId, position) {
   });
 }
 
+export function toWireOccurrence(occurrence, taskId, date) {
+  return compact({
+    task_id: taskId,
+    date,
+    done: occurrence.done,
+    done_at: isoOrNull(occurrence.doneAt),
+    steps_snapshot: occurrence.stepsSnapshot || [],
+  });
+}
+
 export function toWireChanges(kind, id, op, data = {}) {
   if (op === 'delete') return [{ kind, id, op, data: {} }];
   if (kind === 'task') {
@@ -51,10 +61,17 @@ export function toWireChanges(kind, id, op, data = {}) {
         op: 'upsert',
         data: toWireStep(step, id, position),
       })),
+      ...Object.entries(data.occurrences || {}).map(([date, occurrence]) => ({
+        kind: 'task_occurrence',
+        id: occurrence.id,
+        op: 'upsert',
+        data: toWireOccurrence(occurrence, id, date),
+      })),
     ];
   }
   const adapters = {
     task_step: (step) => toWireStep(step, step.taskId || step.task_id, step.position || 0),
+    task_occurrence: (occurrence) => toWireOccurrence(occurrence, occurrence.taskId || occurrence.task_id, occurrence.date),
     idea: (idea) => compact({
       raw: idea.raw,
       title: idea.title ?? null,
@@ -131,6 +148,23 @@ export function mergeServerChanges(previous, changes) {
     const steps = upsertById(tasks[taskIndex].steps || [], incoming)
       .sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
     tasks[taskIndex] = { ...tasks[taskIndex], steps };
+  }
+  for (const row of changes.task_occurrence || []) {
+    const taskIndex = tasks.findIndex(task => task.id === row.task_id);
+    if (taskIndex < 0) continue;
+    const occurrences = { ...(tasks[taskIndex].occurrences || {}) };
+    if (row.deleted_at) {
+      delete occurrences[row.date];
+    } else {
+      occurrences[row.date] = {
+        id: row.id,
+        done: row.done,
+        doneAt: row.done_at,
+        stepsSnapshot: row.steps_snapshot || [],
+        updatedAt: row.updated_at,
+      };
+    }
+    tasks[taskIndex] = { ...tasks[taskIndex], occurrences };
   }
   next.tasks = tasks.sort((a, b) => {
     const priority = { A: 0, B: 1, C: 2 };

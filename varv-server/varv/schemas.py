@@ -159,6 +159,14 @@ class SyncTaskStepData(StrictSyncData):
     done: bool | None = None
 
 
+class SyncTaskOccurrenceData(StrictSyncData):
+    task_id: str | None = None
+    date: str | None = Field(default=None, pattern=r"^\d{4}-\d{2}-\d{2}$")
+    done: bool | None = None
+    done_at: datetime | None = None
+    steps_snapshot: list[dict] | None = Field(default=None, max_length=20)
+
+
 class SyncIdeaData(StrictSyncData):
     raw: str | None = Field(default=None, max_length=10_000)
     title: str | None = Field(default=None, max_length=200)
@@ -192,7 +200,7 @@ class SyncEnergyEventData(StrictSyncData):
     day: str | None = Field(default=None, pattern=r"^\d{4}-\d{2}-\d{2}$")
 
 class ChangeIn(BaseModel):
-    kind: Literal["task", "task_step", "idea", "shopping_list", "list_item", "win", "energy_event"]
+    kind: Literal["task", "task_step", "task_occurrence", "idea", "shopping_list", "list_item", "win", "energy_event"]
     id: str                                   # klientgenererad UUIDv7
     op: Literal["upsert", "delete"] = "upsert"
     updated_at: datetime = Field(description="Klientens tidsstämpel — LWW-jämförelse")

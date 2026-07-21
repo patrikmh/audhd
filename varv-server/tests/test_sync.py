@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 
 from sqlmodel import select
 
-from varv.db.models import ShoppingList, Task, TaskStep, User, Win
+from varv.db.models import ShoppingList, Task, TaskOccurrence, TaskStep, User, Win
 from varv.schemas import ChangeIn
 from varv.services.sync import apply_changes, pull_changes
 from varv.utils import hash_password, new_token, uuid7
@@ -239,6 +239,64 @@ def test_rich_recurring_task_and_steps_round_trip(session):
     assert task.tags == ["bubba", "medicin"]
     assert task.note == "Med mat"
     assert step.task_id == task_id
+
+
+def test_task_occurrence_completion_is_independent_per_date(session):
+    """Completing a recurring task on one date must not touch the template row or any
+    other date's occurrence — history is per (task_id, date), never rewritten in place."""
+    task_id = uuid7()
+    now = datetime(2026, 7, 21, 8, 0, tzinfo=timezone.utc)
+    apply_changes(session, session.user_id, [ChangeIn(
+        kind="task", id=task_id, updated_at=now,
+        data={"title": "Vattna blommorna", "repeat_days": ["mon", "wed", "fri"]},
+    )])
+
+    mon_id, wed_id = uuid7(), uuid7()
+    apply_changes(session, session.user_id, [
+        ChangeIn(kind="task_occurrence", id=mon_id, updated_at=now, data={
+            "task_id": task_id, "date": "2026-07-20", "done": True,
+            "done_at": now.isoformat(), "steps_snapshot": [{"title": "Häll vatten", "done": True}],
+        }),
+        ChangeIn(kind="task_occurrence", id=wed_id, updated_at=now, data={
+            "task_id": task_id, "date": "2026-07-22", "done": False,
+        }),
+    ])
+
+    task = session.get(Task, task_id)
+    assert task.done is False  # templatet självt bär aldrig completion-status
+
+    mon = session.get(TaskOccurrence, mon_id)
+    wed = session.get(TaskOccurrence, wed_id)
+    assert mon.done is True and mon.steps_snapshot == [{"title": "Häll vatten", "done": True}]
+    assert wed.done is False  # onsdagens instans opåverkad av måndagens completion
+
+    # Två enheter som var för sig skapar en ny occurrence-id för samma (task_id, date)
+    # (t.ex. båda klart offline) ska LWW:as mot varandra, inte krocka på DB-constrainten.
+    dup_result = apply_changes(session, session.user_id, [ChangeIn(
+        kind="task_occurrence", id=uuid7(), updated_at=now + timedelta(minutes=5),
+        data={"task_id": task_id, "date": "2026-07-20", "done": False},
+    )])
+    assert dup_result["results"][0]["status"] == "updated"
+    rows_for_monday = session.exec(
+        select(TaskOccurrence).where(TaskOccurrence.task_id == task_id, TaskOccurrence.date == "2026-07-20")
+    ).all()
+    assert len(rows_for_monday) == 1 and rows_for_monday[0].id == mon_id and rows_for_monday[0].done is False
+
+
+def test_task_occurrence_requires_owned_task_parent(session):
+    other_user = User(username="occurrence-parent-owner", password_hash=hash_password("test"), token=new_token())
+    session.add(other_user)
+    session.flush()
+    foreign_task_id = uuid7()
+    apply_changes(session, other_user.id, [ChangeIn(
+        kind="task", id=foreign_task_id, updated_at=datetime.now(), data={"title": "Inte din uppgift"},
+    )])
+
+    result = apply_changes(session, session.user_id, [ChangeIn(
+        kind="task_occurrence", id=uuid7(), updated_at=datetime.now(),
+        data={"task_id": foreign_task_id, "date": "2026-07-21"},
+    )])
+    assert result["results"][0]["status"] == "rejected"
 
 
 def test_sync_rejects_unknown_fields_and_cross_user_parents(session):

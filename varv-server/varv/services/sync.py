@@ -17,17 +17,18 @@ from pydantic import ValidationError
 from sqlmodel import Session, select
 
 from varv.db.models import (
-    EnergyEvent, Idea, ListItem, ShoppingList, SyncTombstone, Task, TaskStep, Win,
+    EnergyEvent, Idea, ListItem, ShoppingList, SyncTombstone, Task, TaskOccurrence, TaskStep, Win,
 )
 from varv.schemas import (
     ChangeIn, SyncEnergyEventData, SyncIdeaData, SyncListItemData, SyncShoppingListData,
-    SyncTaskData, SyncTaskStepData, SyncWinData,
+    SyncTaskData, SyncTaskOccurrenceData, SyncTaskStepData, SyncWinData,
 )
 from varv.services.capture import redact_idea
 
 SYNCABLE = {
     "task": Task,
     "task_step": TaskStep,
+    "task_occurrence": TaskOccurrence,
     "idea": Idea,
     "shopping_list": ShoppingList,
     "list_item": ListItem,
@@ -39,6 +40,7 @@ SOFT_DELETABLE = set(SYNCABLE) - APPEND_ONLY
 DATA_SCHEMAS = {
     "task": SyncTaskData,
     "task_step": SyncTaskStepData,
+    "task_occurrence": SyncTaskOccurrenceData,
     "idea": SyncIdeaData,
     "shopping_list": SyncShoppingListData,
     "list_item": SyncListItemData,
@@ -48,6 +50,7 @@ DATA_SCHEMAS = {
 REQUIRED_ON_CREATE = {
     "task": {"title"},
     "task_step": {"task_id", "title"},
+    "task_occurrence": {"task_id", "date"},
     "idea": {"raw"},
     "shopping_list": {"name", "slug"},
     "list_item": {"list_id", "text"},
@@ -110,11 +113,11 @@ def _validated_data(ch: ChangeIn, is_create: bool) -> tuple[dict | None, str | N
 
 
 def _parent_error(session: Session, user_id: str, kind: str, row, data: dict) -> str | None:
-    if kind == "task_step":
+    if kind in ("task_step", "task_occurrence"):
         task_id = data.get("task_id") or getattr(row, "task_id", None)
         parent = session.get(Task, task_id) if task_id else None
         if parent is None or parent.user_id != user_id or parent.deleted_at is not None:
-            return "Task step parent is not owned by this user"
+            return f"{kind} parent is not owned by this user"
     if kind == "list_item":
         list_id = data.get("list_id") or getattr(row, "list_id", None)
         parent = session.get(ShoppingList, list_id) if list_id else None
@@ -210,6 +213,18 @@ def apply_changes(session: Session, user_id: str, changes: list[ChangeIn]) -> di
                 results.append(_result(ch, "stale"))
                 continue
             session.delete(tombstone)
+
+        # Ett (task_id, date)-par har högst en rad (DB-constraint) — två klienter som
+        # båda skapar en ny occurrence-id för samma dag (t.ex. offline på varsin enhet)
+        # ska LWW:as mot varandra, inte krascha på unik-constrainten vid commit.
+        if row is None and ch.kind == "task_occurrence" and data.get("task_id") and data.get("date"):
+            row = session.exec(
+                select(TaskOccurrence).where(
+                    TaskOccurrence.user_id == user_id,
+                    TaskOccurrence.task_id == data["task_id"],
+                    TaskOccurrence.date == data["date"],
+                )
+            ).first()
 
         if row is None:
             row = model(id=ch.id, user_id=user_id)

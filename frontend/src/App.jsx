@@ -185,7 +185,6 @@ function VarvApp({ username, onLogout }) {
         if (raw) {
           const s = JSON.parse(raw);
           // Alltid: rensa korrupta uppgifter + migrera saknade day-fält
-          const today = todayWeekday();
           s.tasks = (s.tasks || [])
             .filter((t) => t.title && t.id) // drop corrupted tasks (stale-closure bug created titleless entries)
             .map((t) =>
@@ -200,11 +199,14 @@ function VarvApp({ username, onLogout }) {
             s.energyLog = (s.energyLog || []).filter((e) => e.day >= cutoff);
             s.meds = (s.meds || []).filter((m) => m.day >= medCutoff);
             s.tagLog = (s.tagLog || []).filter((t) => t.day >= medCutoff);
-            // Återkommande uppgifter (repeatDays) tas aldrig bort — de återställs till
-            // ogjorda när deras nästa schemalagda veckodag kommer, istället för att bara
-            // rensas bort som en engångsuppgift.
+            // Återkommande uppgifter tas aldrig bort. Completion är per-dag via
+            // task.occurrences (se completeTask) — templatet självt håller aldrig done,
+            // så det enda som behöver återställas här är stegens ibockning inför nästa
+            // varvs instans (stegens titlar/minuter är oförändrade, bara kryssen nollas).
             s.tasks = s.tasks
-              .map((t) => ((t.repeatDays || []).includes(today) ? { ...t, done: false } : t))
+              .map((t) => (t.repeatDays || []).length && (t.steps || []).some((st) => st.done)
+                ? { ...t, steps: t.steps.map((st) => ({ ...st, done: false })) }
+                : t)
               .filter((t) => (t.repeatDays || []).length > 0 || !t.done);
           }
           s.settings = { ...DEFAULT_STATE.settings, ...(s.settings || {}) };
@@ -268,16 +270,16 @@ function VarvApp({ username, onLogout }) {
   const isToday = selectedDate === todayKey();
 
   const visibleTasks = useMemo(() => {
-    const today = todayWeekday();
+    // Veckodagen för den VISADE dagen, inte alltid faktiskt idag — annars dyker
+    // återkommande uppgifter aldrig upp när man bläddrar till en framtida dag.
+    const selectedWeekday = todayWeekday(new Date(selectedDate + "T12:00:00"));
     let open = state.tasks.filter((t) => {
-      if (t.done) return false;
-      // Filter by scheduled_date if set, otherwise show on creation day
-      // Recurring tasks (repeatDays) with no day/scheduled_date show on matching weekdays
       const hasRepeat = (t.repeatDays || []).length > 0;
       if (hasRepeat) {
-        // Recurring task: show if today matches repeatDays
-        if (!t.repeatDays.includes(today)) return false;
+        if (!t.repeatDays.includes(selectedWeekday)) return false;
+        if (t.occurrences?.[selectedDate]?.done) return false; // klar för just den här dagen
       } else {
+        if (t.done) return false;
         const taskDay = t.scheduled_date || t.day;
         if (taskDay !== selectedDate) return false;
       }
@@ -291,10 +293,21 @@ function VarvApp({ username, onLogout }) {
     });
   }, [state.tasks, state.capacity, selectedDate, isToday]);
 
-  const doneToday = useMemo(
-    () => state.tasks.filter((t) => t.done && t.doneAt && todayKey(new Date(t.doneAt)) === todayKey()),
-    [state.tasks]
-  );
+  // Klara uppgifter för den VISADE dagen — engångsuppgifter (klar-tidsstämpel) och
+  // återkommande instanser (occurrences[selectedDate]) tillsammans, båda återöppningsbara.
+  const doneForSelectedDate = useMemo(() => {
+    const entries = [];
+    for (const t of state.tasks) {
+      const hasRepeat = (t.repeatDays || []).length > 0;
+      if (hasRepeat) {
+        const occ = t.occurrences?.[selectedDate];
+        if (occ?.done) entries.push({ task: t, date: selectedDate, occurrence: occ, doneAt: occ.doneAt, steps: occ.stepsSnapshot || [] });
+      } else if (t.done && t.doneAt && todayKey(new Date(t.doneAt)) === selectedDate) {
+        entries.push({ task: t, date: selectedDate, occurrence: null, doneAt: t.doneAt, steps: t.steps || [] });
+      }
+    }
+    return entries.sort((a, b) => (b.doneAt ? new Date(b.doneAt).getTime() : 0) - (a.doneAt ? new Date(a.doneAt).getTime() : 0));
+  }, [state.tasks, selectedDate]);
 
   const medToday = state.meds.find((m) => m.day === todayKey());
   const pastWinddown = hmToMin(nowHM()) >= hmToMin(state.settings?.winddown || "22:00");
@@ -395,27 +408,84 @@ function VarvApp({ username, onLogout }) {
     if (state.setupDone && state.lastCheckinDate !== todayKey()) setShowCheckin(true);
   }, [state.setupDone, state.lastCheckinDate, loaded]);
 
-  const completeTask = (task) => {
-    if (task.done) return;
-    setState((s) => ({
-      ...s,
-      tasks: s.tasks.map((t) => (t.id === task.id ? { ...t, done: true, doneAt: Date.now() } : t)),
-    }));
-    logEnergy(task.energy, task.title);
-    addWin(`Klart: ${task.title}`);
+  // Återkommande uppgifter completar en enskild dags occurrence, aldrig templatet
+  // självt — så en editering av stegen efteråt aldrig skriver om en redan klar dag.
+  // Engångsuppgifter completar direkt på raden, som förut.
+  const completeTask = (task, date = selectedDate) => {
+    const isRecurring = (task.repeatDays || []).length > 0;
+    if (isRecurring) {
+      if (task.occurrences?.[date]?.done) return;
+      const occId = task.occurrences?.[date]?.id || uid();
+      const stepsSnapshot = (task.steps || []).map(({ id, title, minutes, done }) => ({ id, title, minutes, done }));
+      const doneAt = Date.now();
+      setState((s) => ({
+        ...s,
+        tasks: s.tasks.map((t) => t.id === task.id
+          ? { ...t, occurrences: { ...(t.occurrences || {}), [date]: { id: occId, done: true, doneAt, stepsSnapshot } } }
+          : t),
+      }));
+      sync.trackChange('task_occurrence', occId, 'upsert', { taskId: task.id, date, done: true, doneAt, stepsSnapshot });
+      logEnergy(task.energy, task.title);
+      addWin(`Klart: ${task.title}`);
+      setUndoTask({ ...task, _occurrenceDate: date });
+    } else {
+      if (task.done) return;
+      const doneAt = Date.now();
+      setState((s) => ({
+        ...s,
+        tasks: s.tasks.map((t) => (t.id === task.id ? { ...t, done: true, doneAt } : t)),
+      }));
+      sync.trackChange('task', task.id, 'upsert', { ...task, done: true, doneAt });
+      logEnergy(task.energy, task.title);
+      addWin(`Klart: ${task.title}`);
+      setUndoTask(task);
+    }
     // Show undo option for 8 seconds
-    setUndoTask(task);
     clearTimeout(undoTimer.current);
     undoTimer.current = setTimeout(() => setUndoTask(null), 8000);
   };
 
   const undoCompleteTask = (task) => {
-    setState((s) => ({
-      ...s,
-      tasks: s.tasks.map((t) => (t.id === task.id ? { ...t, done: false, doneAt: null } : t)),
-    }));
+    const date = task._occurrenceDate;
+    if (date) {
+      const occId = task.occurrences?.[date]?.id;
+      setState((s) => ({
+        ...s,
+        tasks: s.tasks.map((t) => {
+          if (t.id !== task.id) return t;
+          const { [date]: _removed, ...rest } = t.occurrences || {};
+          return { ...t, occurrences: rest };
+        }),
+      }));
+      if (occId) sync.trackChange('task_occurrence', occId, 'delete', {});
+    } else {
+      setState((s) => ({
+        ...s,
+        tasks: s.tasks.map((t) => (t.id === task.id ? { ...t, done: false, doneAt: null } : t)),
+      }));
+      sync.trackChange('task', task.id, 'upsert', { ...task, done: false, doneAt: null });
+    }
     setUndoTask(null);
     clearTimeout(undoTimer.current);
+  };
+
+  // Reachable "reopen" for anything already marked done — recurring occurrence or
+  // one-off task — so completed work is never a dead end that can't be corrected.
+  const reopenTask = (entry) => {
+    if (entry.occurrence) {
+      const { task, date, occurrence } = entry;
+      setState((s) => ({
+        ...s,
+        tasks: s.tasks.map((t) => t.id === task.id
+          ? { ...t, occurrences: { ...(t.occurrences || {}), [date]: { ...occurrence, done: false } } }
+          : t),
+      }));
+      sync.trackChange('task_occurrence', occurrence.id, 'upsert', {
+        taskId: task.id, date, done: false, doneAt: null, stepsSnapshot: occurrence.stepsSnapshot || [],
+      });
+    } else {
+      updateTask(entry.task.id, { done: false, doneAt: null });
+    }
   };
 
   /* --- Setup wizard completion --- */
@@ -1133,7 +1203,7 @@ function VarvApp({ username, onLogout }) {
 
         {/* ============ dagsöversikt ============ */}
         <section style={{ ...s.section, display: "flex", gap: 14, flexWrap: "wrap", fontSize: 13, color: T.soft }}>
-          <span><b style={{ color: T.ink }}>{doneToday.length}</b> klara idag</span>
+          <span><b style={{ color: T.ink }}>{doneForSelectedDate.length}</b> klara idag</span>
           <span><b style={{ color: T.ink }}>{visibleTasks.length}</b> kvar</span>
           <span><b style={{ color: T.ink }}>{spent}⚡</b> förbrukat · <b style={{ color: T.ink }}>{recharged}⚡</b> återladdat</span>
           <span><b style={{ color: T.ink }}>{winsToday.length}</b> vinster</span>
@@ -1290,21 +1360,26 @@ function VarvApp({ username, onLogout }) {
           />
         )}
 
-        {/* ============ klart idag ============ */}
-        {doneToday.length > 0 && (
+        {/* ============ klart ============ */}
+        {doneForSelectedDate.length > 0 && (
           <section style={s.section}>
-            <div style={s.eyebrow}>Klart idag ({doneToday.length})</div>
-            {doneToday.map((t) => (
-              <div key={t.id} style={{ ...s.card, marginTop: 8, opacity: 0.75 }}>
+            <div style={s.eyebrow}>{isToday ? "Klart idag" : "Klart"} ({doneForSelectedDate.length})</div>
+            {doneForSelectedDate.map((entry) => (
+              <div key={entry.occurrence ? `${entry.task.id}:${entry.date}` : entry.task.id} style={{ ...s.card, marginTop: 8, opacity: 0.75 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <span style={s.coin}>{t.icon || "📌"}</span>
-                  <span style={{ textDecoration: "line-through", color: T.soft, flex: 1 }}>{t.title}</span>
-                  <span style={{ fontSize: 12, color: T.soft }}>{new Date(t.doneAt).toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" })}</span>
+                  <span style={s.coin}>{entry.task.icon || "📌"}</span>
+                  <span style={{ textDecoration: "line-through", color: T.soft, flex: 1 }}>{entry.task.title}</span>
+                  {entry.doneAt && (
+                    <span style={{ fontSize: 12, color: T.soft }}>{new Date(entry.doneAt).toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" })}</span>
+                  )}
+                  <button style={{ ...s.linkBtn, fontSize: 12, padding: "4px 8px" }} onClick={() => reopenTask(entry)}>
+                    öppna igen
+                  </button>
                 </div>
-                {(t.steps || []).length > 0 && (
+                {entry.steps.length > 0 && (
                   <div style={{ marginTop: 6, paddingLeft: 34 }}>
-                    {t.steps.map((st) => (
-                      <div key={st.id} style={{ fontSize: 13, color: T.soft, textDecoration: st.done ? "line-through" : "none" }}>
+                    {entry.steps.map((st, i) => (
+                      <div key={st.id || i} style={{ fontSize: 13, color: T.soft, textDecoration: st.done ? "line-through" : "none" }}>
                         {st.done ? "✓" : "·"} {st.title}
                       </div>
                     ))}

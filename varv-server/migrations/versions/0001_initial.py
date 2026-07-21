@@ -233,6 +233,27 @@ def upgrade() -> None:
     op.create_index(op.f('ix_taglink_entity_kind'), 'taglink', ['entity_kind'], unique=False)
     op.create_index(op.f('ix_taglink_tag_id'), 'taglink', ['tag_id'], unique=False)
     op.create_index(op.f('ix_taglink_user_id'), 'taglink', ['user_id'], unique=False)
+    op.create_table('taskoccurrence',
+    sa.Column('id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.Column('user_id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.Column('task_id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.Column('date', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.Column('done', sa.Boolean(), nullable=False),
+    sa.Column('done_at', sa.DateTime(), nullable=True),
+    sa.Column('steps_snapshot', sa.JSON(), nullable=False),
+    sa.Column('updated_at', sa.DateTime(), nullable=False),
+    sa.Column('deleted_at', sa.DateTime(), nullable=True),
+    sa.Column('sync_version', sa.Integer(), nullable=False),
+    sa.ForeignKeyConstraint(['task_id'], ['task.id'], ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['user_id'], ['user.id'], ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('task_id', 'date', name='uq_task_occurrence_date')
+    )
+    op.create_index(op.f('ix_taskoccurrence_date'), 'taskoccurrence', ['date'], unique=False)
+    op.create_index(op.f('ix_taskoccurrence_sync_version'), 'taskoccurrence', ['sync_version'], unique=False)
+    op.create_index(op.f('ix_taskoccurrence_task_id'), 'taskoccurrence', ['task_id'], unique=False)
+    op.create_index(op.f('ix_taskoccurrence_updated_at'), 'taskoccurrence', ['updated_at'], unique=False)
+    op.create_index(op.f('ix_taskoccurrence_user_id'), 'taskoccurrence', ['user_id'], unique=False)
     op.create_table('taskstep',
     sa.Column('id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('user_id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
@@ -262,6 +283,12 @@ def downgrade() -> None:
     op.drop_index(op.f('ix_taskstep_task_id'), table_name='taskstep')
     op.drop_index(op.f('ix_taskstep_sync_version'), table_name='taskstep')
     op.drop_table('taskstep')
+    op.drop_index(op.f('ix_taskoccurrence_user_id'), table_name='taskoccurrence')
+    op.drop_index(op.f('ix_taskoccurrence_updated_at'), table_name='taskoccurrence')
+    op.drop_index(op.f('ix_taskoccurrence_task_id'), table_name='taskoccurrence')
+    op.drop_index(op.f('ix_taskoccurrence_sync_version'), table_name='taskoccurrence')
+    op.drop_index(op.f('ix_taskoccurrence_date'), table_name='taskoccurrence')
+    op.drop_table('taskoccurrence')
     op.drop_index(op.f('ix_taglink_user_id'), table_name='taglink')
     op.drop_index(op.f('ix_taglink_tag_id'), table_name='taglink')
     op.drop_index(op.f('ix_taglink_entity_kind'), table_name='taglink')

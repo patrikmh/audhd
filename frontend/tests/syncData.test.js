@@ -74,6 +74,57 @@ test("incremental step pulls preserve all existing task fields", () => {
 });
 
 
+test("completing a recurring task's occurrence sends a task_occurrence change, not a task update", () => {
+  const localTask = {
+    id: "task-1",
+    title: "Vattna blommorna",
+    repeatDays: ["mon", "wed", "fri"],
+    done: false,
+    occurrences: {
+      "2026-07-20": { id: "occ-1", done: true, doneAt: 1753000000000, stepsSnapshot: [{ title: "Häll vatten", done: true }] },
+    },
+  };
+
+  const changes = toWireChanges("task", localTask.id, "upsert", localTask);
+
+  assert.equal(changes.length, 2); // task + one occurrence, no steps this time
+  const occChange = changes.find((c) => c.kind === "task_occurrence");
+  assert.equal(occChange.id, "occ-1");
+  assert.equal(occChange.data.task_id, "task-1");
+  assert.equal(occChange.data.date, "2026-07-20");
+  assert.equal(occChange.data.done, true);
+  assert.deepEqual(occChange.data.steps_snapshot, [{ title: "Häll vatten", done: true }]);
+  // The task change itself must not carry done:true — the template never completes.
+  const taskChange = changes.find((c) => c.kind === "task");
+  assert.equal(taskChange.data.done, false);
+});
+
+
+test("pulled task_occurrence rows nest under the owning task, keyed by date", () => {
+  const previous = {
+    tasks: [{ id: "task-1", title: "Vattna blommorna", repeatDays: ["mon"], occurrences: {} }],
+    ideas: [], lists: [], wins: [], energyLog: [],
+  };
+
+  const merged = mergeServerChanges(previous, {
+    task_occurrence: [{
+      id: "occ-1", task_id: "task-1", date: "2026-07-20", done: true,
+      done_at: "2026-07-20T08:00:00Z", steps_snapshot: [{ title: "Häll vatten", done: true }],
+      updated_at: "2026-07-20T08:00:00Z",
+    }],
+  });
+
+  assert.equal(merged.tasks[0].occurrences["2026-07-20"].done, true);
+  assert.deepEqual(merged.tasks[0].occurrences["2026-07-20"].stepsSnapshot, [{ title: "Häll vatten", done: true }]);
+
+  // A tombstoned occurrence (reopened from another device) is removed from the map, not left dangling.
+  const reopened = mergeServerChanges(merged, {
+    task_occurrence: [{ id: "occ-1", task_id: "task-1", date: "2026-07-20", deleted_at: "2026-07-20T09:00:00Z", updated_at: "2026-07-20T09:00:00Z" }],
+  });
+  assert.equal(reopened.tasks[0].occurrences["2026-07-20"], undefined);
+});
+
+
 test("idea tags and shopping list identity survive server merges", () => {
   const previous = {
     tasks: [],
