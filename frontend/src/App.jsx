@@ -6,6 +6,8 @@ import SetupWizard from "./components/SetupWizard";
 import DailyCheckin from "./components/DailyCheckin";
 import { TaskInitiationSupport } from "./components/TaskInitiationSupport";
 import { TimeAnchor } from "./components/TimeBlindnessSupport";
+import A2UIRenderer from "./components/A2UIRenderer";
+import { useAgUI } from "./hooks/useAgUI";
 import { T, MODES, ENERGY_LABELS, MOVEMENT_IDEAS, REST_MENU, EDU_CARDS, ICON_CHOICES, WEEKDAYS, ICON_KEYWORDS, PRIORITY_ORDER, API_BASE, AUTH_KEY } from "./constants/tokens";
 import { uid, todayKey, todayWeekday, guessIcon, energyColor, nowHM, hmToMin } from "./utils/helpers";
 import { getAuth, setAuth, clearAuth, login } from "./utils/auth";
@@ -155,6 +157,11 @@ function VarvApp({ username, onLogout }) {
     state,
     setState
   );
+
+  // AG-UI streaming agent panel
+  const agui = useAgUI();
+  const [aguiAgent, setAguiAgent] = useState("classify");
+  const [aguiInput, setAguiInput] = useState("");
 
   useEffect(() => {
     const t = setInterval(() => setTick((n) => n + 1), 30000);
@@ -444,8 +451,19 @@ function VarvApp({ username, onLogout }) {
   // fortfarande be om det manuellt via "Jag kommer inte igång".
   const breakdownTask = async (taskId, title) => {
     try {
+      // Check cache first for recurring tasks
+      const cached = stateRef.current.stepCache?.[title];
+      if (cached && cached.length > 0) {
+        updateTask(taskId, { steps: cached });
+        return;
+      }
       const steps = await aiBreakdown(title);
       updateTask(taskId, { steps });
+      // Cache for future recurring instances
+      setState((st) => ({
+        ...st,
+        stepCache: { ...(st.stepCache || {}), [title]: steps },
+      }));
     } catch (e) { /* tyst — nedbrytning kan alltid begäras manuellt senare */ }
   };
 
@@ -1376,6 +1394,7 @@ function VarvApp({ username, onLogout }) {
             <ToolBtn active={tool === "edu"} onClick={() => setTool(tool === "edu" ? null : "edu")} label="Varför det funkar" sub="evidensen" />
             <ToolBtn active={tool === "connect"} onClick={() => setTool(tool === "connect" ? null : "connect")} label="Kopplingar" sub="Google · Notion · Oura" />
             <ToolBtn active={tool === "agents"} onClick={() => setTool(tool === "agents" ? null : "agents")} label="Agenter" sub={`${Object.values(state.agents).filter(Boolean).length}/5 aktiva`} />
+            <ToolBtn active={tool === "agui"} onClick={() => setTool(tool === "agui" ? null : "agui")} label="AG-UI" sub="streaming demo" />
             <ToolBtn onClick={() => setShowCheckin(true)} label="Morgoncheck" sub="översikt + energi" />
             <ToolBtn onClick={() => setShowSetup(true)} label="Inställningar" sub="guidad setup" />
           </div>
@@ -1411,6 +1430,121 @@ function VarvApp({ username, onLogout }) {
                     {new Date(l.ts).toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" })} <span style={{ color: T.spruce, fontWeight: 700 }}>{l.agent}</span> {l.text}
                   </div>
                 ))
+              )}
+            </div>
+          )}
+
+          {tool === "agui" && (
+            <div style={{ ...s.card, marginTop: 10 }}>
+              <div style={{ ...s.eyebrow }}>AG-UI live</div>
+              <div style={{ fontSize: 13, color: T.soft, marginBottom: 10 }}>
+                Strömmande agent via AG-UI protokollet — testa riktigt flöde.
+              </div>
+
+              <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
+                {["classify", "refine", "breakdown", "observer"].map((a) => (
+                  <button
+                    key={a}
+                    onClick={() => setAguiAgent(a)}
+                    style={{
+                      ...s.ghostBtn,
+                      fontSize: 12,
+                      padding: "4px 10px",
+                      background: aguiAgent === a ? T.spruce + "22" : "transparent",
+                      border: `1px solid ${aguiAgent === a ? T.spruce : T.line}`,
+                      color: aguiAgent === a ? T.spruce : T.soft,
+                    }}
+                  >
+                    {a}
+                  </button>
+                ))}
+              </div>
+
+              <div style={{ display: "flex", gap: 8 }}>
+                <input
+                  type="text"
+                  value={aguiInput}
+                  onChange={(e) => setAguiInput(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && aguiInput.trim() && agui.run(aguiAgent, aguiInput, state, true)}
+                  placeholder={aguiAgent === "observer" ? "Analyserar state..." : aguiAgent === "classify" ? "Beskriv en fångst..." : aguiAgent === "refine" ? "Rå idé att förfinа..." : "Uppgift att bryta ner..."}
+                  style={{ ...s.input, flex: 1 }}
+                />
+                <button
+                  onClick={() => aguiInput.trim() && agui.run(aguiAgent, aguiInput, state, true)}
+                  disabled={agui.active || !aguiInput.trim()}
+                  style={{
+                    ...s.solidBtn,
+                    fontSize: 13,
+                    opacity: agui.active || !aguiInput.trim() ? 0.5 : 1,
+                  }}
+                >
+                  {agui.active ? "..." : "Kör"}
+                </button>
+              </div>
+
+              {/* Streaming progress */}
+              {agui.steps.length > 0 && (
+                <div style={{ marginTop: 12 }}>
+                  <div style={{ ...s.eyebrow }}>Steg</div>
+                  {agui.steps.map((step, i) => (
+                    <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "3px 0" }}>
+                      <span style={{ fontSize: 14 }}>{step.status === "done" ? "✓" : step.status === "active" ? "⏳" : "○"}</span>
+                      <span style={{ fontSize: 13, color: T.soft }}>{step.name}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Tool calls */}
+              {agui.toolCalls.length > 0 && (
+                <div style={{ marginTop: 12 }}>
+                  <div style={{ ...s.eyebrow }}>Verktyg</div>
+                  {agui.toolCalls.map((tc) => (
+                    <div key={tc.id} style={{ fontSize: 12, fontFamily: "IBM Plex Mono", color: T.soft, padding: "3px 0" }}>
+                      <span style={{ color: T.spruce }}>{tc.name}</span>
+                      {tc.status === "done" ? " ✓" : " ⏳"}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Messages */}
+              {agui.messages.length > 0 && (
+                <div style={{ marginTop: 12 }}>
+                  <div style={{ ...s.eyebrow }}>Svar</div>
+                  {agui.messages.map((msg) => (
+                    <div key={msg.id} style={{ fontSize: 14, color: T.ink, padding: "4px 0", lineHeight: 1.5 }}>
+                      {msg.text}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Error */}
+              {agui.error && (
+                <div style={{ marginTop: 10, padding: "8px 12px", background: T.warn + "15", borderRadius: 8, fontSize: 13, color: T.warn }}>
+                  {agui.error}
+                </div>
+              )}
+
+              {/* A2UI generative surfaces */}
+              {agui.a2uiSurfaces.length > 0 && (
+                <div style={{ marginTop: 12 }}>
+                  <div style={{ ...s.eyebrow }}>Genererad UI</div>
+                  <A2UIRenderer surfaces={agui.a2uiSurfaces} onAction={(action, payload) => console.log("A2UI action:", action, payload)} />
+                </div>
+              )}
+
+              {/* Raw events (collapsed) */}
+              {agui.events.length > 0 && (
+                <details style={{ marginTop: 12 }}>
+                  <summary style={{ fontSize: 12, color: T.soft, cursor: "pointer" }}>
+                    {agui.events.length} händelser (klicka för att visa)
+                  </summary>
+                  <pre style={{ fontSize: 10, fontFamily: "IBM Plex Mono", color: T.soft, maxHeight: 200, overflow: "auto", marginTop: 6, padding: 8, background: T.track, borderRadius: 6 }}>
+                    {JSON.stringify(agui.events, null, 2)}
+                  </pre>
+                </details>
               )}
             </div>
           )}

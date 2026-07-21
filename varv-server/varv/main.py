@@ -7,6 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from varv.api.routes import auth_router, router
+from varv.api.ag_ui_routes import router as ag_ui_router
 from varv.config import get_settings
 from varv.db.engine import init_db
 from varv.worker import agent_loop
@@ -33,6 +34,7 @@ app.add_middleware(
 )
 app.include_router(auth_router, prefix="/api")
 app.include_router(router, prefix="/api")
+app.include_router(ag_ui_router, prefix="/api")
 
 
 @app.get("/health")
