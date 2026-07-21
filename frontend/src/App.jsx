@@ -2219,7 +2219,37 @@ function TaskCard({ task, onDone, onUpdate, onRemove, onWin, onPushCal, agentBus
   const [busy, setBusy] = useState(false);
   const [calBusy, setCalBusy] = useState(false);
   const [err, setErr] = useState("");
+  const [editing, setEditing] = useState(false);
+  const [editTitle, setEditTitle] = useState(task.title);
+  const [editNote, setEditNote] = useState(task.note || "");
+  const [imgBusy, setImgBusy] = useState(false);
   const s = styles;
+
+  // Compress an image File to a base64 data-URI thumbnail (max 800px, JPEG 0.7).
+  const compressImage = (file) => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const max = 800;
+        let { width, height } = img;
+        if (width > max || height > max) {
+          const scale = max / Math.max(width, height);
+          width = Math.round(width * scale);
+          height = Math.round(height * scale);
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', 0.7));
+      };
+      img.onerror = reject;
+      img.src = reader.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
 
   const breakDown = async () => {
     setBusy(true);
@@ -2286,6 +2316,107 @@ function TaskCard({ task, onDone, onUpdate, onRemove, onWin, onPushCal, agentBus
                 <span style={s.chipSoft}>🔁 {task.repeatDays.map((k) => WEEKDAYS.find((d) => d.key === k).label).join(", ")}</span>
               )}
               {(task.tags || []).map((tg) => <span key={tg} style={s.chipSoft}>#{tg}</span>)}
+            </div>
+          )}
+
+          {/* Time + note + image — rich details */}
+          {!editing && (task.note || task.image) && (
+            <div style={{ marginTop: 10, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+              {task.image && (
+                <img src={task.image} alt="" style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 8, flexShrink: 0 }} />
+              )}
+              {task.note && (
+                <p style={{ margin: 0, fontSize: 13, color: T.ink, whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>{task.note}</p>
+              )}
+            </div>
+          )}
+
+          {editing ? (
+            <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <input
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                style={{ fontSize: 14, fontFamily: 'Fraunces', fontWeight: 600, padding: '6px 8px', border: `1px solid ${T.line}`, borderRadius: 6, background: T.card }}
+                placeholder="Rubrik…"
+              />
+              <textarea
+                value={editNote}
+                onChange={(e) => setEditNote(e.target.value)}
+                rows={3}
+                style={{ fontSize: 13, fontFamily: 'Atkinson Hyperlegible', padding: '6px 8px', border: `1px solid ${T.line}`, borderRadius: 6, background: T.card, resize: 'vertical' }}
+                placeholder="Anteckning…"
+              />
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <input
+                  type="file"
+                  accept="image/*"
+                  id={`img-${task.id}`}
+                  style={{ display: 'none' }}
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    setImgBusy(true);
+                    try {
+                      const data = await compressImage(file);
+                      onUpdate({ image: data });
+                    } catch (err) {
+                      setErr("Kunde inte ladda bilden.");
+                    }
+                    setImgBusy(false);
+                  }}
+                />
+                <button
+                  type="button"
+                  style={{ ...s.linkBtn, fontSize: 12 }}
+                  disabled={imgBusy}
+                  onClick={() => document.getElementById(`img-${task.id}`).click()}
+                >
+                  {imgBusy ? 'bearbetar…' : task.image ? 'byt bild' : '🖼️ bild'}
+                </button>
+                {task.image && (
+                  <button
+                    type="button"
+                    style={{ ...s.linkBtn, fontSize: 12, color: T.warn }}
+                    onClick={() => onUpdate({ image: null })}
+                  >
+                    ta bort bild
+                  </button>
+                )}
+                <div style={{ flex: 1 }} />
+                <button
+                  style={{ ...s.linkBtn, background: T.petrol, color: 'white' }}
+                  onClick={() => {
+                    onUpdate({ title: editTitle.trim() || task.title, note: editNote.trim() || null });
+                    setEditing(false);
+                  }}
+                >spara</button>
+                <button
+                  style={s.linkBtn}
+                  onClick={() => {
+                    setEditTitle(task.title);
+                    setEditNote(task.note || "");
+                    setEditing(false);
+                  }}
+                >avbryt</button>
+              </div>
+            </div>
+          ) : null}
+
+          {/* Time selector — always editable in expanded view */}
+          {!editing && (
+            <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginTop: 10, flexWrap: 'wrap' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: T.soft }}>
+                klockan
+                <input
+                  type="time"
+                  value={task.time || ''}
+                  onChange={(e) => onUpdate({ time: e.target.value || null })}
+                  style={{ fontSize: 13, padding: '3px 6px', border: `1px solid ${T.line}`, borderRadius: 6, background: T.card, fontFamily: 'inherit' }}
+                />
+              </label>
+              <button style={{ ...s.linkBtn, fontSize: 12 }} onClick={() => { setEditTitle(task.title); setEditNote(task.note || ''); setEditing(true); }}>
+                ✎ redigera
+              </button>
             </div>
           )}
 

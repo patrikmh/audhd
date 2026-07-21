@@ -92,6 +92,8 @@ class Task(SQLModel, table=True):
     deleted_at: datetime | None = None        # mjuk radering — se synkkommentar överst
     day: str = Field(default_factory=today, index=True)
     scheduled_date: str | None = None         # YYYY-MM-DD för framtida uppgifter
+    note: str | None = None                   # fritextanteckning
+    image: str | None = None                  # base64-data-uri för miniatyr
 
 
 class TaskStep(SQLModel, table=True):
@@ -118,6 +120,8 @@ class Idea(SQLModel, table=True):
     updated_at: datetime = Field(default_factory=datetime.now, index=True)
     deleted_at: datetime | None = None
     day: str = Field(default_factory=today, index=True)
+    image: str | None = None
+    tags: str | None = None
 
 
 class ShoppingList(SQLModel, table=True):

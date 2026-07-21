@@ -180,37 +180,37 @@
       "id": "20",
       "subject": "Trim today view — remove duplication and dead stubs",
       "description": "Remove from today view: (1) TimeAnchor duplication of energy/winddown/progression already in WorkingMemoryDisplay — pick ONE source. (2) Dead calendar/email integration stub (\"inte kopplad till servern än\"). (3) \"Nästa halvdag\" section when empty. (4) Condense stats footer (0 klara / 4 kvar / energi / vinster) into the tasks header. Keep: greeting, one clear next thing, tasks + day strip, capture.",
-      "status": "in_progress",
+      "status": "completed",
       "activeForm": "Trimming today view",
       "metadata": {},
       "blocks": [],
       "blockedBy": [],
       "createdAt": 1784651961776,
-      "updatedAt": 1784652755730
+      "updatedAt": 1784653375171
     },
     {
       "id": "21",
       "subject": "Move energy mode + meds to less prominent position",
       "description": "Move energy mode buttons (Stadig/Lågt batteri/Återhämtning) and Medicin idag panel out of the hero/prominent position. Options: collapse into a single \"details\" row, move to a profile/settings panel, or tuck under a toggle. Goal: not the first thing you see, but still accessible.",
-      "status": "in_progress",
+      "status": "completed",
       "activeForm": "Demoting energy and meds",
       "metadata": {},
       "blocks": [],
       "blockedBy": [],
       "createdAt": 1784651968971,
-      "updatedAt": 1784653015221
+      "updatedAt": 1784653379949
     },
     {
       "id": "22",
       "subject": "Richer task editing — time, notes, images",
       "description": "Enhance task editing: (1) Set/modify time on tasks (beyond just date). (2) Add notes/description to tasks. (3) Add images to tasks (need backend storage — base64 in DB or file upload). ContextMenu 'Redigera' should open a full edit sheet with all fields. TaskCard should display time and image thumbnail when present.",
-      "status": "pending",
+      "status": "in_progress",
       "activeForm": "Adding richer task editing",
       "metadata": {},
       "blocks": [],
       "blockedBy": [],
       "createdAt": 1784651975704,
-      "updatedAt": 1784651975704
+      "updatedAt": 1784653431024
     },
     {
       "id": "23",

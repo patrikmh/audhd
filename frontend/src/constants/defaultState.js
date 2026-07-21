@@ -55,5 +55,7 @@ export const DEFAULT_TASK = {
   priority: null,
   inbox: true,
   done: false,
+  note: null,
+  image: null,
   steps: [],
 };
