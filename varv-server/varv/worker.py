@@ -14,7 +14,7 @@ from sqlmodel import func, select
 from varv.agents.core import forfinaren, nedbrytaren
 from varv.config import get_settings
 from varv.db.engine import session_scope
-from varv.db.models import AgentLog, Idea, IdeaStatus, KV, Task, TaskStep, User
+from varv.db.models import AgentLog, Idea, IdeaStatus, KV, Task, TaskStep, User, utcnow
 from varv.services.capture import agent_note
 from varv.services.capture import link_tags
 from varv.services.topics import run_topics
@@ -60,7 +60,7 @@ async def refine_sweep() -> None:
                 result = await forfinaren.run(idea.raw)
                 out = result.output
                 idea.title, idea.note, idea.status = out.title, out.note, IdeaStatus.klar
-                idea.updated_at = datetime.now()
+                idea.updated_at = utcnow()
                 link_tags(session, idea.user_id, out.tags, "idea", idea.id)
                 agent_note(session, idea.user_id, "forfinaren", f'städade "{out.title[:50]}"')
             except Exception:

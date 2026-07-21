@@ -145,69 +145,76 @@ export function useSync(apiBase, getAuth, username, state, setState) {
 
   // Merge server data into local state
   const mergeServerData = useCallback((serverChanges) => {
-    if (!serverChanges) return;
+    if (!serverChanges) return Promise.resolve();
 
     const serverLocal = serverToLocal(serverChanges);
 
-    setState(prevState => {
-      const merged = { ...prevState };
+    return new Promise((resolve, reject) => {
+      setState(prevState => {
+        const merged = { ...prevState };
 
-      // Merge tasks (server wins on conflicts)
-      if (serverLocal.tasks.length > 0) {
-        const taskMap = new Map([...prevState.tasks, ...serverLocal.tasks].map(t => [t.id, t]));
-        merged.tasks = Array.from(taskMap.values())
-          .filter(t => !t.deletedAt)
-          .sort((a, b) => {
-            // Sort by priority first, then time
-            const pOrder = { A: 0, B: 1, C: 2 };
-            const pa = pOrder[a.priority] ?? 3;
-            const pb = pOrder[b.priority] ?? 3;
-            if (pa !== pb) return pa - pb;
-            return (a.time || '23:59').localeCompare(b.time || '23:59');
-          });
-      }
-
-      // Merge ideas
-      if (serverLocal.ideas.length > 0) {
-        const ideaMap = new Map([...prevState.ideas, ...serverLocal.ideas].map(i => [i.id, i]));
-        merged.ideas = Array.from(ideaMap.values())
-          .filter(i => !i.deletedAt)
-          .sort((a, b) => (b.ts || '').localeCompare(a.ts || ''));
-      }
-
-      // Merge wins
-      if (serverLocal.wins.length > 0) {
-        const winMap = new Map([...prevState.wins, ...serverLocal.wins].map(w => [w.id, w]));
-        merged.wins = Array.from(winMap.values())
-          .sort((a, b) => (b.ts || '').localeCompare(a.ts || ''));
-      }
-
-      // Merge energy log
-      if (serverLocal.energyLog.length > 0) {
-        const energyMap = new Map([...prevState.energyLog, ...serverLocal.energyLog].map(e => [e.id, e]));
-        merged.energyLog = Array.from(energyMap.values())
-          .sort((a, b) => (b.ts || '').localeCompare(a.ts || ''));
-      }
-
-      // Merge lists — keep local names, only update items from server
-      if (serverLocal.lists.length > 0) {
-        const localNames = new Map(prevState.lists.map((l) => [l.id, l.name]));
-        const serverIds = new Set(serverLocal.lists.map((l) => l.id));
-        const mergedLists = serverLocal.lists.map((sl) => ({
-          ...sl,
-          name: localNames.get(sl.id) || (sl.id === 'shopping' ? 'Inköp' : sl.name),
-          items: sl.items.filter((i) => !i.deletedAt),
-        }));
-        // Keep local-only lists that the server doesn't know about yet
-        for (const l of prevState.lists) {
-          if (!serverIds.has(l.id)) mergedLists.push(l);
+        // Merge tasks (server wins on conflicts)
+        if (serverLocal.tasks.length > 0) {
+          const taskMap = new Map([...prevState.tasks, ...serverLocal.tasks].map(t => [t.id, t]));
+          merged.tasks = Array.from(taskMap.values())
+            .filter(t => !t.deletedAt)
+            .sort((a, b) => {
+              const pOrder = { A: 0, B: 1, C: 2 };
+              const pa = pOrder[a.priority] ?? 3;
+              const pb = pOrder[b.priority] ?? 3;
+              if (pa !== pb) return pa - pb;
+              return (a.time || '23:59').localeCompare(b.time || '23:59');
+            });
         }
-        merged.lists = mergedLists;
-      }
 
-      return merged;
+        // Merge ideas
+        if (serverLocal.ideas.length > 0) {
+          const ideaMap = new Map([...prevState.ideas, ...serverLocal.ideas].map(i => [i.id, i]));
+          merged.ideas = Array.from(ideaMap.values())
+            .filter(i => !i.deletedAt)
+            .sort((a, b) => (b.ts || '').localeCompare(a.ts || ''));
+        }
+
+        // Merge wins
+        if (serverLocal.wins.length > 0) {
+          const winMap = new Map([...prevState.wins, ...serverLocal.wins].map(w => [w.id, w]));
+          merged.wins = Array.from(winMap.values())
+            .sort((a, b) => (b.ts || '').localeCompare(a.ts || ''));
+        }
+
+        // Merge energy log
+        if (serverLocal.energyLog.length > 0) {
+          const energyMap = new Map([...prevState.energyLog, ...serverLocal.energyLog].map(e => [e.id, e]));
+          merged.energyLog = Array.from(energyMap.values())
+            .sort((a, b) => (b.ts || '').localeCompare(a.ts || ''));
+        }
+
+        // Merge lists — keep local names, only update items from server
+        if (serverLocal.lists.length > 0) {
+          const localNames = new Map(prevState.lists.map((l) => [l.id, l.name]));
+          const serverIds = new Set(serverLocal.lists.map((l) => l.id));
+          const mergedLists = serverLocal.lists.map((sl) => ({
+            ...sl,
+            name: localNames.get(sl.id) || (sl.id === 'shopping' ? 'Inköp' : sl.name),
+            items: sl.items.filter((i) => !i.deletedAt),
+          }));
+          for (const list of prevState.lists) {
+            if (!serverIds.has(list.id)) mergedLists.push(list);
+          }
+          merged.lists = mergedLists;
+        }
+
+        try {
+          localStorage.setItem(`varv-state:${username}`, JSON.stringify(merged));
+          resolve();
+          return merged;
+        } catch (error) {
+          reject(error);
+          return prevState;
+        }
+      });
     });
-  }, [serverToLocal, setState]);
+  }, [serverToLocal, setState, username]);
 
   // Perform sync
   const performSync = useCallback(async () => {
@@ -218,16 +225,35 @@ export function useSync(apiBase, getAuth, username, state, setState) {
     syncInProgressRef.current = true;
 
     try {
+      const pullAll = async () => {
+        let firstChanges = null;
+        let hasMore = false;
+        const applyPage = async (page, alreadyStaged = false) => {
+          if (!alreadyStaged) syncClientRef.current.stagePage(page);
+          if (firstChanges === null) firstChanges = page.changes;
+          await mergeServerData(page.changes);
+          syncClientRef.current.commitCursor(page.next_cursor);
+          syncClientRef.current.clearStagedPage();
+          return page.has_more;
+        };
+
+        const stagedPage = syncClientRef.current.loadStagedPage();
+        if (stagedPage) hasMore = await applyPage(stagedPage, true);
+        do {
+          const page = await syncClientRef.current.pullPage();
+          hasMore = await applyPage(page);
+        } while (hasMore);
+        return firstChanges || {};
+      };
+
       // Pull first to get latest server state
-      const pullResult = await syncClientRef.current.pull();
-      mergeServerData(pullResult);
+      const pullResult = await pullAll();
 
       // Then push local changes
       const pushResult = await syncClientRef.current.push();
 
       // Pull again to get any changes that happened during our push
-      const finalPull = await syncClientRef.current.pull();
-      mergeServerData(finalPull);
+      await pullAll();
 
       return {
         success: true,

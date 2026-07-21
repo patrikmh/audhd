@@ -1,5 +1,5 @@
 """Synkprotokollet: LWW, idempotens och delete."""
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from varv.db.models import Task, User, Win
 from varv.schemas import ChangeIn
@@ -42,9 +42,9 @@ def test_delete_and_pull(session):
     deleted_task = session.get(Task, tid)
     assert deleted_task is not None and deleted_task.deleted_at is not None
 
-    pulled = pull_changes(session, session.user_id, since=None)
-    assert "task" in pulled and "win" in pulled
-    pulled_task = next(t for t in pulled["task"] if t["id"] == tid)
+    pulled = pull_changes(session, session.user_id)
+    assert "task" in pulled["changes"] and "win" in pulled["changes"]
+    pulled_task = next(t for t in pulled["changes"]["task"] if t["id"] == tid)
     assert pulled_task["deleted_at"] is not None
 
 
@@ -73,6 +73,102 @@ def test_change_cannot_modify_another_users_row(session):
         ],
     )
 
-    session.refresh(session.get(Task, task_id))
+    task = session.get(Task, task_id)
+    session.refresh(task)
     assert result["skipped"] == 1
-    assert session.get(Task, task_id).title == "Privat"
+    assert task.title == "Privat"
+
+
+def test_aware_utc_update_and_stale_delete(session):
+    task_id = uuid7()
+    first = datetime(2026, 7, 21, 18, 0, tzinfo=timezone.utc)
+    newer = first + timedelta(minutes=5)
+    apply_changes(
+        session,
+        session.user_id,
+        [ChangeIn(kind="task", id=task_id, updated_at=first, data={"title": "Först"})],
+    )
+    apply_changes(
+        session,
+        session.user_id,
+        [ChangeIn(kind="task", id=task_id, updated_at=newer, data={"title": "Nyare"})],
+    )
+
+    result = apply_changes(
+        session,
+        session.user_id,
+        [ChangeIn(kind="task", id=task_id, op="delete", updated_at=first)],
+    )
+
+    task = session.get(Task, task_id)
+    assert result["results"][0]["status"] == "stale"
+    assert task.title == "Nyare"
+    assert task.deleted_at is None
+
+
+def test_unknown_delete_blocks_stale_resurrection(session):
+    task_id = uuid7()
+    deleted_at = datetime(2026, 7, 21, 19, 0, tzinfo=timezone.utc)
+    apply_changes(
+        session,
+        session.user_id,
+        [ChangeIn(kind="task", id=task_id, op="delete", updated_at=deleted_at)],
+    )
+
+    stale = apply_changes(
+        session,
+        session.user_id,
+        [
+            ChangeIn(
+                kind="task",
+                id=task_id,
+                updated_at=deleted_at - timedelta(minutes=1),
+                data={"title": "Gammal kopia"},
+            )
+        ],
+    )
+    assert stale["results"][0]["status"] == "stale"
+    assert session.get(Task, task_id) is None
+
+    fresh = apply_changes(
+        session,
+        session.user_id,
+        [
+            ChangeIn(
+                kind="task",
+                id=task_id,
+                updated_at=deleted_at + timedelta(minutes=1),
+                data={"title": "Avsiktligt återställd"},
+            )
+        ],
+    )
+    assert fresh["results"][0]["status"] == "created"
+    assert session.get(Task, task_id).title == "Avsiktligt återställd"
+
+
+def test_pull_uses_a_monotonic_paginated_cursor(session):
+    base = datetime(2026, 7, 21, 20, 0, tzinfo=timezone.utc)
+    changes = [
+        ChangeIn(
+            kind="task",
+            id=uuid7(),
+            updated_at=base + timedelta(minutes=index),
+            data={"title": f"Uppgift {index}"},
+        )
+        for index in range(3)
+    ]
+    apply_changes(session, session.user_id, changes)
+
+    first_page = pull_changes(session, session.user_id, cursor=0, limit=2)
+    second_page = pull_changes(
+        session,
+        session.user_id,
+        cursor=first_page["next_cursor"],
+        limit=2,
+    )
+
+    assert len(first_page["changes"]["task"]) == 2
+    assert first_page["has_more"] is True
+    assert len(second_page["changes"]["task"]) == 1
+    assert second_page["has_more"] is False
+    assert second_page["next_cursor"] > first_page["next_cursor"]

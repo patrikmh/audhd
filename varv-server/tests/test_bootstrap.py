@@ -91,6 +91,14 @@ def test_authenticated_sync_push_persists_scheduled_task(fresh_database_client):
     )
 
     assert response.status_code == 200
+    pull_response = client.get(
+        "/api/sync/pull?cursor=0&limit=1",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert pull_response.status_code == 200
+    page = pull_response.json()
+    assert page["changes"]["task"][0]["id"] == task_id
+    assert page["next_cursor"] > 0
     with Session(engine) as session:
         task = session.get(Task, task_id)
         assert task is not None

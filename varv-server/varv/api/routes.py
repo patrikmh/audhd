@@ -4,17 +4,17 @@ Auth: varje route (utom /auth/login) kräver en giltig User-token och skalar
 alla frågor till just den användaren — se varv/api/auth.py och User i db/models.py.
 """
 import asyncio
-from datetime import date, datetime
+from datetime import date
 from functools import partial
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
 from sqlmodel import Session, select
 
 from varv.agents.core import SortDeps, forfinaren, nedbrytaren, sorteraren, tagaren
 from varv.api.auth import current_user
 from varv.db.engine import get_session
 from varv.db.models import (
-    AgentLog, Capture, EnergyEvent, Idea, ListItem, ShoppingList, Task, TaskStep, Topic, User, Win,
+    AgentLog, Capture, EnergyEvent, Idea, ListItem, ShoppingList, Task, TaskStep, Topic, User, Win, utcnow,
 )
 from varv.schemas import (
     Breakdown, BreakdownIn, CaptureIn, CaptureOut, ChangeIn, ClassifiedCapture, ClassifyIn,
@@ -123,9 +123,12 @@ def sync_push(
 
 @router.get("/sync/pull")
 def sync_pull(
-    since: datetime | None = None, user: User = Depends(current_user), session: Session = Depends(get_session)
+    cursor: int = Query(default=0, ge=0),
+    limit: int = Query(default=200, ge=1, le=500),
+    user: User = Depends(current_user),
+    session: Session = Depends(get_session),
 ):
-    return {"server_time": datetime.now().isoformat(), "changes": sync.pull_changes(session, user.id, since)}
+    return sync.pull_changes(session, user.id, cursor, limit)
 
 
 # ---------- uppgifter ----------
@@ -159,9 +162,9 @@ def patch_task(
     completing = data.get("done") and not task.done
     for key, value in data.items():
         setattr(task, key, value)
-    task.updated_at = datetime.now()
+    task.updated_at = utcnow()
     if completing:
-        task.done_at = datetime.now()
+        task.done_at = utcnow()
         session.add(EnergyEvent(user_id=user.id, delta=task.energy, label=task.title))
         session.add(Win(user_id=user.id, text=f"Klart: {task.title}"))
     session.commit()
@@ -175,7 +178,7 @@ def toggle_step(step_id: str, user: User = Depends(current_user), session: Sessi
     if not step or step.user_id != user.id or step.deleted_at is not None:
         raise HTTPException(404)
     step.done = not step.done
-    step.updated_at = datetime.now()
+    step.updated_at = utcnow()
     if step.done:
         session.add(Win(user_id=user.id, text=f"Steg klart: {step.title}"))
     session.commit()
@@ -202,7 +205,7 @@ def patch_idea(idea_id: str, patch: IdeaPatch, user: User = Depends(current_user
     data = patch.model_dump(exclude_unset=True)
     for key, value in data.items():
         setattr(idea, key, value)
-    idea.updated_at = datetime.now()
+    idea.updated_at = utcnow()
     session.commit()
     session.refresh(idea)
     return idea
@@ -213,7 +216,7 @@ def delete_idea(idea_id: str, user: User = Depends(current_user), session: Sessi
     idea = session.get(Idea, idea_id)
     if not idea or idea.user_id != user.id or idea.deleted_at is not None:
         raise HTTPException(404)
-    now = datetime.now()
+    now = utcnow()
     idea.deleted_at = now
     idea.updated_at = now
     session.commit()
@@ -243,7 +246,7 @@ def toggle_item(item_id: str, user: User = Depends(current_user), session: Sessi
     if not item or item.user_id != user.id or item.deleted_at is not None:
         raise HTTPException(404)
     item.done = not item.done
-    item.updated_at = datetime.now()
+    item.updated_at = utcnow()
     session.commit()
     return item
 

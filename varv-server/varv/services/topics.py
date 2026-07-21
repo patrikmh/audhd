@@ -12,7 +12,7 @@ from datetime import datetime
 from sqlmodel import Session, select
 
 from varv.config import get_settings
-from varv.db.models import AgentLog, Capture, KV, Topic
+from varv.db.models import AgentLog, Capture, KV, Topic, utcnow
 
 log = logging.getLogger(__name__)
 
@@ -66,7 +66,7 @@ def run_topics(session: Session) -> str:
 
         if best is not None and best_sim >= MATCH_THRESHOLD:
             best.label, best.size, best.centroid = label, size, json.dumps(centroid)
-            best.updated_at = datetime.now()
+            best.updated_at = utcnow()
             id_map[cluster_id] = best.id
             existing_centroids = [(t, c) for t, c in existing_centroids if t.id != best.id]  # en match per tema
             matched += 1

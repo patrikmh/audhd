@@ -49,6 +49,7 @@ class ChangeTracker {
   constructor(username) {
     this.storageKey = `varv-sync:${encodeURIComponent(username)}:pending`;
     this.changes = new Map(); // id -> {kind, op, data, updated_at}
+    this.lastTimestampMs = 0;
     this.loadPending();
   }
 
@@ -58,6 +59,10 @@ class ChangeTracker {
       if (saved) {
         const parsed = JSON.parse(saved);
         this.changes = new Map(Object.entries(parsed));
+        this.lastTimestampMs = Math.max(
+          0,
+          ...Array.from(this.changes.values(), change => Date.parse(change.updated_at) || 0),
+        );
       }
     } catch (e) {
       console.error('Failed to load pending changes:', e);
@@ -75,12 +80,13 @@ class ChangeTracker {
 
   track(kind, id, op, data = {}) {
     const key = `${kind}:${id}`;
+    this.lastTimestampMs = Math.max(Date.now(), this.lastTimestampMs + 1);
     this.changes.set(key, {
       kind,
       id,
       op,
       data,
-      updated_at: new Date().toISOString()
+      updated_at: new Date(this.lastTimestampMs).toISOString()
     });
     this.savePending();
   }
@@ -89,6 +95,15 @@ class ChangeTracker {
     const key = `${kind}:${id}`;
     this.changes.delete(key);
     this.savePending();
+  }
+
+  ack(change) {
+    const key = `${change.kind}:${change.id}`;
+    const current = this.changes.get(key);
+    if (current?.updated_at !== change.updated_at) return false;
+    this.changes.delete(key);
+    this.savePending();
+    return true;
   }
 
   getPending() {
@@ -111,6 +126,7 @@ class SyncClient {
     this.getAuth = getAuth;
     this.username = username;
     this.cursorKey = `varv-sync:${encodeURIComponent(username)}:cursor`;
+    this.inboxKey = `varv-sync:${encodeURIComponent(username)}:inbox`;
     this.abortController = new AbortController();
     this.tracker = new ChangeTracker(username);
     this.cursor = this.loadCursor();
@@ -164,20 +180,22 @@ class SyncClient {
 
     const result = await response.json();
 
-    // Clear pending changes on success
-    if (result.created + result.updated + result.deleted > 0) {
-      this.tracker.clear();
+    const acknowledged = new Set(['created', 'updated', 'deleted', 'stale', 'idempotent']);
+    const sentByKey = new Map(changes.map(change => [`${change.kind}:${change.id}`, change]));
+    for (const item of result.results || []) {
+      if (!acknowledged.has(item.status)) continue;
+      const sent = sentByKey.get(`${item.kind}:${item.id}`);
+      if (sent) this.tracker.ack(sent);
     }
 
     return result;
   }
 
-  async pull() {
+  async pullPage() {
     const auth = this.requireAuth();
 
-    const url = this.cursor
-      ? `${this.apiBase}/api/sync/pull?since=${encodeURIComponent(this.cursor)}`
-      : `${this.apiBase}/api/sync/pull`;
+    const cursor = this.cursor || '0';
+    const url = `${this.apiBase}/api/sync/pull?cursor=${encodeURIComponent(cursor)}&limit=200`;
 
     const response = await fetch(url, {
       headers: {
@@ -190,14 +208,24 @@ class SyncClient {
       throw new Error(`Sync pull failed: ${response.status}`);
     }
 
-    const result = await response.json();
+    return response.json();
+  }
 
-    // Update cursor to latest server time
-    if (result.server_time) {
-      this.saveCursor(result.server_time);
-    }
+  commitCursor(cursor) {
+    this.saveCursor(String(cursor ?? this.cursor ?? 0));
+  }
 
-    return result.changes;
+  loadStagedPage() {
+    const saved = localStorage.getItem(this.inboxKey);
+    return saved ? JSON.parse(saved) : null;
+  }
+
+  stagePage(page) {
+    localStorage.setItem(this.inboxKey, JSON.stringify(page));
+  }
+
+  clearStagedPage() {
+    localStorage.removeItem(this.inboxKey);
   }
 
   /**
@@ -212,15 +240,6 @@ class SyncClient {
    */
   removePending(kind, id) {
     this.tracker.remove(kind, id);
-  }
-
-  /**
-   * Full sync: push local changes, then pull remote changes
-   */
-  async sync() {
-    const pushResult = await this.push();
-    const pullResult = await this.pull();
-    return { push: pushResult, pull: pullResult };
   }
 
   dispose() {

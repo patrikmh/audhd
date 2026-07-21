@@ -10,9 +10,11 @@ Designprinciper:
 - ondelete="CASCADE" på alla user_id-kopplingar: raderas en User försvinner allt dess data,
   inga föräldralösa rader. Kräver PRAGMA foreign_keys=ON, satt i db/engine.py.
 """
-from datetime import datetime, date
+from datetime import date, datetime, timezone
 from enum import StrEnum
 
+from sqlalchemy import event, text
+from sqlalchemy.orm import Session as SQLAlchemySession
 from sqlmodel import Field, SQLModel, UniqueConstraint
 
 from varv.utils import uuid7
@@ -20,6 +22,10 @@ from varv.utils import uuid7
 
 def today() -> str:
     return date.today().isoformat()
+
+
+def utcnow() -> datetime:
+    return datetime.now(timezone.utc)
 
 
 class CaptureType(StrEnum):
@@ -56,7 +62,7 @@ class User(SQLModel, table=True):
     capacity_set_by: str | None = None                 # "user" | "auto" — user vinner alltid samma dag
     setup_done: bool = False                           # wizard genomförd
     last_checkin_date: str | None = None               # senaste morgoncheckin (YYYY-MM-DD)
-    created_at: datetime = Field(default_factory=datetime.now)
+    created_at: datetime = Field(default_factory=utcnow)
 
 
 class Capture(SQLModel, table=True):
@@ -68,7 +74,7 @@ class Capture(SQLModel, table=True):
     routed_type: CaptureType | None = None
     routed_id: str | None = None
     topic_id: str | None = Field(default=None, foreign_key="topic.id")
-    created_at: datetime = Field(default_factory=datetime.now)
+    created_at: datetime = Field(default_factory=utcnow)
     day: str = Field(default_factory=today, index=True)
 
 
@@ -87,13 +93,14 @@ class Task(SQLModel, table=True):
     synced_to_calendar: bool = False
     done: bool = False
     done_at: datetime | None = None
-    created_at: datetime = Field(default_factory=datetime.now)
-    updated_at: datetime = Field(default_factory=datetime.now, index=True)
+    created_at: datetime = Field(default_factory=utcnow)
+    updated_at: datetime = Field(default_factory=utcnow, index=True)
     deleted_at: datetime | None = None        # mjuk radering — se synkkommentar överst
     day: str = Field(default_factory=today, index=True)
     scheduled_date: str | None = None         # YYYY-MM-DD för framtida uppgifter
     note: str | None = None                   # fritextanteckning
     image: str | None = None                  # base64-data-uri för miniatyr
+    sync_version: int = Field(default=0, index=True)
 
 
 class TaskStep(SQLModel, table=True):
@@ -104,8 +111,9 @@ class TaskStep(SQLModel, table=True):
     minutes: int = 5
     position: int = 0
     done: bool = False
-    updated_at: datetime = Field(default_factory=datetime.now, index=True)
+    updated_at: datetime = Field(default_factory=utcnow, index=True)
     deleted_at: datetime | None = None
+    sync_version: int = Field(default=0, index=True)
 
 
 class Idea(SQLModel, table=True):
@@ -116,12 +124,13 @@ class Idea(SQLModel, table=True):
     note: str | None = None
     status: IdeaStatus = IdeaStatus.raw
     attempts: int = 0
-    created_at: datetime = Field(default_factory=datetime.now)
-    updated_at: datetime = Field(default_factory=datetime.now, index=True)
+    created_at: datetime = Field(default_factory=utcnow)
+    updated_at: datetime = Field(default_factory=utcnow, index=True)
     deleted_at: datetime | None = None
     day: str = Field(default_factory=today, index=True)
     image: str | None = None
     tags: str | None = None
+    sync_version: int = Field(default=0, index=True)
 
 
 class ShoppingList(SQLModel, table=True):
@@ -138,9 +147,10 @@ class ListItem(SQLModel, table=True):
     list_id: str = Field(foreign_key="shoppinglist.id", ondelete="CASCADE", index=True)
     text: str
     done: bool = False
-    created_at: datetime = Field(default_factory=datetime.now)
-    updated_at: datetime = Field(default_factory=datetime.now, index=True)
+    created_at: datetime = Field(default_factory=utcnow)
+    updated_at: datetime = Field(default_factory=utcnow, index=True)
     deleted_at: datetime | None = None
+    sync_version: int = Field(default=0, index=True)
 
 
 class Tag(SQLModel, table=True):
@@ -170,8 +180,9 @@ class Win(SQLModel, table=True):
     id: str = Field(default_factory=uuid7, primary_key=True)
     user_id: str = Field(foreign_key="user.id", ondelete="CASCADE", index=True)
     text: str
-    created_at: datetime = Field(default_factory=datetime.now)
+    created_at: datetime = Field(default_factory=utcnow)
     day: str = Field(default_factory=today, index=True)
+    sync_version: int = Field(default=0, index=True)
 
 
 class EnergyEvent(SQLModel, table=True):
@@ -180,8 +191,9 @@ class EnergyEvent(SQLModel, table=True):
     user_id: str = Field(foreign_key="user.id", ondelete="CASCADE", index=True)
     delta: int
     label: str
-    created_at: datetime = Field(default_factory=datetime.now)
+    created_at: datetime = Field(default_factory=utcnow)
     day: str = Field(default_factory=today, index=True)
+    sync_version: int = Field(default=0, index=True)
 
 
 class AgentLog(SQLModel, table=True):
@@ -189,7 +201,7 @@ class AgentLog(SQLModel, table=True):
     user_id: str = Field(foreign_key="user.id", ondelete="CASCADE", index=True)
     agent: str = Field(index=True)
     text: str
-    created_at: datetime = Field(default_factory=datetime.now)
+    created_at: datetime = Field(default_factory=utcnow)
     day: str = Field(default_factory=today, index=True)
 
 
@@ -201,7 +213,7 @@ class Topic(SQLModel, table=True):
     label: str
     size: int = 0
     centroid: str | None = None               # JSON-lista: normaliserad embeddingcentroid
-    updated_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=utcnow)
 
 
 class KV(SQLModel, table=True):
@@ -209,3 +221,44 @@ class KV(SQLModel, table=True):
     per-användartillstånd (kapacitet) bor på User där det hör hemma, inte här."""
     key: str = Field(primary_key=True)
     value: str
+
+
+class SyncTombstone(SQLModel, table=True):
+    """Deletion marker for an entity that was not present on this server."""
+    __table_args__ = (UniqueConstraint("user_id", "kind", "entity_id", name="uq_sync_tombstone"),)
+    id: str = Field(default_factory=uuid7, primary_key=True)
+    user_id: str = Field(foreign_key="user.id", ondelete="CASCADE", index=True)
+    kind: str = Field(index=True)
+    entity_id: str = Field(index=True)
+    updated_at: datetime = Field(default_factory=utcnow)
+    sync_version: int = Field(default=0, index=True)
+
+
+SYNC_VERSIONED_TYPES = (Task, TaskStep, Idea, ListItem, Win, EnergyEvent, SyncTombstone)
+
+
+@event.listens_for(SQLAlchemySession, "before_flush")
+def _assign_sync_versions(session, flush_context, instances) -> None:
+    """Assign one monotonic per-user cursor to every changed sync entity."""
+    candidates = [*session.new, *session.dirty]
+    for row in candidates:
+        if not isinstance(row, SYNC_VERSIONED_TYPES):
+            continue
+        if row in session.dirty and not session.is_modified(row, include_collections=False):
+            continue
+
+        key = f"sync_version:{row.user_id}"
+        connection = session.connection()
+        connection.execute(
+            text('INSERT INTO kv ("key", value) VALUES (:key, \'0\') ON CONFLICT ("key") DO NOTHING'),
+            {"key": key},
+        )
+        row.sync_version = int(
+            connection.execute(
+                text(
+                    'UPDATE kv SET value = CAST(value AS INTEGER) + 1 '
+                    'WHERE "key" = :key RETURNING value'
+                ),
+                {"key": key},
+            ).scalar_one()
+        )

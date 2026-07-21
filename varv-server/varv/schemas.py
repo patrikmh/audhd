@@ -3,6 +3,9 @@
 Agent-outputs är kontraktet mellan LLM och kod — Pydantic AI validerar och
 begär om vid schemafel, så service-lagret slipper defensiv parsning.
 """
+from datetime import datetime
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 from varv.db.models import CaptureType, Priority
@@ -124,11 +127,18 @@ class BreakdownIn(BaseModel):
 # ---------- synk ----------
 
 class ChangeIn(BaseModel):
-    kind: str                                 # task | task_step | idea | list_item | win | energy_event
+    kind: Literal["task", "task_step", "idea", "list_item", "win", "energy_event"]
     id: str                                   # klientgenererad UUIDv7
-    op: str = "upsert"                        # upsert | delete
-    updated_at: "datetime" = Field(description="Klientens tidsstämpel — LWW-jämförelse")
+    op: Literal["upsert", "delete"] = "upsert"
+    updated_at: datetime = Field(description="Klientens tidsstämpel — LWW-jämförelse")
     data: dict = Field(default_factory=dict)
+
+
+class SyncChangeResult(BaseModel):
+    kind: str
+    id: str
+    updated_at: datetime
+    status: Literal["created", "updated", "deleted", "stale", "idempotent", "rejected"]
 
 
 class SyncPushOut(BaseModel):
@@ -136,7 +146,4 @@ class SyncPushOut(BaseModel):
     updated: int
     deleted: int
     skipped: int
-
-
-from datetime import datetime  # noqa: E402  (för ChangeIn ovan)
-ChangeIn.model_rebuild()
+    results: list[SyncChangeResult]
