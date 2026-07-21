@@ -3,29 +3,25 @@ from datetime import date, timedelta
 
 from sqlmodel import Session, func, select
 
-from varv.db.models import EnergyEvent, KV, TagLink, Tag, Win
+from varv.db.models import EnergyEvent, TagLink, Tag, User, Win
 
 MODE_BUDGETS = {"steady": 20, "low": 12, "recovery": 6}
 
 
 def get_capacity(session: Session, user_id: str) -> str:
-    row = session.get(KV, f"capacity:{user_id}")
-    return row.value if row else "steady"
+    return session.get(User, user_id).capacity
 
 
 def set_capacity(session: Session, user_id: str, mode: str, by: str) -> None:
     """by = 'user' | 'auto'. Användarens val samma dag vinner alltid; auto växlar bara nedåt."""
     assert mode in MODE_BUDGETS
-    owner = session.get(KV, f"capacity_by:{user_id}")
+    user = session.get(User, user_id)
     today = date.today().isoformat()
-    if by == "auto" and owner and owner.value == f"user:{today}":
+    if by == "auto" and user.capacity_set_by == "user" and user.capacity_set_day == today:
         return
-    for key, value in ((f"capacity:{user_id}", mode), (f"capacity_by:{user_id}", f"{by}:{today}")):
-        row = session.get(KV, key)
-        if row:
-            row.value = value
-        else:
-            session.add(KV(key=key, value=value))
+    user.capacity = mode
+    user.capacity_set_day = today
+    user.capacity_set_by = by
     session.commit()
 
 

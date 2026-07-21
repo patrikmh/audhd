@@ -2,13 +2,26 @@
 from collections.abc import Iterator
 from contextlib import contextmanager
 
+from sqlalchemy import event
 from sqlmodel import Session, SQLModel, create_engine
 
 from varv.config import get_settings
 
 _settings = get_settings()
-_connect_args = {"check_same_thread": False} if _settings.database_url.startswith("sqlite") else {}
+_is_sqlite = _settings.database_url.startswith("sqlite")
+_connect_args = {"check_same_thread": False} if _is_sqlite else {}
 engine = create_engine(_settings.database_url, connect_args=_connect_args)
+
+if _is_sqlite:
+    @event.listens_for(engine, "connect")
+    def _sqlite_pragmas(dbapi_connection, connection_record) -> None:
+        # SQLite ignorerar FK-constraints (våra ondelete="CASCADE") om man inte
+        # slår på det per anslutning. WAL minskar "database is locked" när
+        # bakgrundsworkern och API-requests läser/skriver samtidigt.
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA foreign_keys=ON")
+        cursor.execute("PRAGMA journal_mode=WAL")
+        cursor.close()
 
 
 def init_db() -> None:

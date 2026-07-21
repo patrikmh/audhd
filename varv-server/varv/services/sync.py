@@ -2,9 +2,12 @@
 last-write-wins per rad via updated_at. CRDT medvetet bortvalt — en användare, få enheter.
 
 - push: klienten skickar ändringar; okänd rad skapas, känd rad uppdateras om inkommande
-  updated_at är nyare, delete är explicit op. Append-only-tabeller är insert-om-saknas
-  (idempotent på id) — de kan aldrig konfliktera.
-- pull: allt ändrat/skapat sedan `since`. Klienten sparar högsta tidsstämpeln som ny cursor.
+  updated_at är nyare, delete sätter deleted_at (mjuk radering) istället för att ta bort
+  raden — annars skulle en enhet som redan hade cachat raden aldrig få veta att den
+  försvann, den skulle bara tyst sluta dyka upp i framtida pull. Append-only-tabeller är
+  insert-om-saknas (idempotent på id) — de kan aldrig konfliktera eller raderas.
+- pull: allt ändrat/skapat/mjukraderat sedan `since`, inklusive tombstones — klienten tar
+  bort lokalt när den ser deleted_at != null. Klienten sparar högsta tidsstämpeln som cursor.
 """
 from datetime import datetime
 
@@ -21,11 +24,13 @@ SYNCABLE = {
     "win": Win,
     "energy_event": EnergyEvent,
 }
-APPEND_ONLY = {"win", "energy_event"}
+APPEND_ONLY = {"win", "energy_event"}         # saknar deleted_at — kan aldrig raderas
+SOFT_DELETABLE = set(SYNCABLE) - APPEND_ONLY
 
 
-# Kolumner klienten aldrig får sätta via synk: identitet, härkomst och serverägd bokföring.
-_PROTECTED = {"id", "user_id", "created_at", "updated_at", "routed_type", "routed_id", "topic_id"}
+# Kolumner klienten aldrig får sätta via synk: identitet, härkomst, serverägd bokföring
+# och tombstone-status (den sätts bara via den explicita "delete"-op:en nedan).
+_PROTECTED = {"id", "user_id", "created_at", "updated_at", "deleted_at", "routed_type", "routed_id", "topic_id"}
 
 
 def _apply_fields(row, data: dict, model) -> None:
@@ -48,11 +53,12 @@ def apply_changes(session: Session, user_id: str, changes: list[ChangeIn]) -> di
             continue
 
         if ch.op == "delete":
-            if row is not None:
-                session.delete(row)
-                counts["deleted"] += 1
-            else:
+            if row is None or ch.kind not in SOFT_DELETABLE:
                 counts["skipped"] += 1
+            else:
+                row.deleted_at = ch.updated_at
+                row.updated_at = ch.updated_at
+                counts["deleted"] += 1
             continue
 
         if row is None:
@@ -84,6 +90,8 @@ def _cursor_column(kind: str, model):
 
 
 def pull_changes(session: Session, user_id: str, since: datetime | None) -> dict[str, list[dict]]:
+    """Inkluderar mjukraderade rader med flit — klienten behöver se tombstonen för att
+    ta bort sin lokala kopia, filtrering på deleted_at hör hemma i de vanliga REST-listorna."""
     out: dict[str, list[dict]] = {}
     for kind, model in SYNCABLE.items():
         stamp = _cursor_column(kind, model)

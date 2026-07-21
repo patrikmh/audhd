@@ -5,7 +5,7 @@ begär om vid schemafel, så service-lagret slipper defensiv parsning.
 """
 from pydantic import BaseModel, Field
 
-from varv.db.models import CaptureType
+from varv.db.models import CaptureType, Priority
 
 
 # ---------- agent-outputs ----------
@@ -58,7 +58,7 @@ class TaskPatch(BaseModel):
     trigger: str | None = None
     energy: int | None = Field(default=None, ge=1, le=5)
     time: str | None = None
-    priority: str | None = None
+    priority: Priority | None = None
     essential: bool | None = None
     done: bool | None = None
 

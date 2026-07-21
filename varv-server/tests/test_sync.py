@@ -32,11 +32,17 @@ def test_append_only_idempotent(session):
 
 
 def test_delete_and_pull(session):
+    """Delete är en mjuk radering (tombstone) — raden lever kvar med deleted_at satt,
+    så en enhet som redan cachat den lokalt får se förändringen vid nästa pull istället
+    för att tyst tappa den ur sikte."""
     tid = uuid7()
     now = datetime.now()
     apply_changes(session, session.user_id, [ChangeIn(kind="task", id=tid, updated_at=now, data={"title": "bort"})])
     apply_changes(session, session.user_id, [ChangeIn(kind="task", id=tid, op="delete", updated_at=now)])
-    assert session.get(Task, tid) is None
+    deleted_task = session.get(Task, tid)
+    assert deleted_task is not None and deleted_task.deleted_at is not None
 
     pulled = pull_changes(session, session.user_id, since=None)
     assert "task" in pulled and "win" in pulled
+    pulled_task = next(t for t in pulled["task"] if t["id"] == tid)
+    assert pulled_task["deleted_at"] is not None

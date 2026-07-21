@@ -119,9 +119,15 @@ def sync_pull(
 @router.get("/tasks")
 def list_tasks(done: bool = False, user: User = Depends(current_user), session: Session = Depends(get_session)):
     tasks = session.exec(
-        select(Task).where(Task.user_id == user.id, Task.done == done).order_by(Task.priority, Task.time)
+        select(Task)
+        .where(Task.user_id == user.id, Task.done == done, Task.deleted_at.is_(None))
+        .order_by(Task.priority, Task.time)
     ).all()
-    steps = session.exec(select(TaskStep).where(TaskStep.user_id == user.id).order_by(TaskStep.position)).all()
+    steps = session.exec(
+        select(TaskStep)
+        .where(TaskStep.user_id == user.id, TaskStep.deleted_at.is_(None))
+        .order_by(TaskStep.position)
+    ).all()
     by_task: dict[str, list[TaskStep]] = {}
     for st in steps:
         by_task.setdefault(st.task_id, []).append(st)
@@ -133,7 +139,7 @@ def patch_task(
     task_id: str, patch: TaskPatch, user: User = Depends(current_user), session: Session = Depends(get_session)
 ):
     task = session.get(Task, task_id)
-    if not task or task.user_id != user.id:
+    if not task or task.user_id != user.id or task.deleted_at is not None:
         raise HTTPException(404)
     data = patch.model_dump(exclude_unset=True)
     completing = data.get("done") and not task.done
@@ -152,7 +158,7 @@ def patch_task(
 @router.patch("/steps/{step_id}/toggle")
 def toggle_step(step_id: str, user: User = Depends(current_user), session: Session = Depends(get_session)):
     step = session.get(TaskStep, step_id)
-    if not step or step.user_id != user.id:
+    if not step or step.user_id != user.id or step.deleted_at is not None:
         raise HTTPException(404)
     step.done = not step.done
     step.updated_at = datetime.now()
@@ -167,16 +173,21 @@ def toggle_step(step_id: str, user: User = Depends(current_user), session: Sessi
 @router.get("/ideas")
 def list_ideas(user: User = Depends(current_user), session: Session = Depends(get_session)):
     return session.exec(
-        select(Idea).where(Idea.user_id == user.id).order_by(Idea.created_at.desc()).limit(100)
+        select(Idea)
+        .where(Idea.user_id == user.id, Idea.deleted_at.is_(None))
+        .order_by(Idea.created_at.desc())
+        .limit(100)
     ).all()
 
 
 @router.delete("/ideas/{idea_id}")
 def delete_idea(idea_id: str, user: User = Depends(current_user), session: Session = Depends(get_session)):
     idea = session.get(Idea, idea_id)
-    if not idea or idea.user_id != user.id:
+    if not idea or idea.user_id != user.id or idea.deleted_at is not None:
         raise HTTPException(404)
-    session.delete(idea)
+    now = datetime.now()
+    idea.deleted_at = now
+    idea.updated_at = now
     session.commit()
     return {"ok": True}
 
@@ -186,7 +197,9 @@ def delete_idea(idea_id: str, user: User = Depends(current_user), session: Sessi
 @router.get("/lists")
 def get_lists(user: User = Depends(current_user), session: Session = Depends(get_session)):
     lists = session.exec(select(ShoppingList).where(ShoppingList.user_id == user.id)).all()
-    items = session.exec(select(ListItem).where(ListItem.user_id == user.id)).all()
+    items = session.exec(
+        select(ListItem).where(ListItem.user_id == user.id, ListItem.deleted_at.is_(None))
+    ).all()
     by_list: dict[str, list[ListItem]] = {}
     for it in items:
         by_list.setdefault(it.list_id, []).append(it)
@@ -196,7 +209,7 @@ def get_lists(user: User = Depends(current_user), session: Session = Depends(get
 @router.patch("/list-items/{item_id}/toggle")
 def toggle_item(item_id: str, user: User = Depends(current_user), session: Session = Depends(get_session)):
     item = session.get(ListItem, item_id)
-    if not item or item.user_id != user.id:
+    if not item or item.user_id != user.id or item.deleted_at is not None:
         raise HTTPException(404)
     item.done = not item.done
     item.updated_at = datetime.now()

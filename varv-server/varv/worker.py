@@ -45,7 +45,11 @@ async def refine_sweep() -> None:
     with session_scope() as session:
         pending = session.exec(
             select(Idea)
-            .where(Idea.status.in_([IdeaStatus.raw, IdeaStatus.fail]), Idea.attempts < s.refine_max_attempts)
+            .where(
+                Idea.status.in_([IdeaStatus.raw, IdeaStatus.fail]),
+                Idea.attempts < s.refine_max_attempts,
+                Idea.deleted_at.is_(None),
+            )
             .limit(s.refine_batch)
         ).all()
         for idea in pending:
@@ -77,12 +81,15 @@ async def breakdown_sweep() -> None:
             ).one()
             if used >= s.breakdown_daily_budget:
                 continue
-            has_steps = select(TaskStep.task_id).distinct()
+            has_steps = select(TaskStep.task_id).where(TaskStep.deleted_at.is_(None)).distinct()
             # Kandidater: öppna, stegfria uppgifter som faktiskt behöver igångsättningshjälp
             # (A-prioriterade eller tunga). Väljs sedan i den ordning användaren möter dem.
             candidates = session.exec(
                 select(Task)
-                .where(Task.user_id == user.id, Task.done == False, Task.id.not_in(has_steps))  # noqa: E712
+                .where(
+                    Task.user_id == user.id, Task.done == False,  # noqa: E712
+                    Task.deleted_at.is_(None), Task.id.not_in(has_steps),
+                )
                 .where((Task.priority == "A") | (Task.energy >= 4))
             ).all()
             if not candidates:
