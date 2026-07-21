@@ -190,6 +190,14 @@ class APIClient {
       : '/api/sync/pull';
     return this.get(url);
   }
+
+  async getMe() {
+    return this.get('/api/me');
+  }
+
+  async patchMe(data) {
+    return this.patch('/api/me', data);
+  }
 }
 
 export { APIClient };
