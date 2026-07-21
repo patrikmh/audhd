@@ -112,6 +112,11 @@ class RefineIn(BaseModel):
     raw: str = Field(min_length=1, max_length=2000)
 
 
+class TagIn(BaseModel):
+    title: str = Field(min_length=1, max_length=200)
+    note: str | None = Field(default=None, max_length=2000)
+
+
 class BreakdownIn(BaseModel):
     title: str = Field(min_length=1, max_length=200)
 

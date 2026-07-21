@@ -18,7 +18,7 @@ from varv.db.models import (
 )
 from varv.schemas import (
     Breakdown, BreakdownIn, CaptureIn, CaptureOut, ChangeIn, ClassifiedCapture, ClassifyIn,
-    IdeaPatch, LoginIn, LoginOut, RefinedIdea, RefineIn, SyncPushOut, TaskPatch, TranscriptOut, WeekStats,
+    IdeaPatch, LoginIn, LoginOut, RefinedIdea, RefineIn, SyncPushOut, TagIn, TaskPatch, TranscriptOut, WeekStats,
 )
 from varv.services import stats, sync
 from varv.services.capture import known_tag_vocabulary, process_capture
@@ -102,11 +102,6 @@ async def agents_refine(payload: RefineIn, user: User = Depends(current_user)) -
 async def agents_breakdown(payload: BreakdownIn, user: User = Depends(current_user)) -> Breakdown:
     result = await nedbrytaren.run(payload.title)
     return result.output
-
-
-class TagIn(BaseModel):
-    title: str
-    note: str | None = None
 
 
 @router.post("/agents/tags", response_model=list[str])
