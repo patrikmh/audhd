@@ -11,6 +11,45 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { T } from "../constants/tokens";
 
+// ── A2UI v0.9 normalization ────────────────────────────────────────────────
+
+/**
+ * Normalize A2UI v0.9 format → {id, type, properties} for renderer.
+ * Backend sends: {id, component: {Card: {children: {explicitList: [...]}, text: {literalString: "..."}}}}
+ * Renderer expects: {id, type: "card", properties: {children: [...]}}
+ */
+function normalizeA2UI(data) {
+  if (!data) return null;
+  if (data.type && data.properties) return data; // already normalized
+
+  const entries = Object.entries(data.component || {});
+  if (!entries.length) return null;
+  const [type, props] = entries[0];
+  const normalized = { id: data.id, type: type.toLowerCase(), properties: {} };
+
+  for (const [k, v] of Object.entries(props)) {
+    if (k === "children") {
+      if (v && v.explicitList) {
+        normalized.properties.children = v.explicitList;
+      } else if (Array.isArray(v)) {
+        normalized.properties.children = v;
+      }
+    } else if (v && typeof v === "object" && v.literalString) {
+      normalized.properties[k] = v.literalString;
+    } else if (v && typeof v === "object" && Array.isArray(v.literalList)) {
+      normalized.properties[k] = v.literalList.map((item) =>
+        item && typeof item === "object" && item.literalString ? item.literalString : item
+      );
+    } else if (v && typeof v === "object" && v.dataBinding) {
+      normalized.properties[k] = `[${v.dataBinding.path || "data"}]`;
+    } else {
+      normalized.properties[k] = v;
+    }
+  }
+
+  return normalized;
+}
+
 // ── Component registry ──────────────────────────────────────────────────────
 
 const COMPONENTS = {
@@ -37,9 +76,27 @@ const COMPONENTS = {
 export default function A2UIRenderer({ surfaces = [], onAction }) {
   if (!surfaces.length) return null;
 
+  // Assemble surfaces from message stream: group by surfaceId,
+  // apply updateComponents / updateDataModel in order.
+  const assembled = {};
+  for (const msg of surfaces) {
+    if (msg.type === "createSurface") {
+      assembled[msg.surfaceId] = { id: msg.surfaceId, components: [], dataModel: {} };
+    } else if (msg.type === "updateComponents" && assembled[msg.surfaceId]) {
+      assembled[msg.surfaceId].components = msg.components || [];
+    } else if (msg.type === "updateDataModel" && assembled[msg.surfaceId]) {
+      assembled[msg.surfaceId].dataModel = msg.data || {};
+    } else if (msg.type === "deleteSurface" && assembled[msg.surfaceId]) {
+      delete assembled[msg.surfaceId];
+    }
+  }
+
+  const surfaceList = Object.values(assembled);
+  if (!surfaceList.length) return null;
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      {surfaces.map((surface, idx) => (
+      {surfaceList.map((surface, idx) => (
         <Surface key={surface.id || idx} surface={surface} onAction={onAction} />
       ))}
     </div>
@@ -47,8 +104,10 @@ export default function A2UIRenderer({ surfaces = [], onAction }) {
 }
 
 function Surface({ surface, onAction }) {
-  const { components = [], dataModel = {} } = surface;
+  const { components: rawComponents = [], dataModel = {} } = surface;
 
+  // Normalize v0.9 flat list → renderer format
+  const components = rawComponents.map(normalizeA2UI).filter(Boolean);
   if (!components.length) return null;
 
   // Build component map for quick lookup
@@ -217,7 +276,8 @@ function IconComponent({ name, size }) {
   );
 }
 
-function BadgeComponent({ label, variant }) {
+function BadgeComponent({ label, text, variant }) {
+  const display = label || text || "";
   const colors = {
     success: { bg: T.moss + "22", fg: T.moss },
     warning: { bg: T.warn + "22", fg: T.warn },
@@ -235,7 +295,7 @@ function BadgeComponent({ label, variant }) {
       background: c.bg,
       color: c.fg,
     }}>
-      {label}
+      {display}
     </span>
   );
 }

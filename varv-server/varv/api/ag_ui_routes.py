@@ -341,7 +341,8 @@ async def ag_ui_run_a2ui(
                 result = await agents["nedbrytaren"].run(payload.input)
                 output = result.output
 
-                for msg in a2ui["breakdown_result"](payload.input, output.steps, None):
+                step_strs = [f"{s.title} ({s.minutes} min)" for s in output.steps]
+                for msg in a2ui["breakdown_result"](payload.input, step_strs, None):
                     yield _emit(encoder, E.custom("a2ui_message", msg))
 
                 msg_id = str(uuid.uuid4())
