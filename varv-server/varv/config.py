@@ -18,8 +18,9 @@ class Settings(BaseSettings):
     refine_batch: int = 2                    # Förfinaren: idéer per tick
     agent_tick_seconds: int = 300            # bakgrundsloopens intervall
 
-    # --- transkribering (KB-Whisper) ---
-    whisper_model: str = "KBLab/kb-whisper-tiny"  # tiny = ~2x faster than small, slightly lower quality
+    # --- transkribering (web API med lokal fallback) ---
+    openai_api_key: str | None = None    # OPENAI_API_KEY för web-transkribering
+    whisper_model: str = "KBLab/kb-whisper-tiny"  # fallback: lokal modell
     whisper_device: str = "cpu"
     whisper_compute_type: str = "int8"       # int8 = Pi-vänligt
 
