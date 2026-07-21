@@ -68,6 +68,11 @@ const uid = () => Math.random().toString(36).slice(2, 9);
 const todayKey = () => new Date().toISOString().slice(0, 10);
 
 const ICON_CHOICES = ["📌", "🛒", "📞", "✉️", "🧹", "🧺", "🐈", "🩺", "🏃", "📚", "💻", "✍️", "💳", "🗓️", "🍳", "🔧"];
+const WEEKDAYS = [
+  { key: "mon", label: "Mån" }, { key: "tue", label: "Tis" }, { key: "wed", label: "Ons" },
+  { key: "thu", label: "Tor" }, { key: "fri", label: "Fre" }, { key: "sat", label: "Lör" }, { key: "sun", label: "Sön" },
+];
+const todayWeekday = () => ["sun", "mon", "tue", "wed", "thu", "fri", "sat"][new Date().getDay()];
 const ICON_KEYWORDS = [
   ["handla", "🛒"], ["köp", "🛒"], ["buy", "🛒"], ["shop", "🛒"], ["grocer", "🛒"],
   ["ring", "📞"], ["call", "📞"], ["mail", "✉️"], ["mejl", "✉️"], ["email", "✉️"],
@@ -247,7 +252,13 @@ function VarvApp({ username, onLogout }) {
             s.energyLog = (s.energyLog || []).filter((e) => e.day >= cutoff);
             s.meds = (s.meds || []).filter((m) => m.day >= medCutoff);
             s.tagLog = (s.tagLog || []).filter((t) => t.day >= medCutoff);
-            s.tasks = (s.tasks || []).filter((t) => !t.done);
+            // Återkommande uppgifter (repeatDays) tas aldrig bort — de återställs till
+            // ogjorda när deras nästa schemalagda veckodag kommer, istället för att bara
+            // rensas bort som en engångsuppgift.
+            const today = todayWeekday();
+            s.tasks = (s.tasks || [])
+              .map((t) => ((t.repeatDays || []).includes(today) ? { ...t, done: false } : t))
+              .filter((t) => (t.repeatDays || []).length > 0 || !t.done);
           }
           s.settings = { ...DEFAULT_STATE.settings, ...(s.settings || {}) };
           s.lists = s.lists || DEFAULT_STATE.lists;
@@ -291,7 +302,10 @@ function VarvApp({ username, onLogout }) {
   const winsToday = state.wins.filter((w) => new Date(w.ts).toDateString() === new Date().toDateString());
 
   const visibleTasks = useMemo(() => {
-    let open = state.tasks.filter((t) => !t.done);
+    const today = todayWeekday();
+    let open = state.tasks.filter(
+      (t) => !t.done && ((t.repeatDays || []).length === 0 || t.repeatDays.includes(today))
+    );
     if (state.capacity === "recovery") open = open.filter((t) => t.essential);
     return [...open].sort((a, b) => {
       const pa = a.priority ? PRIORITY_ORDER[a.priority] : 3;
@@ -299,6 +313,11 @@ function VarvApp({ username, onLogout }) {
       return pa - pb;
     });
   }, [state.tasks, state.capacity]);
+
+  const doneToday = useMemo(
+    () => state.tasks.filter((t) => t.done && t.doneAt && new Date(t.doneAt).toDateString() === new Date().toDateString()),
+    [state.tasks]
+  );
 
   const medToday = state.meds.find((m) => m.day === todayKey());
   const lapDoneToday = state.morningLapDay === todayKey();
@@ -351,7 +370,7 @@ function VarvApp({ username, onLogout }) {
     if (task.done) return;
     setState((s) => ({
       ...s,
-      tasks: s.tasks.map((t) => (t.id === task.id ? { ...t, done: true } : t)),
+      tasks: s.tasks.map((t) => (t.id === task.id ? { ...t, done: true, doneAt: Date.now() } : t)),
     }));
     logEnergy(task.energy, task.title);
     addWin(`Klart: ${task.title}`);
@@ -361,6 +380,28 @@ function VarvApp({ username, onLogout }) {
     setState((s) => ({ ...s, tasks: s.tasks.map((t) => (t.id === id ? { ...t, ...p } : t)) }));
 
   const removeTask = (id) => setState((s) => ({ ...s, tasks: s.tasks.filter((t) => t.id !== id) }));
+
+  // Nedbrytaren körs direkt när en uppgift skapas — inte bara i bakgrundssvepet — så
+  // det första steget redan finns när man möter uppgiften. Tyst vid fel: man kan
+  // fortfarande be om det manuellt via "Jag kommer inte igång".
+  const breakdownTask = async (taskId, title) => {
+    try {
+      const steps = await aiBreakdown(title);
+      updateTask(taskId, { steps });
+    } catch (e) { /* tyst — nedbrytning kan alltid begäras manuellt senare */ }
+  };
+
+  const DEFAULT_TASK = {
+    icon: "📌", trigger: "", energy: 2, time: "", essential: false, steps: [],
+    done: false, doneAt: null, minutes: 30, priority: null, inbox: true, tags: [], repeatDays: [],
+  };
+
+  const addTask = (draft) => {
+    const task = { ...DEFAULT_TASK, id: uid(), icon: guessIcon(draft.title), ...draft };
+    setState((st) => ({ ...st, tasks: [...st.tasks, task] }));
+    breakdownTask(task.id, task.title);
+    return task;
+  };
 
   /* ---------- Google-synk ----------
      varv-server har (ännu) ingen Gmail/Calendar/Notion-integration — dessa
@@ -460,10 +501,7 @@ function VarvApp({ username, onLogout }) {
 
   const ideaToTask = (idea) => {
     const title = idea.title || idea.raw.slice(0, 60);
-    setState((st) => ({
-      ...st,
-      tasks: [...st.tasks, { id: uid(), title, icon: "💡", trigger: "", energy: 2, time: "", essential: false, steps: [], done: false, minutes: 30, priority: null, inbox: true }],
-    }));
+    addTask({ title, icon: "💡" });
     addWin(`Idé → uppgift: ${title}`);
   };
 
@@ -490,10 +528,7 @@ function VarvApp({ username, onLogout }) {
       setToast(`→ Inköp: ${c.title || raw}`);
       logAgent("Sorteraren", `→ Inköp: "${(c.title || raw).slice(0, 40)}"`);
     } else if (c.type === "task") {
-      setState((st) => ({
-        ...st,
-        tasks: [...st.tasks, { id: uid(), title: c.title || raw, icon: guessIcon(c.title || raw), trigger: "", energy: c.energy || 2, time: c.time || "", essential: false, steps: [], done: false, minutes: 30, priority: null, inbox: true, tags }],
-      }));
+      addTask({ title: c.title || raw, energy: c.energy || 2, time: c.time || "", tags });
       setToast(`→ Uppgift: ${c.title || raw}${tags[0] ? ` · #${tags[0]}` : ""}`);
       logAgent("Sorteraren", `→ Uppgift: "${(c.title || raw).slice(0, 40)}" [${tags.join(", ")}]`);
     } else {
@@ -735,9 +770,9 @@ function VarvApp({ username, onLogout }) {
                 <button
                   style={{ ...s.medBtn, flexShrink: 0 }}
                   onClick={() => {
+                    addTask({ title: m.title, icon: "✉️" });
                     setState((st) => ({
                       ...st,
-                      tasks: [...st.tasks, { id: uid(), title: m.title, icon: "✉️", trigger: "", energy: 2, time: "", essential: false, steps: [], done: false, minutes: 30, priority: null, inbox: true }],
                       mailSug: { ...st.mailSug, items: st.mailSug.items.filter((x) => x.id !== m.id), dismissed: [...(st.mailSug.dismissed || []), `${m.from}|${m.subject}`] },
                     }));
                   }}
@@ -943,6 +978,14 @@ function VarvApp({ username, onLogout }) {
           </section>
         )}
 
+        {/* ============ dagsöversikt ============ */}
+        <section style={{ ...s.section, display: "flex", gap: 14, flexWrap: "wrap", fontSize: 13, color: T.soft }}>
+          <span><b style={{ color: T.ink }}>{doneToday.length}</b> klara idag</span>
+          <span><b style={{ color: T.ink }}>{visibleTasks.length}</b> kvar</span>
+          <span><b style={{ color: T.ink }}>{spent}⚡</b> förbrukat · <b style={{ color: T.ink }}>{recharged}⚡</b> återladdat</span>
+          <span><b style={{ color: T.ink }}>{winsToday.length}</b> vinster</span>
+        </section>
+
         {/* ============ tasks ============ */}
         <section style={s.section}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
@@ -954,8 +997,8 @@ function VarvApp({ username, onLogout }) {
 
           {showAdd && (
             <AddTask
-              onAdd={(t) => {
-                setState((st) => ({ ...st, tasks: [...st.tasks, t] }));
+              onAdd={(draft) => {
+                addTask(draft);
                 setShowAdd(false);
               }}
             />
@@ -981,6 +1024,31 @@ function VarvApp({ username, onLogout }) {
             />
           ))}
         </section>
+
+        {/* ============ klart idag ============ */}
+        {doneToday.length > 0 && (
+          <section style={s.section}>
+            <div style={s.eyebrow}>Klart idag ({doneToday.length})</div>
+            {doneToday.map((t) => (
+              <div key={t.id} style={{ ...s.card, marginTop: 8, opacity: 0.75 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <span style={s.coin}>{t.icon || "📌"}</span>
+                  <span style={{ textDecoration: "line-through", color: T.soft, flex: 1 }}>{t.title}</span>
+                  <span style={{ fontSize: 12, color: T.soft }}>{new Date(t.doneAt).toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" })}</span>
+                </div>
+                {(t.steps || []).length > 0 && (
+                  <div style={{ marginTop: 6, paddingLeft: 34 }}>
+                    {t.steps.map((st) => (
+                      <div key={st.id} style={{ fontSize: 13, color: T.soft, textDecoration: st.done ? "line-through" : "none" }}>
+                        {st.done ? "✓" : "·"} {st.title}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </section>
+        )}
           </>
         )}
 
@@ -1203,12 +1271,7 @@ function VarvApp({ username, onLogout }) {
             mini={lapRunning && !(view === "tools" && tool === "focus")}
             onExpand={() => { setView("tools"); setTool("focus"); }}
             onRunning={setLapRunning}
-            onPark={(text) =>
-              setState((st) => ({
-                ...st,
-                tasks: [...st.tasks, { id: uid(), title: text, icon: guessIcon(text), trigger: "", energy: 2, time: "", essential: false, steps: [], done: false, minutes: 30, priority: null, inbox: true }],
-              }))
-            }
+            onPark={(text) => addTask({ title: text })}
             onDone={(goal, mins, est, actualMin) => {
               addWin(`Fokusvarv (${actualMin} min): ${goal || "utan titel"}`);
               if (est > 0)
@@ -1235,10 +1298,7 @@ function VarvApp({ username, onLogout }) {
           onAuto={autoCapture}
           onVoiceCapture={onVoiceCapture}
           onTask={(title) => {
-            setState((st) => ({
-              ...st,
-              tasks: [...st.tasks, { id: uid(), title, icon: guessIcon(title), trigger: "", energy: 2, time: "", essential: false, steps: [], done: false, minutes: 30, priority: null, inbox: true }],
-            }));
+            addTask({ title });
             setToast(`Fångad: ${title}`);
             clearTimeout(toastTimer.current);
             toastTimer.current = setTimeout(() => setToast(null), 2200);
@@ -1374,10 +1434,10 @@ function CaptureSheet({ onClose, onTask, onListItem, onIdea, onAuto, onVoiceCapt
     try { streamRef.current && streamRef.current.getTracks().forEach((t) => t.stop()); } catch (e) {}
   }, []);
 
-  const task = () => { if (v.trim()) { onTask(v.trim()); setV(""); ref.current && ref.current.focus(); } };
-  const listItem = () => { if (v.trim()) { onListItem(v.trim()); setV(""); ref.current && ref.current.focus(); } };
-  const idea = () => { if (v.trim()) { onIdea(v.trim()); setV(""); ref.current && ref.current.focus(); } };
-  const auto = () => { if (v.trim()) { onAuto(v.trim()); setV(""); ref.current && ref.current.focus(); } };
+  const task = () => { if (v.trim()) { onTask(v.trim()); onClose(); } };
+  const listItem = () => { if (v.trim()) { onListItem(v.trim()); onClose(); } };
+  const idea = () => { if (v.trim()) { onIdea(v.trim()); onClose(); } };
+  const auto = () => { if (v.trim()) { onAuto(v.trim()); onClose(); } };
 
   // Riktig mikrofoninspelning → uppladdning till varv-server (KB-Whisper), inte
   // webbläsarens inbyggda taligenkänning som skickar ljudet till Google.
@@ -1468,7 +1528,7 @@ function CaptureSheet({ onClose, onTask, onListItem, onIdea, onAuto, onVoiceCapt
           </button>
         </div>
         <div style={{ fontSize: 12, color: T.soft, textAlign: "center", marginTop: 10 }}>
-          Enter = agenten sorterar åt dig. Knapparna styr själv. Arket stannar öppet — rabbla flera.
+          Enter = agenten sorterar åt dig. Knapparna styr själv.
         </div>
       </div>
     </div>
@@ -1537,8 +1597,11 @@ function AddTask({ onAdd }) {
   const [essential, setEssential] = useState(false);
   const [icon, setIcon] = useState(null);
   const [pickIcon, setPickIcon] = useState(false);
+  const [repeatDays, setRepeatDays] = useState([]);
   const s = styles;
   const shownIcon = icon || guessIcon(title || " ");
+  const toggleDay = (key) =>
+    setRepeatDays((days) => (days.includes(key) ? days.filter((d) => d !== key) : [...days, key]));
   return (
     <div style={{ ...s.card, marginTop: 10 }}>
       <input style={s.input} placeholder="Vad behöver göras?" value={title} onChange={(e) => setTitle(e.target.value)} />
@@ -1588,11 +1651,36 @@ function AddTask({ onAdd }) {
           nödvändig (visas i återhämtningsläge)
         </label>
       </div>
+      <div style={{ marginTop: 8 }}>
+        <span style={s.smallLabel}>upprepas</span>
+        <div style={{ display: "flex", gap: 4, marginTop: 4, flexWrap: "wrap" }}>
+          {WEEKDAYS.map((d) => (
+            <button
+              key={d.key}
+              type="button"
+              onClick={() => toggleDay(d.key)}
+              style={{
+                fontSize: 12, padding: "5px 9px", borderRadius: 8, cursor: "pointer",
+                border: `1.5px solid ${T.spruce}`,
+                background: repeatDays.includes(d.key) ? T.spruce : "transparent",
+                color: repeatDays.includes(d.key) ? T.card : T.spruce,
+              }}
+            >
+              {d.label}
+            </button>
+          ))}
+        </div>
+        {repeatDays.length > 0 && (
+          <div style={{ fontSize: 12, color: T.soft, marginTop: 4 }}>
+            Återkommer varje {repeatDays.map((k) => WEEKDAYS.find((d) => d.key === k).label).join(", ")} — dyker upp igen nästa gång den dagen kommer, även efter att den bockats av.
+          </div>
+        )}
+      </div>
       <button
         style={{ ...s.primaryBtn, marginTop: 12, opacity: title.trim() ? 1 : 0.5 }}
         disabled={!title.trim()}
         onClick={() =>
-          onAdd({ id: uid(), title: title.trim(), icon: shownIcon, trigger: trigger.trim(), energy, time, essential, steps: [], done: false, minutes: 30, priority: null, inbox: false })
+          onAdd({ title: title.trim(), icon: shownIcon, trigger: trigger.trim(), energy, time, essential, priority: null, inbox: false, repeatDays })
         }
       >
         Lägg till uppgift
@@ -1658,13 +1746,39 @@ function TaskCard({ task, onDone, onUpdate, onRemove, onWin, onPushCal }) {
       {/* expanded details */}
       {expanded && (
         <>
-          {(task.trigger || task.essential || (task.tags || []).length > 0) && (
+          {(task.trigger || task.essential || (task.tags || []).length > 0 || (task.repeatDays || []).length > 0) && (
             <div style={s.metaRow}>
               {task.trigger && <span style={s.chipSoft}>när {task.trigger}</span>}
               {task.essential && <span style={s.chipSoft}>nödvändig</span>}
+              {(task.repeatDays || []).length > 0 && (
+                <span style={s.chipSoft}>🔁 {task.repeatDays.map((k) => WEEKDAYS.find((d) => d.key === k).label).join(", ")}</span>
+              )}
               {(task.tags || []).map((tg) => <span key={tg} style={s.chipSoft}>#{tg}</span>)}
             </div>
           )}
+
+          <div style={{ display: "flex", gap: 4, marginTop: 8, flexWrap: "wrap" }}>
+            {WEEKDAYS.map((d) => {
+              const active = (task.repeatDays || []).includes(d.key);
+              return (
+                <button
+                  key={d.key}
+                  onClick={() => {
+                    const days = task.repeatDays || [];
+                    onUpdate({ repeatDays: active ? days.filter((k) => k !== d.key) : [...days, d.key] });
+                  }}
+                  style={{
+                    fontSize: 11, padding: "3px 7px", borderRadius: 7, cursor: "pointer",
+                    border: `1.5px solid ${T.spruce}`,
+                    background: active ? T.spruce : "transparent",
+                    color: active ? T.card : T.spruce,
+                  }}
+                >
+                  {d.label}
+                </button>
+              );
+            })}
+          </div>
 
           <div style={{ display: "flex", gap: 12, marginTop: 10, flexWrap: "wrap" }}>
             <button style={s.linkBtn} onClick={breakDown} disabled={busy}>
