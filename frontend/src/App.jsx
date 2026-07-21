@@ -1870,6 +1870,117 @@ function ContextMenu({ x, y, items, onClose }) {
 }
 
 /* ============================================================ */
+/* Voice Input Button — attach to any text field                 */
+/* ============================================================ */
+function VoiceInputButton({ onResult, language = "sv-SE", style: btnStyle }) {
+  const [listening, setListening] = useState(false);
+  const [transcript, setTranscript] = useState("");
+  const [fadeClass, setFadeClass] = useState("");
+  const recognitionRef = useRef(null);
+
+  const toggle = () => {
+    if (listening) {
+      recognitionRef.current?.stop();
+      setListening(false);
+      return;
+    }
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { alert("Taligenkänning stöds inte i denna webbläsare."); return; }
+    const rec = new SR();
+    rec.lang = language;
+    rec.continuous = false;
+    rec.interimResults = true;
+    rec.onresult = (e) => {
+      let final = "";
+      let interim = "";
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const t = e.results[i][0].transcript;
+        if (e.results[i].isFinal) final += t;
+        else interim += t;
+      }
+      const display = final || interim;
+      if (display) {
+        setTranscript(display);
+        setFadeClass("voice-fade-in");
+        if (final) onResult(final);
+      }
+    };
+    rec.onend = () => { setListening(false); setTimeout(() => setTranscript(""), 2000); };
+    rec.onerror = () => setListening(false);
+    recognitionRef.current = rec;
+    rec.start();
+    setListening(true);
+  };
+
+  return (
+    <div style={{ position: "relative", display: "inline-flex", alignItems: "center", ...btnStyle }}>
+      <button
+        onClick={toggle}
+        title={"Talskning"}
+        style={{
+          width: 32, height: 32, borderRadius: "50%",
+          border: `1.5px solid ${listening ? T.warn : T.line}`,
+          background: listening ? T.warn : "transparent",
+          color: listening ? "white" : T.soft,
+          cursor: "pointer",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontSize: 16,
+          transition: "all 0.25s ease",
+          flexShrink: 0,
+        }}
+      >
+        {listening ? "■" : "🎤"}
+      </button>
+      {transcript && (
+        <div
+          className={fadeClass}
+          style={{
+            position: "absolute",
+            left: 40,
+            top: "50%",
+            transform: "translateY(-50%)",
+            background: T.card,
+            border: `1px solid ${T.line}`,
+            borderRadius: 8,
+            padding: "4px 10px",
+            fontSize: 13,
+            color: T.petrol,
+            whiteSpace: "nowrap",
+            maxWidth: 200,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            pointerEvents: "none",
+          }}
+        >
+          {listening ? transcript + "…" : transcript}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ============================================================ */
+/* Fade-in animation class (injected once)                       */
+/* ============================================================ */
+const voiceStyle = document.createElement("style");
+voiceStyle.textContent = `
+  @keyframes voiceFadeIn { from { opacity: 0; transform: translateY(-50%) translateX(-6px); } to { opacity: 1; transform: translateY(-50%) translateX(0); } }
+  .voice-fade-in { animation: voiceFadeIn 0.3s ease; }
+  @keyframes pulseGlow { 0%,100% { box-shadow: 0 0 0 0 rgba(166,106,79,0.4); } 50% { box-shadow: 0 0 0 8px rgba(166,106,79,0); } }
+  .voice-pulse { animation: pulseGlow 1.5s infinite; }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  .slide-up { animation: slideUp 0.35s ease; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .fade-in { animation: fadeIn 0.4s ease; }
+  @keyframes textAppear { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+  .text-appear { animation: textAppear 0.3s ease; }
+`;
+if (!document.getElementById("varv-voice-styles")) {
+  voiceStyle.id = "varv-voice-styles";
+  document.head.appendChild(voiceStyle);
+}
+
+/* ============================================================ */
 /* Add task — trigger, energy, time, essential                   */
 /* ============================================================ */
 function AddTask({ onAdd, defaultDate }) {
@@ -1888,7 +1999,10 @@ function AddTask({ onAdd, defaultDate }) {
     setRepeatDays((days) => (days.includes(key) ? days.filter((d) => d !== key) : [...days, key]));
   return (
     <div style={{ ...s.card, marginTop: 10 }}>
-      <input style={s.input} placeholder="Vad behöver göras?" value={title} onChange={(e) => setTitle(e.target.value)} />
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <input style={{ ...s.input, flex: 1 }} placeholder="Vad behöver göras?" value={title} onChange={(e) => setTitle(e.target.value)} />
+        <VoiceInputButton onResult={(t) => setTitle((prev) => prev ? prev + " " + t : t)} language={"sv-SE"} />
+      </div>
       <button style={{ ...s.linkBtn, fontSize: 13, marginTop: 6 }} onClick={() => setPickIcon((v) => !v)}>
         ikon {shownIcon} · {pickIcon ? "klar" : "ändra"}
       </button>
@@ -2592,15 +2706,16 @@ function Lists({ lists, onChange }) {
 
       {lists.filter((l) => l.id === openId).map((l) => (
         <div key={l.id} style={{ ...s.card, marginTop: 10 }}>
-          <div style={{ display: "flex", gap: 8 }}>
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             <input
               ref={entryRef}
-              style={s.captureInput}
+              style={{ ...s.captureInput, flex: 1 }}
               placeholder={`Lägg till i ${l.name} — enter, nästa, enter, nästa…`}
               value={entry}
               onChange={(e) => setEntry(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && addItem(l.id)}
             />
+            <VoiceInputButton onResult={(t) => { setEntry(t); setTimeout(() => addItem(l.id), 100); }} />
             <button style={{ ...s.primaryBtn, padding: "8px 14px" }} onClick={() => addItem(l.id)}>Lägg till</button>
           </div>
 
@@ -2660,23 +2775,31 @@ function IdeaCard({ idea, onRefine, onToTask, onRemove, onUpdate, onContextMenu 
 
   return (
     <div style={{ ...s.card, marginTop: 10 }} onContextMenu={onContextMenu}>
+      {editing ? (
+        /* === Edit mode === */
         <>
           <div style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.5px", color: T.soft, marginBottom: 6 }}>
             Redigera idé
           </div>
-          <input
-            style={{ ...s.input, fontFamily: "'Fraunces', serif", fontWeight: 500, fontSize: 18 }}
-            placeholder="Rubrik…"
-            value={editTitle}
-            onChange={(e) => setEditTitle(e.target.value)}
-            autoFocus
-          />
-          <textarea
-            style={{ ...s.input, minHeight: 80, marginTop: 8, resize: "vertical", fontFamily: "'Atkinson Hyperlegible', sans-serif" }}
-            placeholder="Beskriv idén mer detaljerat…"
-            value={editNote}
-            onChange={(e) => setEditNote(e.target.value)}
-          />
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <input
+              style={{ ...s.input, fontFamily: "'Fraunces', serif", fontWeight: 500, fontSize: 18, flex: 1 }}
+              placeholder="Rubrik…"
+              value={editTitle}
+              onChange={(e) => setEditTitle(e.target.value)}
+              autoFocus
+            />
+            <VoiceInputButton onResult={(t) => setEditTitle((prev) => prev ? prev + " " + t : t)} />
+          </div>
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 8, marginTop: 8 }}>
+            <textarea
+              style={{ ...s.input, minHeight: 80, marginTop: 0, flex: 1, resize: "vertical", fontFamily: "'Atkinson Hyperlegible', sans-serif" }}
+              placeholder="Beskriv idén mer detaljerat…"
+              value={editNote}
+              onChange={(e) => setEditNote(e.target.value)}
+            />
+            <VoiceInputButton onResult={(t) => setEditNote((prev) => prev ? prev + " " + t : t)} style={{ marginTop: 8 }} />
+          </div>
           <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
             <button style={{ ...s.primaryBtn, flex: 1 }} onClick={handleSave}>Spara</button>
             <button style={{ ...s.ghostBtn, flex: 1 }} onClick={handleCancel}>Avbryt</button>
