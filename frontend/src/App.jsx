@@ -101,8 +101,6 @@ const DEFAULT_STATE = {
   day: todayKey(),
 };
 
-const PRIORITY_ORDER = { A: 0, B: 1, C: 2 };
-
 function VarvApp({ username, onLogout }) {
   const storageKey = `varv-state:${username}`;
   const [state, setState] = useState(DEFAULT_STATE);
