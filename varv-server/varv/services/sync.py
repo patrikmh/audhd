@@ -73,9 +73,14 @@ def apply_changes(session: Session, user_id: str, changes: list[ChangeIn]) -> di
             continue
 
         existing = getattr(row, "updated_at", None)
-        if existing is None or ch.updated_at > existing:  # LWW
+        incoming = ch.updated_at
+        # Normalize to datetime for comparison (incoming is ISO string from ChangeTracker)
+        if isinstance(incoming, str):
+            from datetime import datetime as _dt
+            incoming = _dt.fromisoformat(incoming)
+        if existing is None or incoming > existing:  # LWW
             _apply_fields(row, ch.data, model)
-            row.updated_at = ch.updated_at
+            row.updated_at = incoming
             counts["updated"] += 1
         else:
             counts["skipped"] += 1
