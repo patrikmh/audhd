@@ -1,0 +1,641 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: https://a2ui.org/quickstart/#quickstart-run-a2ui-in-5-minutes
+  - banner [ref=e3]:
+    - navigation "Header" [ref=e4]:
+      - link "A2UI" [ref=e5] [cursor=pointer]:
+        - /url: https://a2ui.org/
+        - img "logo" [ref=e6]
+      - generic [ref=e8]:
+        - generic [ref=e10]: A2UI
+        - generic:
+          - generic: Quickstart
+      - generic [ref=e11]:
+        - radio "Switch to dark mode"
+        - generic "Switch to dark mode" [ref=e12] [cursor=pointer]:
+          - img [ref=e13]
+        - radio "Switch to light mode"
+      - dialog [ref=e15]:
+        - search [ref=e16]:
+          - generic [ref=e17]:
+            - textbox "Search" [ref=e18]
+            - generic:
+              - img
+            - navigation "Search":
+              - button "Clear":
+                - img
+          - generic [ref=e20]: Initializing search
+      - link "a2ui-project/a2ui" [ref=e22] [cursor=pointer]:
+        - /url: https://github.com/a2ui-project/a2ui
+        - img [ref=e24]
+        - generic [ref=e26]: a2ui-project/a2ui
+  - generic [ref=e27]:
+    - main [ref=e28]:
+      - generic [ref=e29]:
+        - navigation "Navigation" [ref=e33]:
+          - generic [ref=e34]: A2UI
+          - list [ref=e35]:
+            - listitem [ref=e36]:
+              - link "Home" [ref=e37] [cursor=pointer]:
+                - /url: https://a2ui.org/
+                - generic [ref=e38]: Home
+            - listitem [ref=e39]:
+              - generic [ref=e41]: Introduction & FAQ
+            - listitem [ref=e43]:
+              - link "Quickstart" [ref=e44] [cursor=pointer]:
+                - /url: https://a2ui.org/quickstart/
+                - generic [ref=e45]: Quickstart
+            - listitem [ref=e46]:
+              - link "A2UI Composer ⭐" [ref=e47] [cursor=pointer]:
+                - /url: https://a2ui.org/composer/
+                - generic [ref=e48]: A2UI Composer ⭐
+            - listitem [ref=e49]:
+              - generic [ref=e51]: Concepts
+            - listitem [ref=e53]:
+              - generic [ref=e55]: Guides
+            - listitem [ref=e57]:
+              - generic [ref=e59]: Reference
+            - listitem [ref=e61]:
+              - generic [ref=e63]: Specifications
+            - listitem [ref=e65]:
+              - generic [ref=e67]: Ecosystem
+            - listitem [ref=e69]:
+              - link "Roadmap" [ref=e70] [cursor=pointer]:
+                - /url: https://a2ui.org/roadmap/
+                - generic [ref=e71]: Roadmap
+        - navigation "Table of contents" [ref=e75]:
+          - generic [ref=e76]: Table of contents
+          - list [ref=e77]:
+            - listitem [ref=e78]:
+              - link "What You'll Build" [ref=e79] [cursor=pointer]:
+                - /url: https://a2ui.org/quickstart/#what-youll-build
+                - generic [ref=e80]: What You'll Build
+            - listitem [ref=e81]:
+              - link "Prerequisites" [ref=e82] [cursor=pointer]:
+                - /url: https://a2ui.org/quickstart/#prerequisites
+                - generic [ref=e83]: Prerequisites
+            - listitem [ref=e84]:
+              - 'link "Step 1: Clone the Repository" [ref=e85] [cursor=pointer]':
+                - /url: https://a2ui.org/quickstart/#step-1-clone-the-repository
+                - generic [ref=e86]: "Step 1: Clone the Repository"
+            - listitem [ref=e87]:
+              - 'link "Step 2: Set Your API Key" [ref=e88] [cursor=pointer]':
+                - /url: https://a2ui.org/quickstart/#step-2-set-your-api-key
+                - generic [ref=e89]: "Step 2: Set Your API Key"
+            - listitem [ref=e90]:
+              - 'link "Step 3: Navigate to the Lit Client Samples Directory" [ref=e91] [cursor=pointer]':
+                - /url: https://a2ui.org/quickstart/#step-3-navigate-to-the-lit-client-samples-directory
+                - generic [ref=e92]: "Step 3: Navigate to the Lit Client Samples Directory"
+            - listitem [ref=e93]:
+              - 'link "Step 4: Install and Run" [ref=e94] [cursor=pointer]':
+                - /url: https://a2ui.org/quickstart/#step-4-install-and-run
+                - generic [ref=e95]: "Step 4: Install and Run"
+              - 'navigation "Step 4: Install and Run" [ref=e96]':
+                - list [ref=e97]:
+                  - listitem [ref=e98]:
+                    - link "Running Manually (Alternative)" [ref=e99] [cursor=pointer]:
+                      - /url: https://a2ui.org/quickstart/#running-manually-alternative
+                      - generic [ref=e100]: Running Manually (Alternative)
+            - listitem [ref=e101]:
+              - 'link "Step 5: Try It Out" [ref=e102] [cursor=pointer]':
+                - /url: https://a2ui.org/quickstart/#step-5-try-it-out
+                - generic [ref=e103]: "Step 5: Try It Out"
+              - 'navigation "Step 5: Try It Out" [ref=e104]':
+                - list [ref=e105]:
+                  - listitem [ref=e106]:
+                    - link "What's Happening Behind the Scenes" [ref=e107] [cursor=pointer]:
+                      - /url: https://a2ui.org/quickstart/#whats-happening-behind-the-scenes
+                      - generic [ref=e108]: What's Happening Behind the Scenes
+            - listitem [ref=e109]:
+              - link "Anatomy of an A2UI Message" [ref=e110] [cursor=pointer]:
+                - /url: https://a2ui.org/quickstart/#anatomy-of-an-a2ui-message
+                - generic [ref=e111]: Anatomy of an A2UI Message
+            - listitem [ref=e112]:
+              - link "Exploring Other Demos" [ref=e113] [cursor=pointer]:
+                - /url: https://a2ui.org/quickstart/#exploring-other-demos
+                - generic [ref=e114]: Exploring Other Demos
+              - navigation "Exploring Other Demos" [ref=e115]:
+                - list [ref=e116]:
+                  - listitem [ref=e117]:
+                    - link "Component Gallery (No Agent Required)" [ref=e118] [cursor=pointer]:
+                      - /url: https://a2ui.org/quickstart/#component-gallery-no-agent-required
+                      - generic [ref=e119]: Component Gallery (No Agent Required)
+                  - listitem [ref=e120]:
+                    - link "Other Languages and Frameworks" [ref=e121] [cursor=pointer]:
+                      - /url: https://a2ui.org/quickstart/#other-languages-and-frameworks
+                      - generic [ref=e122]: Other Languages and Frameworks
+            - listitem [ref=e123]:
+              - link "What's Next?" [ref=e124] [cursor=pointer]:
+                - /url: https://a2ui.org/quickstart/#whats-next
+                - generic [ref=e125]: What's Next?
+            - listitem [ref=e126]:
+              - link "Troubleshooting" [ref=e127] [cursor=pointer]:
+                - /url: https://a2ui.org/quickstart/#troubleshooting
+                - generic [ref=e128]: Troubleshooting
+              - navigation "Troubleshooting" [ref=e129]:
+                - list [ref=e130]:
+                  - listitem [ref=e131]:
+                    - link "Port Already in Use" [ref=e132] [cursor=pointer]:
+                      - /url: https://a2ui.org/quickstart/#port-already-in-use
+                      - generic [ref=e133]: Port Already in Use
+                  - listitem [ref=e134]:
+                    - link "API Key Issues" [ref=e135] [cursor=pointer]:
+                      - /url: https://a2ui.org/quickstart/#api-key-issues
+                      - generic [ref=e136]: API Key Issues
+                  - listitem [ref=e137]:
+                    - link "Connection Errors on Startup" [ref=e138] [cursor=pointer]:
+                      - /url: https://a2ui.org/quickstart/#connection-errors-on-startup
+                      - generic [ref=e139]: Connection Errors on Startup
+                  - listitem [ref=e140]:
+                    - link "Python / uv Issues" [ref=e141] [cursor=pointer]:
+                      - /url: https://a2ui.org/quickstart/#python-uv-issues
+                      - generic [ref=e142]: Python / uv Issues
+                  - listitem [ref=e143]:
+                    - link "Still Having Issues?" [ref=e144] [cursor=pointer]:
+                      - /url: https://a2ui.org/quickstart/#still-having-issues
+                      - generic [ref=e145]: Still Having Issues?
+            - listitem [ref=e146]:
+              - link "Understanding the Demo Code" [ref=e147] [cursor=pointer]:
+                - /url: https://a2ui.org/quickstart/#understanding-the-demo-code
+                - generic [ref=e148]: Understanding the Demo Code
+        - article [ref=e150]:
+          - link "View source of this page" [ref=e151] [cursor=pointer]:
+            - /url: https://github.com/a2ui-project/a2ui/raw/main/docs/public/quickstart.md
+            - img [ref=e152]
+          - 'heading "Quickstart: Run A2UI in 5 Minutes ¶" [level=1] [ref=e154]':
+            - text: "Quickstart: Run A2UI in 5 Minutes"
+            - link "¶" [ref=e155] [cursor=pointer]:
+              - /url: https://a2ui.org/quickstart/#quickstart-run-a2ui-in-5-minutes
+          - paragraph [ref=e156]: Get hands-on with A2UI by running the restaurant finder demo. This guide will have you experiencing agent-generated UI in less than 5 minutes.
+          - heading "What You'll Build ¶" [level=2] [ref=e157]:
+            - text: What You'll Build
+            - link "¶" [ref=e158] [cursor=pointer]:
+              - /url: https://a2ui.org/quickstart/#what-youll-build
+          - paragraph [ref=e159]: "By the end of this quickstart, you'll have:"
+          - list [ref=e160]:
+            - listitem [ref=e161]: A running web app with A2UI Lit renderer.
+            - listitem [ref=e162]: A Gemini-powered agent that generates dynamic UIs.
+            - listitem [ref=e163]: An interactive restaurant finder with form generation, time selection, and confirmation flows.
+            - listitem [ref=e164]: Understanding of how A2UI messages flow from agent to UI.
+          - heading "Prerequisites ¶" [level=2] [ref=e165]:
+            - text: Prerequisites
+            - link "¶" [ref=e166] [cursor=pointer]:
+              - /url: https://a2ui.org/quickstart/#prerequisites
+          - paragraph [ref=e167]: "Before you begin, make sure you have:"
+          - list [ref=e168]:
+            - listitem [ref=e169]:
+              - strong [ref=e170]: Node.js
+              - text: (v18 or later with
+              - link "Corepack" [ref=e171] [cursor=pointer]:
+                - /url: https://nodejs.org/api/corepack.html
+              - text: enabled) —
+              - link "Download here" [ref=e172] [cursor=pointer]:
+                - /url: https://nodejs.org/
+            - listitem [ref=e173]:
+              - strong [ref=e174]: uv
+              - text: (Python package manager) —
+              - link "Install here" [ref=e175] [cursor=pointer]:
+                - /url: https://docs.astral.sh/uv/getting-started/installation/
+              - text: (used to run the Python agent backend)
+            - listitem [ref=e176]:
+              - strong [ref=e177]: A Gemini API key
+              - text: —
+              - link "Get one free from Google AI Studio" [ref=e178] [cursor=pointer]:
+                - /url: https://aistudio.google.com/apikey
+          - paragraph [ref=e179]: "WARNING: Security Notice"
+          - paragraph [ref=e180]: This demo runs an A2A agent that uses Gemini to generate A2UI responses. The agent has access to your API key and will make requests to Google's Gemini API. Always review agent code before running it in production environments.
+          - 'heading "Step 1: Clone the Repository ¶" [level=2] [ref=e181]':
+            - text: "Step 1: Clone the Repository"
+            - link "¶" [ref=e182] [cursor=pointer]:
+              - /url: https://a2ui.org/quickstart/#step-1-clone-the-repository
+          - generic [ref=e184]:
+            - navigation [ref=e185]:
+              - button "Toggle line selection" [ref=e186] [cursor=pointer]
+              - button "Copy to clipboard" [ref=e187] [cursor=pointer]
+            - code [ref=e188]:
+              - generic [ref=e189]: git clone https://github.com/a2ui-project/a2ui.git
+              - generic [ref=e190]: cd a2ui
+          - 'heading "Step 2: Set Your API Key ¶" [level=2] [ref=e191]':
+            - text: "Step 2: Set Your API Key"
+            - link "¶" [ref=e192] [cursor=pointer]:
+              - /url: https://a2ui.org/quickstart/#step-2-set-your-api-key
+          - paragraph [ref=e193]: "Export your Gemini API key as an environment variable:"
+          - generic [ref=e195]:
+            - navigation [ref=e196]:
+              - button "Toggle line selection" [ref=e197] [cursor=pointer]
+              - button "Copy to clipboard" [ref=e198] [cursor=pointer]
+            - code [ref=e199]:
+              - generic [ref=e200]: export GEMINI_API_KEY="your_gemini_api_key_here"
+          - 'heading "Step 3: Navigate to the Lit Client Samples Directory ¶" [level=2] [ref=e201]':
+            - text: "Step 3: Navigate to the Lit Client Samples Directory"
+            - link "¶" [ref=e202] [cursor=pointer]:
+              - /url: https://a2ui.org/quickstart/#step-3-navigate-to-the-lit-client-samples-directory
+          - paragraph [ref=e203]:
+            - text: The client application source code is located in
+            - code [ref=e204]: samples/client/lit/shell
+            - text: ". Navigate to the parent samples directory to run the demo:"
+          - generic [ref=e206]:
+            - navigation [ref=e207]:
+              - button "Toggle line selection" [ref=e208] [cursor=pointer]
+              - button "Copy to clipboard" [ref=e209] [cursor=pointer]
+            - code [ref=e210]:
+              - generic [ref=e211]: cd samples/client/lit
+          - 'heading "Step 4: Install and Run ¶" [level=2] [ref=e212]':
+            - text: "Step 4: Install and Run"
+            - link "¶" [ref=e213] [cursor=pointer]:
+              - /url: https://a2ui.org/quickstart/#step-4-install-and-run
+          - paragraph [ref=e214]: "Run the demo launcher (ensuring Corepack is enabled so Node automatically fetches the correct Yarn version):"
+          - generic [ref=e216]:
+            - navigation [ref=e217]:
+              - button "Toggle line selection" [ref=e218] [cursor=pointer]
+              - button "Copy to clipboard" [ref=e219] [cursor=pointer]
+            - code [ref=e220]:
+              - generic [ref=e221]: "# Enable Corepack (macOS Homebrew users: see tip below)"
+              - generic [ref=e222]: corepack enable
+              - generic [ref=e224]: yarn install
+              - generic [ref=e225]: yarn demo:restaurant
+          - generic [ref=e226]:
+            - paragraph [ref=e227]:
+              - strong [ref=e228]: "macOS Homebrew Users:"
+              - text: "If you have standalone package managers installed, unlink conflicts before installing Corepack so Corepack can manage versions per-project:"
+            - generic [ref=e230]:
+              - navigation [ref=e231]:
+                - button "Toggle line selection" [ref=e232] [cursor=pointer]
+                - button "Copy to clipboard" [ref=e233] [cursor=pointer]
+              - code [ref=e234]:
+                - generic [ref=e235]: brew unlink yarn pnpm
+                - generic [ref=e236]: brew install corepack
+                - generic [ref=e237]: corepack enable
+          - paragraph [ref=e238]: "This command will:"
+          - list [ref=e239]:
+            - listitem [ref=e240]: Install all dependencies
+            - listitem [ref=e241]: Build the A2UI renderer
+            - listitem [ref=e242]: Start the A2A restaurant finder agent (Python backend)
+            - listitem [ref=e243]: Launch the development server
+            - listitem [ref=e244]:
+              - text: Open your browser to
+              - code [ref=e245]: http://localhost:5173
+          - paragraph [ref=e246]:
+            - text: The source code for the Restaurant Finder agent is located in
+            - link "samples/agent/adk/restaurant_finder" [ref=e247] [cursor=pointer]:
+              - /url: https://github.com/a2ui-project/a2ui/blob/main/samples/agent/adk/restaurant_finder
+              - code [ref=e248]: samples/agent/adk/restaurant_finder
+            - text: .
+          - paragraph [ref=e250]:
+            - strong [ref=e251]: "Package Manager Usage:"
+            - text: Running the quickstart demo application within the A2UI repository requires Yarn as configured by Corepack workspaces. For your own regular usage and standalone projects outside this repository, use the package manager of your choice (e.g. npm, pnpm).
+          - heading "Running Manually (Alternative) ¶" [level=3] [ref=e252]:
+            - text: Running Manually (Alternative)
+            - link "¶" [ref=e253] [cursor=pointer]:
+              - /url: https://a2ui.org/quickstart/#running-manually-alternative
+          - paragraph [ref=e254]: "If you prefer to run the agent and client in separate terminals, or need to troubleshoot:"
+          - paragraph [ref=e255]:
+            - strong [ref=e256]: "1. Run the Agent:"
+          - generic [ref=e258]:
+            - navigation [ref=e259]:
+              - button "Toggle line selection" [ref=e260] [cursor=pointer]
+              - button "Copy to clipboard" [ref=e261] [cursor=pointer]
+            - code [ref=e262]:
+              - generic [ref=e263]: cd samples/agent/adk/restaurant_finder
+              - generic [ref=e264]: uv run .
+          - paragraph [ref=e265]:
+            - strong [ref=e266]: "2. Run the Client:"
+          - generic [ref=e268]:
+            - navigation [ref=e269]:
+              - button "Toggle line selection" [ref=e270] [cursor=pointer]
+              - button "Copy to clipboard" [ref=e271] [cursor=pointer]
+            - code [ref=e272]:
+              - generic [ref=e273]: cd samples/client/lit/shell
+              - generic [ref=e274]: yarn dev
+          - paragraph [ref=e275]: "NOTE: Demo Running"
+          - paragraph [ref=e276]: If everything worked, you should see the web app in your browser. The agent is now ready to generate UI!
+          - 'heading "Step 5: Try It Out ¶" [level=2] [ref=e277]':
+            - text: "Step 5: Try It Out"
+            - link "¶" [ref=e278] [cursor=pointer]:
+              - /url: https://a2ui.org/quickstart/#step-5-try-it-out
+          - paragraph [ref=e279]: "In the web app, try these prompts:"
+          - list [ref=e280]:
+            - listitem [ref=e281]:
+              - strong [ref=e282]: "\"Book a table for 2\""
+              - text: "- Watch the agent generate a reservation form"
+            - listitem [ref=e283]:
+              - strong [ref=e284]: "\"Find Italian restaurants near me\""
+              - text: "- See dynamic search results"
+            - listitem [ref=e285]:
+              - strong [ref=e286]: "\"What are your hours?\""
+              - text: "- Experience different UI layouts for different intents"
+          - heading "What's Happening Behind the Scenes ¶" [level=3] [ref=e287]:
+            - text: What's Happening Behind the Scenes
+            - link "¶" [ref=e288] [cursor=pointer]:
+              - /url: https://a2ui.org/quickstart/#whats-happening-behind-the-scenes
+          - generic [ref=e290]:
+            - navigation [ref=e291]:
+              - button "Toggle line selection" [ref=e292] [cursor=pointer]
+              - button "Copy to clipboard" [ref=e293] [cursor=pointer]
+            - code [ref=e294]:
+              - generic [ref=e295]: ┌─────────────┐ ┌──────────────┐ ┌────────────────┐
+              - generic [ref=e296]: │ You Type │────────>│ A2A Agent │────────>│ Gemini API │
+              - generic [ref=e297]: │ a Message │ │ (Python) │ │ (LLM) │
+              - generic [ref=e298]: └─────────────┘ └──────────────┘ └────────────────┘
+              - generic [ref=e299]: │ │
+              - generic [ref=e300]: │ Generates A2UI JSON │
+              - generic [ref=e301]: │<────────────────────────┘
+              - generic [ref=e302]: │
+              - generic [ref=e303]: │ Streams JSONL messages
+              - generic [ref=e304]: v
+              - generic [ref=e305]: ┌──────────────┐
+              - generic [ref=e306]: │ Web App │
+              - generic [ref=e307]: │ (A2UI Lit │
+              - generic [ref=e308]: │ Renderer) │
+              - generic [ref=e309]: └──────────────┘
+              - generic [ref=e310]: │
+              - generic [ref=e311]: │ Renders native components
+              - generic [ref=e312]: v
+              - generic [ref=e313]: ┌──────────────┐
+              - generic [ref=e314]: │ Your UI │
+              - generic [ref=e315]: └──────────────┘
+          - list [ref=e316]:
+            - listitem [ref=e317]:
+              - strong [ref=e318]: You send a message
+              - text: via the web UI
+            - listitem [ref=e319]:
+              - strong [ref=e320]: The A2A agent
+              - text: receives it and sends the conversation to Gemini
+            - listitem [ref=e321]:
+              - strong [ref=e322]: Gemini generates
+              - text: A2UI JSON messages describing the UI
+            - listitem [ref=e323]:
+              - strong [ref=e324]: The A2A agent streams
+              - text: these messages back to the web app
+            - listitem [ref=e325]:
+              - strong [ref=e326]: The A2UI renderer
+              - text: converts them into native web components
+            - listitem [ref=e327]:
+              - strong [ref=e328]: You see the UI
+              - text: rendered in your browser
+          - heading "Anatomy of an A2UI Message ¶" [level=2] [ref=e329]:
+            - text: Anatomy of an A2UI Message
+            - link "¶" [ref=e330] [cursor=pointer]:
+              - /url: https://a2ui.org/quickstart/#anatomy-of-an-a2ui-message
+          - paragraph [ref=e331]: "Let's peek at what the agent is sending. Here's a simplified example of the JSON messages:"
+          - generic [ref=e332]:
+            - radio "v0.8 (Legacy)" [checked]
+            - radio "v0.9 (Stable)"
+            - generic [ref=e333]:
+              - link "v0.8 (Legacy)" [ref=e335] [cursor=pointer]:
+                - /url: "#v08-legacy"
+              - link "v0.9 (Stable)" [ref=e337] [cursor=pointer]:
+                - /url: "#v09-stable"
+            - generic [ref=e339]:
+              - paragraph [ref=e340]:
+                - strong [ref=e341]: "Defining the UI:"
+              - generic [ref=e343]:
+                - navigation [ref=e344]:
+                  - button "Toggle line selection" [ref=e345] [cursor=pointer]
+                  - button "Copy to clipboard" [ref=e346] [cursor=pointer]
+                - code [ref=e347]:
+                  - generic [ref=e348]: "{\"surfaceUpdate\": {\"surfaceId\": \"main\", \"components\": ["
+                  - generic [ref=e349]: "{\"id\": \"header\", \"component\": {\"Text\": {\"text\": {\"literalString\": \"Book Your Table\"}, \"usageHint\": \"h1\"}}},"
+                  - generic [ref=e350]: "{\"id\": \"date-picker\", \"component\": {\"DateTimeInput\": {\"label\": {\"literalString\": \"Select Date\"}, \"value\": {\"path\": \"/reservation/date\"}, \"enableDate\": true}}},"
+                  - generic [ref=e351]: "{\"id\": \"submit-text\", \"component\": {\"Text\": {\"text\": {\"literalString\": \"Confirm Reservation\"}}}},"
+                  - generic [ref=e352]: "{\"id\": \"submit-btn\", \"component\": {\"Button\": {\"child\": \"submit-text\", \"action\": {\"name\": \"confirm_booking\"}}}}"
+                  - generic [ref=e353]: "]}}"
+              - paragraph [ref=e354]:
+                - strong [ref=e355]: "Populating data:"
+              - generic [ref=e357]:
+                - navigation [ref=e358]:
+                  - button "Toggle line selection" [ref=e359] [cursor=pointer]
+                  - button "Copy to clipboard" [ref=e360] [cursor=pointer]
+                - code [ref=e361]:
+                  - generic [ref=e362]: "{\"dataModelUpdate\": {\"surfaceId\": \"main\", \"contents\": ["
+                  - generic [ref=e363]: "{\"key\": \"reservation\", \"valueMap\": ["
+                  - generic [ref=e364]: "{\"key\": \"date\", \"valueString\": \"2025-12-15\"},"
+                  - generic [ref=e365]: "{\"key\": \"time\", \"valueString\": \"19:00\"},"
+                  - generic [ref=e366]: "{\"key\": \"guests\", \"valueInt\": 2}"
+                  - generic [ref=e367]: "]}"
+                  - generic [ref=e368]: "]}}"
+              - paragraph [ref=e369]:
+                - strong [ref=e370]: "Signaling render:"
+              - generic [ref=e372]:
+                - navigation [ref=e373]:
+                  - button "Toggle line selection" [ref=e374] [cursor=pointer]
+                  - button "Copy to clipboard" [ref=e375] [cursor=pointer]
+                - code [ref=e376]:
+                  - generic [ref=e377]: "{\"beginRendering\": {\"surfaceId\": \"main\", \"root\": \"header\"}}"
+            - button [ref=e378] [cursor=pointer]
+            - button [ref=e379] [cursor=pointer]
+          - paragraph [ref=e380]: "TIP: It's Just JSON"
+          - paragraph [ref=e381]: Notice how readable and structured this is? LLMs can generate this easily, and it's safe to transmit and render—no code execution required.
+          - heading "Exploring Other Demos ¶" [level=2] [ref=e382]:
+            - text: Exploring Other Demos
+            - link "¶" [ref=e383] [cursor=pointer]:
+              - /url: https://a2ui.org/quickstart/#exploring-other-demos
+          - paragraph [ref=e384]: "The repository includes several other demos:"
+          - heading "Component Gallery (No Agent Required) ¶" [level=3] [ref=e385]:
+            - text: Component Gallery (No Agent Required)
+            - link "¶" [ref=e386] [cursor=pointer]:
+              - /url: https://a2ui.org/quickstart/#component-gallery-no-agent-required
+          - paragraph [ref=e387]: "See all available A2UI components:"
+          - generic [ref=e389]:
+            - navigation [ref=e390]:
+              - button "Toggle line selection" [ref=e391] [cursor=pointer]
+              - button "Copy to clipboard" [ref=e392] [cursor=pointer]
+            - code [ref=e393]:
+              - generic [ref=e394]: yarn start gallery
+          - paragraph [ref=e395]: This runs a client-only demo showcasing every standard component (Card, Button, TextField, Timeline, etc.) with live examples and code samples.
+          - heading "Other Languages and Frameworks ¶" [level=3] [ref=e396]:
+            - text: Other Languages and Frameworks
+            - link "¶" [ref=e397] [cursor=pointer]:
+              - /url: https://a2ui.org/quickstart/#other-languages-and-frameworks
+          - paragraph [ref=e398]:
+            - text: While this guide uses the Lit client as an example, A2UI provides samples for other popular frameworks in the
+            - code [ref=e399]: samples/client
+            - text: "directory:"
+          - list [ref=e400]:
+            - listitem [ref=e401]:
+              - strong [ref=e402]: Angular
+              - text: ":"
+              - code [ref=e403]: samples/client/angular
+            - listitem [ref=e404]:
+              - strong [ref=e405]: React
+              - text: ":"
+              - code [ref=e406]: samples/client/react
+          - paragraph [ref=e407]:
+            - text: Explore the
+            - link "samples/client" [ref=e408] [cursor=pointer]:
+              - /url: https://github.com/a2ui-project/a2ui/blob/main/samples/client
+            - text: directory to see all available client implementations.
+          - heading "What's Next? ¶" [level=2] [ref=e409]:
+            - text: What's Next?
+            - link "¶" [ref=e410] [cursor=pointer]:
+              - /url: https://a2ui.org/quickstart/#whats-next
+          - paragraph [ref=e411]: "Now that you've seen A2UI in action, you're ready to:"
+          - list [ref=e412]:
+            - listitem [ref=e413]:
+              - strong [ref=e414]:
+                - link "Learn Core Concepts" [ref=e415] [cursor=pointer]:
+                  - /url: https://a2ui.org/concepts/overview/
+              - text: ": Understand surfaces, components, and data binding"
+            - listitem [ref=e416]:
+              - strong [ref=e417]:
+                - link "Set Up Your Own Client" [ref=e418] [cursor=pointer]:
+                  - /url: https://a2ui.org/guides/client-setup/
+              - text: ": Integrate A2UI into your own app"
+            - listitem [ref=e419]:
+              - strong [ref=e420]:
+                - link "Build an Agent" [ref=e421] [cursor=pointer]:
+                  - /url: https://a2ui.org/guides/agent-development/
+              - text: ": Create agents that generate A2UI responses"
+            - listitem [ref=e422]:
+              - strong [ref=e423]:
+                - link "Use an Existing Agent App" [ref=e424] [cursor=pointer]:
+                  - /url: https://a2ui.org/guides/a2ui-with-any-agent-framework/
+              - text: ": Add A2UI through CopilotKit + AG-UI for ADK, LangGraph, CrewAI, Mastra, or a custom service"
+            - listitem [ref=e425]:
+              - strong [ref=e426]:
+                - link "Explore the Protocol" [ref=e427] [cursor=pointer]:
+                  - /url: https://a2ui.org/reference/messages/
+              - text: ": Dive into the technical specification"
+          - heading "Troubleshooting ¶" [level=2] [ref=e428]:
+            - text: Troubleshooting
+            - link "¶" [ref=e429] [cursor=pointer]:
+              - /url: https://a2ui.org/quickstart/#troubleshooting
+          - heading "Port Already in Use ¶" [level=3] [ref=e430]:
+            - text: Port Already in Use
+            - link "¶" [ref=e431] [cursor=pointer]:
+              - /url: https://a2ui.org/quickstart/#port-already-in-use
+          - paragraph [ref=e432]: If port 5173 is already in use, the dev server will automatically try the next available port. Check the terminal output for the actual URL.
+          - heading "API Key Issues ¶" [level=3] [ref=e433]:
+            - text: API Key Issues
+            - link "¶" [ref=e434] [cursor=pointer]:
+              - /url: https://a2ui.org/quickstart/#api-key-issues
+          - paragraph [ref=e435]: "If you see errors about missing API keys:"
+          - list [ref=e436]:
+            - listitem [ref=e437]:
+              - text: "Verify the key is exported:"
+              - code [ref=e438]: echo $GEMINI_API_KEY
+            - listitem [ref=e439]:
+              - text: Make sure it's a valid Gemini API key from
+              - link "Google AI Studio" [ref=e440] [cursor=pointer]:
+                - /url: https://aistudio.google.com/apikey
+            - listitem [ref=e441]:
+              - text: "Try re-exporting:"
+              - code [ref=e442]: export GEMINI_API_KEY="your_key"
+          - heading "Connection Errors on Startup ¶" [level=3] [ref=e443]:
+            - text: Connection Errors on Startup
+            - link "¶" [ref=e444] [cursor=pointer]:
+              - /url: https://a2ui.org/quickstart/#connection-errors-on-startup
+          - paragraph [ref=e445]:
+            - text: If you see
+            - code [ref=e446]: ERR_CONNECTION_REFUSED
+            - text: errors when the browser opens,
+            - strong [ref=e447]: don't worry
+            - text: — this is a known race condition (
+            - link "#587" [ref=e448] [cursor=pointer]:
+              - /url: https://github.com/a2ui-project/a2ui/issues/587
+            - text: ). The web app starts faster than the Python agent backend. Just wait a few seconds and refresh the page.
+          - heading "Python / uv Issues ¶" [level=3] [ref=e449]:
+            - text: Python / uv Issues
+            - link "¶" [ref=e450] [cursor=pointer]:
+              - /url: https://a2ui.org/quickstart/#python-uv-issues
+          - paragraph [ref=e451]:
+            - text: The demo agents require
+            - link "uv" [ref=e452] [cursor=pointer]:
+              - /url: https://docs.astral.sh/uv/
+            - text: to run. If you see
+            - code [ref=e453]: "uv: command not found"
+            - text: ":"
+          - generic [ref=e455]:
+            - navigation [ref=e456]:
+              - button "Toggle line selection" [ref=e457] [cursor=pointer]
+              - button "Copy to clipboard" [ref=e458] [cursor=pointer]
+            - code [ref=e459]:
+              - generic [ref=e460]: "# Install uv"
+              - generic [ref=e461]: curl -LsSf https://astral.sh/uv/install.sh | sh
+              - generic [ref=e463]: "# Verify"
+              - generic [ref=e464]: uv --version
+          - paragraph [ref=e465]: "If you encounter other Python errors:"
+          - generic [ref=e467]:
+            - navigation [ref=e468]:
+              - button "Toggle line selection" [ref=e469] [cursor=pointer]
+              - button "Copy to clipboard" [ref=e470] [cursor=pointer]
+            - code [ref=e471]:
+              - generic [ref=e472]: "# Make sure Python 3.10+ is available"
+              - generic [ref=e473]: python3 --version
+              - generic [ref=e475]: "# Try running the agent manually"
+              - generic [ref=e476]: cd samples/agent/adk/restaurant_finder
+              - generic [ref=e477]: uv run .
+          - heading "Still Having Issues? ¶" [level=3] [ref=e478]:
+            - text: Still Having Issues?
+            - link "¶" [ref=e479] [cursor=pointer]:
+              - /url: https://a2ui.org/quickstart/#still-having-issues
+          - list [ref=e480]:
+            - listitem [ref=e481]:
+              - text: Check the
+              - link "GitHub Issues" [ref=e482] [cursor=pointer]:
+                - /url: https://github.com/a2ui-project/a2ui/issues
+            - listitem [ref=e483]:
+              - text: Review the
+              - link "samples/client/lit/README.md" [ref=e484] [cursor=pointer]:
+                - /url: https://github.com/a2ui-project/a2ui/blob/main/samples/client/lit
+            - listitem [ref=e485]: Join the community discussions
+          - heading "Understanding the Demo Code ¶" [level=2] [ref=e486]:
+            - text: Understanding the Demo Code
+            - link "¶" [ref=e487] [cursor=pointer]:
+              - /url: https://a2ui.org/quickstart/#understanding-the-demo-code
+          - paragraph [ref=e488]: "Want to see how it works? Check out:"
+          - list [ref=e489]:
+            - listitem [ref=e490]:
+              - strong [ref=e491]: Agent Code
+              - text: ":"
+              - code [ref=e492]: samples/agent/adk/restaurant_finder/
+              - text: — The Python A2A agent
+            - listitem [ref=e493]:
+              - strong [ref=e494]: Client Code
+              - text: ":"
+              - code [ref=e495]: samples/client/lit/
+              - text: — The Lit web client with A2UI renderer
+            - listitem [ref=e496]:
+              - strong [ref=e497]: A2UI Renderers
+              - text: ":"
+              - code [ref=e498]: renderers/lit/
+              - text: (Lit) and
+              - code [ref=e499]: renderers/web_core/
+              - text: (framework-agnostic core)
+          - paragraph [ref=e500]: Each directory has its own README with detailed documentation.
+          - separator [ref=e501]
+          - paragraph [ref=e502]:
+            - strong [ref=e503]: Congratulations!
+            - text: You've successfully run your first A2UI application. You've seen how an AI agent can generate rich, interactive UIs that render natively in a web application—all through safe, declarative JSON messages.
+      - button "Back to top":
+        - img
+        - text: Back to top
+    - contentinfo [ref=e504]:
+      - navigation "Footer" [ref=e505]:
+        - 'link "Previous: How Does A2UI Compare?" [ref=e506] [cursor=pointer]':
+          - /url: https://a2ui.org/introduction/agent-ui-ecosystem/
+          - img [ref=e508]
+          - generic [ref=e510]:
+            - text: Previous
+            - generic [ref=e511]: How Does A2UI Compare?
+        - 'link "Next: A2UI Composer ⭐" [ref=e512] [cursor=pointer]':
+          - /url: https://a2ui.org/composer/
+          - generic [ref=e513]:
+            - text: Next
+            - generic [ref=e514]: A2UI Composer ⭐
+          - img [ref=e516]
+      - generic [ref=e520]:
+        - generic [ref=e521]:
+          - text: Copyright Google 2025 |
+          - link "Terms" [ref=e522] [cursor=pointer]:
+            - /url: //policies.google.com/terms
+          - text: "|"
+          - link "Privacy" [ref=e523] [cursor=pointer]:
+            - /url: //policies.google.com/privacy
+          - text: "|"
+          - link "Manage cookies" [ref=e524] [cursor=pointer]:
+            - /url: https://a2ui.org/quickstart/#__consent
+        - text: Made with
+        - link "Material for MkDocs" [ref=e525] [cursor=pointer]:
+          - /url: https://squidfunk.github.io/mkdocs-material/
+  - progressbar

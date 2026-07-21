@@ -1,5 +1,5 @@
 {
-  "nextId": 8,
+  "nextId": 17,
   "tasks": [
     {
       "id": "6",
@@ -24,6 +24,121 @@
       "blockedBy": [],
       "createdAt": 1784629681460,
       "updatedAt": 1784630203247
+    },
+    {
+      "id": "8",
+      "subject": "Create Setup Wizard for first launch",
+      "description": "Wizard that shows on first app start: welcome, set wake/wind-down times, create initial recurring tasks, set energy capacity, quick feature tour. Store completion in state so it only shows once.",
+      "status": "completed",
+      "activeForm": "Building setup wizard",
+      "metadata": {},
+      "blocks": [
+        "10"
+      ],
+      "blockedBy": [],
+      "createdAt": 1784634335868,
+      "updatedAt": 1784634458429
+    },
+    {
+      "id": "9",
+      "subject": "Create Daily Morning Check-in flow",
+      "description": "Daily overview that shows on first load each day: set today's energy, review yesterday's wins/tasks, see today's plan, quick capture. Should be dismissable and re-accessible from tools. Store last check-in date to know when to show it.",
+      "status": "completed",
+      "activeForm": "Building daily check-in",
+      "metadata": {},
+      "blocks": [
+        "10"
+      ],
+      "blockedBy": [],
+      "createdAt": 1784634346047,
+      "updatedAt": 1784634515758
+    },
+    {
+      "id": "10",
+      "subject": "Wire wizard and check-in into App.jsx state",
+      "description": "Add setupDone and lastCheckinDate to defaultState. Add showSetup and showCheckin state flags. Wire SetupWizard completion to set setupDone=true. Wire daily check-in to show when lastCheckinDate !== todayKey(). Add buttons in tools view to re-access both.",
+      "status": "completed",
+      "activeForm": "Wiring state and flows",
+      "metadata": {},
+      "blocks": [],
+      "blockedBy": [
+        "8",
+        "9"
+      ],
+      "createdAt": 1784634360463,
+      "updatedAt": 1784634675630
+    },
+    {
+      "id": "11",
+      "subject": "Install AG-UI Python SDK in varv-server",
+      "description": "No pip package exists for AG-UI Python. Will implement protocol directly as typed SSE events (it's just JSON events over SSE).",
+      "status": "completed",
+      "activeForm": "Installing AG-UI Python SDK",
+      "metadata": {},
+      "blocks": [],
+      "blockedBy": [],
+      "createdAt": 1784638848776,
+      "updatedAt": 1784639063615
+    },
+    {
+      "id": "12",
+      "subject": "Create AG-UI SSE streaming endpoint in varv-server",
+      "description": "Add POST /ag-ui endpoint that emits AG-UI lifecycle/text/tool/state events via SSE. Wrap existing agent dispatch (classify, refine, breakdown, observer, sync) with AG-UI event emission.",
+      "status": "in_progress",
+      "activeForm": "Building AG-UI streaming endpoint",
+      "metadata": {},
+      "blocks": [],
+      "blockedBy": [],
+      "createdAt": 1784638862045,
+      "updatedAt": 1784639079910
+    },
+    {
+      "id": "13",
+      "subject": "Build AG-UI React client with streaming agent display",
+      "description": "Add AG-UI SSE client to frontend. Show real-time agent processing steps, streaming text, tool calls, and state updates in the UI. Replace polling-based agent log.",
+      "status": "pending",
+      "activeForm": "Building AG-UI React client",
+      "metadata": {},
+      "blocks": [],
+      "blockedBy": [],
+      "createdAt": 1784638893577,
+      "updatedAt": 1784638893577
+    },
+    {
+      "id": "14",
+      "subject": "Define Varv A2UI component catalog",
+      "description": "Create A2UI component catalog for Varv's design system: TaskCard, EnergyPicker, BreathingWidget, ToolSuggestion, MorningCheckin, etc. Define which components agents can use.",
+      "status": "pending",
+      "activeForm": "Defining A2UI component catalog",
+      "metadata": {},
+      "blocks": [],
+      "blockedBy": [],
+      "createdAt": 1784638908857,
+      "updatedAt": 1784638908857
+    },
+    {
+      "id": "15",
+      "subject": "Build A2UI React renderer for Varv",
+      "description": "Create React renderer that takes A2UI JSON messages and renders native Varv-styled components. Wire into agent streaming pipeline.",
+      "status": "pending",
+      "activeForm": "Building A2UI React renderer",
+      "metadata": {},
+      "blocks": [],
+      "blockedBy": [],
+      "createdAt": 1784638925946,
+      "updatedAt": 1784638925946
+    },
+    {
+      "id": "16",
+      "subject": "Wire agents to emit A2UI messages through AG-UI stream",
+      "description": "Update classify, refine, breakdown, observer agents to generate A2UI component messages alongside their AG-UI text/state events. Observatören suggests tools as A2UI cards.",
+      "status": "pending",
+      "activeForm": "Wiring agents to emit A2UI",
+      "metadata": {},
+      "blocks": [],
+      "blockedBy": [],
+      "createdAt": 1784638954007,
+      "updatedAt": 1784638954007
     }
   ]
 }

@@ -1,0 +1,964 @@
+- generic [active] [ref=e1]:
+  - blockquote [ref=e2]:
+    - heading [level=2] [ref=e3]: Documentation Index
+    - paragraph [ref=e4]:
+      - text: "Fetch the complete documentation index at:"
+      - link [ref=e5] [cursor=pointer]:
+        - /url: /llms.txt
+        - text: /llms.txt
+    - paragraph [ref=e6]: Use this file to discover all available pages before exploring further.
+  - generic [ref=e7]:
+    - link "Skip to main content" [ref=e8] [cursor=pointer]:
+      - /url: "#content-area"
+    - generic [ref=e10]:
+      - banner [ref=e11]:
+        - generic [ref=e14]:
+          - generic [ref=e17]:
+            - link "Agent User Interaction Protocol home page AG-UI" [ref=e19] [cursor=pointer]:
+              - /url: /
+              - generic [ref=e20]: Agent User Interaction Protocol home page
+              - img "AG-UI" [ref=e21]
+            - button "Open search" [ref=e23] [cursor=pointer]:
+              - generic [ref=e24]:
+                - img [ref=e25]
+                - generic [ref=e28]: Search...
+              - generic [ref=e29]: ⌘K
+            - generic [ref=e30]:
+              - navigation "Main" [ref=e32]:
+                - list [ref=e33]:
+                  - listitem [ref=e34]:
+                    - link "Discord" [ref=e35] [cursor=pointer]:
+                      - /url: https://discord.gg/Jd3FzfdJa8
+                      - img [ref=e36]
+                      - generic [ref=e37]: Discord
+                  - listitem [ref=e38] [cursor=pointer]:
+                    - link "ag-ui-protocol/ag-ui 14 835" [ref=e39]:
+                      - /url: https://github.com/ag-ui-protocol/ag-ui
+                      - generic [ref=e40]:
+                        - generic [ref=e41]:
+                          - img [ref=e42]
+                          - generic [ref=e44]: ag-ui-protocol/ag-ui
+                        - generic [ref=e45]:
+                          - img [ref=e46]
+                          - generic [ref=e47]: 14 835
+              - button "Change theme preference" [ref=e48] [cursor=pointer]:
+                - img [ref=e50]
+          - generic [ref=e54]:
+            - link "Documentation" [ref=e55] [cursor=pointer]:
+              - /url: /introduction
+              - text: Documentation
+            - link "SDKs" [ref=e57] [cursor=pointer]:
+              - /url: /sdk/js/core/overview
+              - img [ref=e58]
+              - text: SDKs
+      - generic [ref=e60]:
+        - navigation "Pages" [ref=e61]:
+          - generic [ref=e63]:
+            - list [ref=e64]:
+              - listitem [ref=e65]:
+                - link "TypeScript SDK" [ref=e66] [cursor=pointer]:
+                  - /url: https://docs.ag-ui.com/sdk/js/core/overview
+                  - img [ref=e67]
+                  - generic [ref=e68]: TypeScript SDK
+              - listitem [ref=e69]:
+                - link "Python SDK" [ref=e70] [cursor=pointer]:
+                  - /url: https://docs.ag-ui.com/sdk/python/core/overview
+                  - img [ref=e71]
+                  - generic [ref=e72]: Python SDK
+              - listitem [ref=e73]:
+                - link ".NET SDK" [ref=e74] [cursor=pointer]:
+                  - /url: https://docs.ag-ui.com/sdk/dotnet/abstractions/overview
+                  - img [ref=e75]
+                  - generic [ref=e76]: .NET SDK
+            - generic [ref=e77]:
+              - heading "Get Started" [level=3] [ref=e79]
+              - list [ref=e80]:
+                - listitem [ref=e81]:
+                  - link "AG-UI Overview" [ref=e82] [cursor=pointer]:
+                    - /url: /introduction
+                    - generic [ref=e85]: AG-UI Overview
+                - listitem [ref=e86]:
+                  - link "MCP, A2A, and AG-UI" [ref=e87] [cursor=pointer]:
+                    - /url: /agentic-protocols
+                    - generic [ref=e90]: MCP, A2A, and AG-UI
+                - listitem [ref=e91]:
+                  - button "Quickstart" [ref=e92] [cursor=pointer]:
+                    - generic [ref=e94]: Quickstart
+                    - img [ref=e96]
+            - generic [ref=e100]:
+              - heading "Concepts" [level=3] [ref=e102]
+              - list [ref=e103]:
+                - listitem [ref=e104]:
+                  - link "Core architecture" [ref=e105] [cursor=pointer]:
+                    - /url: /concepts/architecture
+                    - generic [ref=e108]: Core architecture
+                - listitem [ref=e109]:
+                  - link "Events" [ref=e110] [cursor=pointer]:
+                    - /url: /concepts/events
+                    - generic [ref=e113]: Events
+                - listitem [ref=e114]:
+                  - link "Agents" [ref=e115] [cursor=pointer]:
+                    - /url: /concepts/agents
+                    - generic [ref=e118]: Agents
+                - listitem [ref=e119]:
+                  - link "Middleware" [ref=e120] [cursor=pointer]:
+                    - /url: /concepts/middleware
+                    - generic [ref=e123]: Middleware
+                - listitem [ref=e124]:
+                  - link "Messages" [ref=e125] [cursor=pointer]:
+                    - /url: /concepts/messages
+                    - generic [ref=e128]: Messages
+                - listitem [ref=e129]:
+                  - link "Reasoning" [ref=e130] [cursor=pointer]:
+                    - /url: /concepts/reasoning
+                    - generic [ref=e133]: Reasoning
+                - listitem [ref=e134]:
+                  - link "State Management" [ref=e135] [cursor=pointer]:
+                    - /url: /concepts/state
+                    - generic [ref=e138]: State Management
+                - listitem [ref=e139]:
+                  - link "Interrupts" [ref=e140] [cursor=pointer]:
+                    - /url: /concepts/interrupts
+                    - generic [ref=e143]: Interrupts
+                - listitem [ref=e144]:
+                  - link "Serialization" [ref=e145] [cursor=pointer]:
+                    - /url: /concepts/serialization
+                    - generic [ref=e148]: Serialization
+                - listitem [ref=e149]:
+                  - link "Tools" [ref=e150] [cursor=pointer]:
+                    - /url: /concepts/tools
+                    - generic [ref=e153]: Tools
+                - listitem [ref=e154]:
+                  - link "Capabilities" [ref=e155] [cursor=pointer]:
+                    - /url: /concepts/capabilities
+                    - generic [ref=e158]: Capabilities
+                - listitem [ref=e159]:
+                  - link "Generative UI" [ref=e160] [cursor=pointer]:
+                    - /url: /concepts/generative-ui-specs
+                    - generic [ref=e163]: Generative UI
+            - generic [ref=e166]:
+              - heading "Draft Proposals" [level=3] [ref=e168]
+              - list [ref=e169]:
+                - listitem [ref=e170]:
+                  - link "Overview" [ref=e171] [cursor=pointer]:
+                    - /url: /drafts/overview
+                    - generic [ref=e174]: Overview
+                - listitem [ref=e175]:
+                  - link "Generative User Interfaces" [ref=e176] [cursor=pointer]:
+                    - /url: /drafts/generative-ui
+                    - generic [ref=e179]: Generative User Interfaces
+                - listitem [ref=e180]:
+                  - link "Meta Events" [ref=e181] [cursor=pointer]:
+                    - /url: /drafts/meta-events
+                    - generic [ref=e184]: Meta Events
+            - generic [ref=e187]:
+              - heading "Tutorials" [level=3] [ref=e189]
+              - list [ref=e190]:
+                - listitem [ref=e191]:
+                  - link "Developing with Cursor" [ref=e192] [cursor=pointer]:
+                    - /url: /tutorials/cursor
+                    - generic [ref=e195]: Developing with Cursor
+                - listitem [ref=e196]:
+                  - link "Debugging" [ref=e197] [cursor=pointer]:
+                    - /url: /tutorials/debugging
+                    - generic [ref=e200]: Debugging
+            - generic [ref=e203]:
+              - heading "Development" [level=3] [ref=e205]
+              - list [ref=e206]:
+                - listitem [ref=e207]:
+                  - link "What's New" [ref=e208] [cursor=pointer]:
+                    - /url: /development/updates
+                    - generic [ref=e211]: What's New
+                - listitem [ref=e212]:
+                  - link "Roadmap" [ref=e213] [cursor=pointer]:
+                    - /url: /development/roadmap
+                    - generic [ref=e216]: Roadmap
+                - listitem [ref=e217]:
+                  - link "Contributing" [ref=e218] [cursor=pointer]:
+                    - /url: /development/contributing
+                    - generic [ref=e221]: Contributing
+                - listitem [ref=e222]:
+                  - link "Enterprise" [ref=e223] [cursor=pointer]:
+                    - /url: /talk-to-us
+                    - generic [ref=e226]: Enterprise
+        - main [ref=e228]:
+          - navigation "On this page" [ref=e232]:
+            - heading "On this page" [level=2] [ref=e233]:
+              - button "On this page" [ref=e234] [cursor=pointer]:
+                - img [ref=e235]
+                - generic [ref=e236]: On this page
+            - list [ref=e238]:
+              - listitem [ref=e239]:
+                - link "The Agent–User Interaction (AG-UI) Protocol" [ref=e240] [cursor=pointer]:
+                  - /url: "#the-agent%E2%80%93user-interaction-ag-ui-protocol"
+              - listitem [ref=e241]:
+                - link "Agentic Protocols" [ref=e242] [cursor=pointer]:
+                  - /url: "#agentic-protocols"
+              - listitem [ref=e243]:
+                - link "Building blocks (today & upcoming)" [ref=e244] [cursor=pointer]:
+                  - /url: "#building-blocks-today-%26-upcoming"
+              - listitem [ref=e245]:
+                - link "Why Agentic Apps need AG-UI" [ref=e246] [cursor=pointer]:
+                  - /url: "#why-agentic-apps-need-ag-ui"
+                - list [ref=e247]:
+                  - listitem [ref=e248]:
+                    - link "The requirements of user‑facing agents" [ref=e249] [cursor=pointer]:
+                      - /url: "#the-requirements-of-user%E2%80%91facing-agents"
+              - listitem [ref=e250]:
+                - link "AG-UI in Action" [ref=e251] [cursor=pointer]:
+                  - /url: "#ag-ui-in-action"
+              - listitem [ref=e252]:
+                - link "Supported Integrations" [ref=e253] [cursor=pointer]:
+                  - /url: "#supported-integrations"
+                - list [ref=e254]:
+                  - listitem [ref=e255]:
+                    - link "Direct to LLM" [ref=e256] [cursor=pointer]:
+                      - /url: "#direct-to-llm"
+                  - listitem [ref=e257]:
+                    - link "Agent Framework - Partnerships" [ref=e258] [cursor=pointer]:
+                      - /url: "#agent-framework-partnerships"
+                  - listitem [ref=e259]:
+                    - link "Agent Framework - 1st Party" [ref=e260] [cursor=pointer]:
+                      - /url: "#agent-framework-1st-party"
+                  - listitem [ref=e261]:
+                    - link "Agent Framework - Community" [ref=e262] [cursor=pointer]:
+                      - /url: "#agent-framework-community"
+                  - listitem [ref=e263]:
+                    - link "Agent Interaction Protocols" [ref=e264] [cursor=pointer]:
+                      - /url: "#agent-interaction-protocols"
+                  - listitem [ref=e265]:
+                    - link "Infrastructure / Deployment" [ref=e266] [cursor=pointer]:
+                      - /url: "#infrastructure-%2F-deployment"
+                  - listitem [ref=e267]:
+                    - link "Specification (standard)" [ref=e268] [cursor=pointer]:
+                      - /url: "#specification-standard"
+                  - listitem [ref=e269]:
+                    - link "SDKs" [ref=e270] [cursor=pointer]:
+                      - /url: "#sdks"
+                  - listitem [ref=e271]:
+                    - link "Clients" [ref=e272] [cursor=pointer]:
+                      - /url: "#clients"
+              - listitem [ref=e273]:
+                - link "Quick Start" [ref=e274] [cursor=pointer]:
+                  - /url: "#quick-start"
+              - listitem [ref=e275]:
+                - link "Explore AG-UI" [ref=e276] [cursor=pointer]:
+                  - /url: "#explore-ag-ui"
+              - listitem [ref=e277]:
+                - link "Resources" [ref=e278] [cursor=pointer]:
+                  - /url: "#resources"
+              - listitem [ref=e279]:
+                - link "Contributing" [ref=e280] [cursor=pointer]:
+                  - /url: "#contributing"
+              - listitem [ref=e281]:
+                - link "Support and Feedback" [ref=e282] [cursor=pointer]:
+                  - /url: "#support-and-feedback"
+          - generic [ref=e283]:
+            - generic [ref=e285]:
+              - generic [ref=e286]: Get Started
+              - heading "AG-UI Overview" [level=1] [ref=e288]
+            - generic [ref=e289]:
+              - heading "Navigate to header The Agent–User Interaction (AG-UI) Protocol" [level=1] [ref=e290]:
+                - link "Navigate to header" [ref=e291] [cursor=pointer]:
+                  - /url: "#the-agent–user-interaction-ag-ui-protocol"
+                  - img [ref=e293]
+                - generic [ref=e296] [cursor=pointer]: The Agent–User Interaction (AG-UI) Protocol
+              - generic [ref=e297]:
+                - text: AG-UI is an
+                - strong [ref=e299]: open
+                - text: ","
+                - strong [ref=e301]: lightweight
+                - text: ","
+                - strong [ref=e303]: event-based
+                - text: protocol that standardizes how AI agents connect to user-facing applications.
+              - generic [ref=e304]: AG-UI is designed to be the general-purpose, bi-directional connection between a user-facing application and any agentic backend.
+              - generic [ref=e305]: Built for simplicity and flexibility, it standardizes how agent state, UI intents, and user interactions flow between your model/agent runtime and user-facing frontend applications—to allow application developers to ship reliable, debuggable, user‑friendly agentic features fast while focusing on application needs and avoiding complex ad-hoc wiring.
+              - generic [ref=e307]:
+                - img "AG-UI Overview" [ref=e310]
+                - generic:
+                  - 'button "Expand image: AG-UI Overview"'
+              - separator [ref=e311]
+              - heading "Navigate to header Agentic Protocols" [level=2] [ref=e312]:
+                - link "Navigate to header" [ref=e313] [cursor=pointer]:
+                  - /url: "#agentic-protocols"
+                  - img [ref=e315]
+                - generic [ref=e318] [cursor=pointer]: Agentic Protocols
+              - note "Note" [ref=e319]:
+                - img [ref=e321]
+                - generic [ref=e324]:
+                  - strong [ref=e325]: Confused about “A2UI” and “AG-UI”?
+                  - text: That’s understandable! Despite the naming similarities, they are quite different and work well together. A2UI is a
+                  - link "generative UI specification" [ref=e326] [cursor=pointer]:
+                    - /url: ./concepts/generative-ui-specs
+                  - text: "- allowing agents to deliver UI widgets, where AG-UI is the Agent↔User Interaction protocol - which connects an agentic frontend to any agentic backend."
+                  - link "Learn more" [ref=e327] [cursor=pointer]:
+                    - /url: https://copilotkit.ai/ag-ui-and-a2ui
+              - generic [ref=e328]:
+                - text: AG-UI is one of three prominent open
+                - link "agentic protocols" [ref=e329] [cursor=pointer]:
+                  - /url: ./agentic-protocols
+                - text: .
+              - region "Scrollable table" [ref=e330]:
+                - table [ref=e332]:
+                  - rowgroup [ref=e333]:
+                    - row "Layer Protocol / Example Purpose" [ref=e334]:
+                      - columnheader "Layer" [ref=e335]:
+                        - strong [ref=e336]: Layer
+                      - columnheader "Protocol / Example" [ref=e337]:
+                        - strong [ref=e338]: Protocol / Example
+                      - columnheader "Purpose" [ref=e339]:
+                        - strong [ref=e340]: Purpose
+                  - rowgroup [ref=e341]:
+                    - row "Agent ↔ User Interaction AG-UI (Agent–User Interaction Protocol) The open, event-based standard that connects agents to user-facing applications — enabling real-time, multimodal, interactive experiences." [ref=e342]:
+                      - cell "Agent ↔ User Interaction" [ref=e343]:
+                        - strong [ref=e344]: Agent ↔ User Interaction
+                      - cell "AG-UI (Agent–User Interaction Protocol)" [ref=e345]:
+                        - strong [ref=e346]:
+                          - text: AG-UI
+                          - text: (Agent–User Interaction Protocol)
+                      - cell "The open, event-based standard that connects agents to user-facing applications — enabling real-time, multimodal, interactive experiences." [ref=e347]
+                    - row "Agent ↔ Tools & Data MCP (Model Context Protocol) Open standard (originated by Anthropic) that lets agents securely connect to external systems — tools, workflows, and data sources." [ref=e348]:
+                      - cell "Agent ↔ Tools & Data" [ref=e349]:
+                        - strong [ref=e350]: Agent ↔ Tools & Data
+                      - cell "MCP (Model Context Protocol)" [ref=e351]:
+                        - strong [ref=e352]:
+                          - text: MCP
+                          - text: (Model Context Protocol)
+                      - cell "Open standard (originated by Anthropic) that lets agents securely connect to external systems — tools, workflows, and data sources." [ref=e353]
+                    - row "Agent ↔ Agent A2A (Agent to Agent) Open standard (originated by Google) which defines how agents coordinate and share work across distributed agentic systems." [ref=e354]:
+                      - cell "Agent ↔ Agent" [ref=e355]:
+                        - strong [ref=e356]: Agent ↔ Agent
+                      - cell "A2A (Agent to Agent)" [ref=e357]:
+                        - strong [ref=e358]:
+                          - text: A2A
+                          - text: (Agent to Agent)
+                      - cell "Open standard (originated by Google) which defines how agents coordinate and share work across distributed agentic systems." [ref=e359]
+              - separator [ref=e360]
+              - heading "Navigate to header Building blocks (today & upcoming)" [level=2] [ref=e361]:
+                - link "Navigate to header" [ref=e362] [cursor=pointer]:
+                  - /url: "#building-blocks-today-&-upcoming"
+                  - img [ref=e364]
+                - generic [ref=e367] [cursor=pointer]: Building blocks (today & upcoming)
+              - generic [ref=e368]:
+                - generic [ref=e369] [cursor=pointer]:
+                  - generic [ref=e370]: Streaming chat
+                  - generic [ref=e371]: Live token and event streaming for responsive multi turn sessions, with cancel and resume.
+                - generic [ref=e372] [cursor=pointer]:
+                  - generic [ref=e373]: Multimodality
+                  - generic [ref=e374]: Typed attachments and real time media (files, images, audio, transcripts); supports voice, previews, annotations, provenance.
+                - generic [ref=e375] [cursor=pointer]:
+                  - generic [ref=e376]: Generative UI, static
+                  - generic [ref=e377]: Render model output as stable, typed components under app control.
+                - generic [ref=e378] [cursor=pointer]:
+                  - generic [ref=e379]: Generative UI, declarative
+                  - generic [ref=e380]: Small declarative language for constrained yet open-ended agent UIs; agents propose trees and constraints, the app validates and mounts.
+                - generic [ref=e381] [cursor=pointer]:
+                  - generic [ref=e382]: Shared state
+                  - generic [ref=e383]: (Read-only & read-write). Typed store shared between agent and app, with streamed event-sourced diffs and conflict resolution for snappy collaboration.
+                - generic [ref=e384] [cursor=pointer]:
+                  - generic [ref=e385]: Thinking steps
+                  - generic [ref=e386]: Visualize intermediate reasoning from traces and tool events; no raw chain of thought.
+                - generic [ref=e387] [cursor=pointer]:
+                  - generic [ref=e388]: Frontend tool calls
+                  - generic [ref=e389]: Typed handoffs from agent to frontend-executed actions, and back.
+                - generic [ref=e390] [cursor=pointer]:
+                  - generic [ref=e391]: Backend tool rendering
+                  - generic [ref=e392]: Visualize backend tool outputs in app and chat, emit side effects as first-class events.
+                - generic [ref=e393] [cursor=pointer]:
+                  - generic [ref=e394]: Interrupts (human in the loop)
+                  - generic [ref=e395]: Pause, approve, edit, retry, or escalate mid flow without losing state.
+                - generic [ref=e396] [cursor=pointer]:
+                  - generic [ref=e397]: Sub-agents and composition
+                  - generic [ref=e398]: Nested delegation with scoped state, tracing, and cancellation.
+                - generic [ref=e399] [cursor=pointer]:
+                  - generic [ref=e400]: Agent steering
+                  - generic [ref=e401]: Dynamically redirect agent execution with real-time user input to guide behavior and outcomes.
+                - generic [ref=e402] [cursor=pointer]:
+                  - generic [ref=e403]: Tool output streaming
+                  - generic [ref=e404]: Stream tool results and logs so UIs can render long-running effects in real time.
+                - generic [ref=e405] [cursor=pointer]:
+                  - generic [ref=e406]: Custom events
+                  - generic [ref=e407]: Open-ended data exchange for needs not covered by the protocol.
+              - separator [ref=e408]
+              - heading "Navigate to header Why Agentic Apps need AG-UI" [level=2] [ref=e409]:
+                - link "Navigate to header" [ref=e410] [cursor=pointer]:
+                  - /url: "#why-agentic-apps-need-ag-ui"
+                  - img [ref=e412]
+                - generic [ref=e415] [cursor=pointer]: Why Agentic Apps need AG-UI
+              - generic [ref=e416]: "Agentic applications break the simple request/response model that dominated frontend-backend development in the pre-agentic era: a client makes a request, the server returns data, the client renders it, and the interaction ends."
+              - heading "Navigate to header The requirements of user‑facing agents" [level=4] [ref=e417]:
+                - link "Navigate to header" [ref=e418] [cursor=pointer]:
+                  - /url: "#the-requirements-of-user‑facing-agents"
+                  - img [ref=e420]
+                - generic [ref=e423] [cursor=pointer]: The requirements of user‑facing agents
+              - generic [ref=e424]: "While agents are just software, they exhibit characteristics that make them challenging to serve behind traditional REST/GraphQL APIs:"
+              - list [ref=e425]:
+                - listitem [ref=e426]:
+                  - text: Agents are
+                  - strong [ref=e427]: long‑running
+                  - text: and
+                  - strong [ref=e428]: stream
+                  - text: intermediate work—often across multi‑turn sessions.
+                - listitem [ref=e429]:
+                  - text: Agents are
+                  - strong [ref=e430]: nondeterministic
+                  - text: and can
+                  - strong [ref=e431]: control application UI nondeterministically
+                  - text: .
+                - listitem [ref=e432]:
+                  - text: Agents simultanously mix
+                  - strong [ref=e433]: structured + unstructured IO
+                  - text: (e.g. text & voice, alongside tool calls and state updates).
+                - listitem [ref=e434]:
+                  - text: Agents need user-interactive
+                  - strong [ref=e435]: composition
+                  - text: ": e.g. they may call sub‑agents, often recursively."
+                - listitem [ref=e436]: And more…
+              - generic [ref=e437]: AG-UI is an event-based protocol that enables dynamic communication between agentic frontends and backends. It builds on top of the foundational protocols of the web (HTTP, WebSockets) as an abstraction layer designed for the agentic age—bridging the gap between traditional client-server architectures and the dynamic, stateful nature of AI agents.
+              - separator [ref=e438]
+              - heading "Navigate to header AG-UI in Action" [level=2] [ref=e439]:
+                - link "Navigate to header" [ref=e440] [cursor=pointer]:
+                  - /url: "#ag-ui-in-action"
+                  - img [ref=e442]
+                - generic [ref=e445] [cursor=pointer]: AG-UI in Action
+              - generic [ref=e448]:
+                - img [ref=e450]
+                - generic [ref=e452]:
+                  - text: You can see demo apps of the AG-UI features with the framework of your choice, with preview, code, and walkthrough docs in the
+                  - link "AG-UI Dojo" [ref=e453] [cursor=pointer]:
+                    - /url: https://dojo.ag-ui.com/
+              - separator [ref=e454]
+              - heading "Navigate to header Supported Integrations" [level=2] [ref=e455]:
+                - link "Navigate to header" [ref=e456] [cursor=pointer]:
+                  - /url: "#supported-integrations"
+                  - img [ref=e458]
+                - generic [ref=e461] [cursor=pointer]: Supported Integrations
+              - generic [ref=e462]:
+                - text: AG-UI was born from CopilotKit’s initial
+                - strong [ref=e463]: partnership
+                - text: with LangGraph and CrewAI - and brings the incredibly popular agent-user-interactivity infrastructure to the wider agentic ecosystem.
+              - generic [ref=e464]:
+                - strong [ref=e465]: 1st party
+                - text: = the platforms that have AG‑UI built in and provide documentation for guidance.
+              - heading "Navigate to header Direct to LLM" [level=3] [ref=e466]:
+                - link "Navigate to header" [ref=e467] [cursor=pointer]:
+                  - /url: "#direct-to-llm"
+                  - img [ref=e469]
+                - generic [ref=e472] [cursor=pointer]: Direct to LLM
+              - region "Scrollable table" [ref=e473]:
+                - table [ref=e475]:
+                  - rowgroup [ref=e476]:
+                    - row "Framework Status AG-UI Resources" [ref=e477]:
+                      - columnheader "Framework" [ref=e478]
+                      - columnheader "Status" [ref=e479]
+                      - columnheader "AG-UI Resources" [ref=e480]
+                  - rowgroup [ref=e481]:
+                    - row "Direct to LLM Supported Docs" [ref=e482]:
+                      - cell "Direct to LLM" [ref=e483]
+                      - cell "Supported" [ref=e484]
+                      - cell "Docs" [ref=e485]:
+                        - link "Docs" [ref=e486] [cursor=pointer]:
+                          - /url: https://docs.copilotkit.ai/direct-to-llm
+              - heading "Navigate to header Agent Framework - Partnerships" [level=3] [ref=e487]:
+                - link "Navigate to header" [ref=e488] [cursor=pointer]:
+                  - /url: "#agent-framework-partnerships"
+                  - img [ref=e490]
+                - generic [ref=e493] [cursor=pointer]: Agent Framework - Partnerships
+              - region "Scrollable table" [ref=e494]:
+                - table [ref=e496]:
+                  - rowgroup [ref=e497]:
+                    - row "Framework Status AG-UI Resources" [ref=e498]:
+                      - columnheader "Framework" [ref=e499]
+                      - columnheader "Status" [ref=e500]
+                      - columnheader "AG-UI Resources" [ref=e501]
+                  - rowgroup [ref=e502]:
+                    - row "LangGraph Supported Docs, Demos" [ref=e503]:
+                      - cell "LangGraph" [ref=e504]:
+                        - link "LangGraph" [ref=e505] [cursor=pointer]:
+                          - /url: https://www.langchain.com/langgraph
+                      - cell "Supported" [ref=e506]
+                      - cell "Docs, Demos" [ref=e507]:
+                        - link "Docs" [ref=e508] [cursor=pointer]:
+                          - /url: https://docs.copilotkit.ai/langgraph/
+                        - text: ","
+                        - link "Demos" [ref=e509] [cursor=pointer]:
+                          - /url: https://dojo.ag-ui.com/langgraph-fastapi/feature/shared_state
+                    - row "CrewAI Supported Docs, Demos" [ref=e510]:
+                      - cell "CrewAI" [ref=e511]:
+                        - link "CrewAI" [ref=e512] [cursor=pointer]:
+                          - /url: https://crewai.com/
+                      - cell "Supported" [ref=e513]
+                      - cell "Docs, Demos" [ref=e514]:
+                        - link "Docs" [ref=e515] [cursor=pointer]:
+                          - /url: https://docs.copilotkit.ai/crewai-flows
+                        - text: ","
+                        - link "Demos" [ref=e516] [cursor=pointer]:
+                          - /url: https://dojo.ag-ui.com/crewai/feature/shared_state
+              - heading "Navigate to header Agent Framework - 1st Party" [level=3] [ref=e517]:
+                - link "Navigate to header" [ref=e518] [cursor=pointer]:
+                  - /url: "#agent-framework-1st-party"
+                  - img [ref=e520]
+                - generic [ref=e523] [cursor=pointer]: Agent Framework - 1st Party
+              - region "Scrollable table" [ref=e524]:
+                - table [ref=e526]:
+                  - rowgroup [ref=e527]:
+                    - row "Framework Status AG-UI Resources" [ref=e528]:
+                      - columnheader "Framework" [ref=e529]
+                      - columnheader "Status" [ref=e530]
+                      - columnheader "AG-UI Resources" [ref=e531]
+                  - rowgroup [ref=e532]:
+                    - row "Microsoft Agent Framework Supported Docs, Demos" [ref=e533]:
+                      - cell "Microsoft Agent Framework" [ref=e534]:
+                        - link "Microsoft Agent Framework" [ref=e535] [cursor=pointer]:
+                          - /url: https://azure.microsoft.com/en-us/blog/introducing-microsoft-agent-framework/
+                      - cell "Supported" [ref=e536]
+                      - cell "Docs, Demos" [ref=e537]:
+                        - link "Docs" [ref=e538] [cursor=pointer]:
+                          - /url: https://docs.copilotkit.ai/microsoft-agent-framework
+                        - text: ","
+                        - link "Demos" [ref=e539] [cursor=pointer]:
+                          - /url: https://dojo.ag-ui.com/microsoft-agent-framework-dotnet/feature/shared_state
+                    - row "Google ADK Supported Docs, Demos" [ref=e540]:
+                      - cell "Google ADK" [ref=e541]:
+                        - link "Google ADK" [ref=e542] [cursor=pointer]:
+                          - /url: https://google.github.io/adk-docs/get-started/
+                      - cell "Supported" [ref=e543]
+                      - cell "Docs, Demos" [ref=e544]:
+                        - link "Docs" [ref=e545] [cursor=pointer]:
+                          - /url: https://docs.copilotkit.ai/adk
+                        - text: ","
+                        - link "Demos" [ref=e546] [cursor=pointer]:
+                          - /url: https://dojo.ag-ui.com/adk-middleware/feature/shared_state?openCopilot=true
+                    - row "AWS Strands Agents Supported Docs, Demos" [ref=e547]:
+                      - cell "AWS Strands Agents" [ref=e548]:
+                        - link "AWS Strands Agents" [ref=e549] [cursor=pointer]:
+                          - /url: https://github.com/strands-agents/sdk-python
+                      - cell "Supported" [ref=e550]
+                      - cell "Docs, Demos" [ref=e551]:
+                        - link "Docs" [ref=e552] [cursor=pointer]:
+                          - /url: https://docs.copilotkit.ai/aws-strands
+                        - text: ","
+                        - link "Demos" [ref=e553] [cursor=pointer]:
+                          - /url: https://dojo.ag-ui.com/aws-strands/feature/shared_state
+                    - row "AWS Bedrock AgentCore Supported Docs" [ref=e554]:
+                      - cell "AWS Bedrock AgentCore" [ref=e555]:
+                        - link "AWS Bedrock AgentCore" [ref=e556] [cursor=pointer]:
+                          - /url: https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/runtime-agui-protocol-contract.html
+                      - cell "Supported" [ref=e557]
+                      - cell "Docs" [ref=e558]:
+                        - link "Docs" [ref=e559] [cursor=pointer]:
+                          - /url: https://github.com/awslabs/fullstack-solution-template-for-agentcore
+                    - row "Mastra Supported Docs, Demos" [ref=e560]:
+                      - cell "Mastra" [ref=e561]:
+                        - link "Mastra" [ref=e562] [cursor=pointer]:
+                          - /url: https://mastra.ai/
+                      - cell "Supported" [ref=e563]
+                      - cell "Docs, Demos" [ref=e564]:
+                        - link "Docs" [ref=e565] [cursor=pointer]:
+                          - /url: https://docs.copilotkit.ai/mastra/
+                        - text: ","
+                        - link "Demos" [ref=e566] [cursor=pointer]:
+                          - /url: https://dojo.ag-ui.com/mastra/feature/tool_based_generative_ui
+                    - row "Pydantic AI Supported Docs, Demos" [ref=e567]:
+                      - cell "Pydantic AI" [ref=e568]:
+                        - link "Pydantic AI" [ref=e569] [cursor=pointer]:
+                          - /url: https://github.com/pydantic/pydantic-ai
+                      - cell "Supported" [ref=e570]
+                      - cell "Docs, Demos" [ref=e571]:
+                        - link "Docs" [ref=e572] [cursor=pointer]:
+                          - /url: https://docs.copilotkit.ai/pydantic-ai/
+                        - text: ","
+                        - link "Demos" [ref=e573] [cursor=pointer]:
+                          - /url: https://dojo.ag-ui.com/pydantic-ai/feature/shared_state
+                    - row "Agno Supported Docs, Demos" [ref=e574]:
+                      - cell "Agno" [ref=e575]:
+                        - link "Agno" [ref=e576] [cursor=pointer]:
+                          - /url: https://github.com/agno-agi/agno
+                      - cell "Supported" [ref=e577]
+                      - cell "Docs, Demos" [ref=e578]:
+                        - link "Docs" [ref=e579] [cursor=pointer]:
+                          - /url: https://docs.copilotkit.ai/agno/
+                        - text: ","
+                        - link "Demos" [ref=e580] [cursor=pointer]:
+                          - /url: https://dojo.ag-ui.com/agno/feature/tool_based_generative_ui
+                    - row "LlamaIndex Supported Docs, Demos" [ref=e581]:
+                      - cell "LlamaIndex" [ref=e582]:
+                        - link "LlamaIndex" [ref=e583] [cursor=pointer]:
+                          - /url: https://github.com/run-llama/llama_index
+                      - cell "Supported" [ref=e584]
+                      - cell "Docs, Demos" [ref=e585]:
+                        - link "Docs" [ref=e586] [cursor=pointer]:
+                          - /url: https://docs.copilotkit.ai/llamaindex/
+                        - text: ","
+                        - link "Demos" [ref=e587] [cursor=pointer]:
+                          - /url: https://dojo.ag-ui.com/llamaindex/feature/shared_state
+                    - row "AG2 Supported Docs Demos" [ref=e588]:
+                      - cell "AG2" [ref=e589]:
+                        - link "AG2" [ref=e590] [cursor=pointer]:
+                          - /url: https://ag2.ai/
+                      - cell "Supported" [ref=e591]
+                      - cell "Docs Demos" [ref=e592]:
+                        - link "Docs" [ref=e593] [cursor=pointer]:
+                          - /url: https://docs.copilotkit.ai/ag2/
+                        - link "Demos" [ref=e594] [cursor=pointer]:
+                          - /url: https://dojo.ag-ui.com/ag2/feature/shared_state
+                    - row "AWS Bedrock Agents In Progress –" [ref=e595]:
+                      - cell "AWS Bedrock Agents" [ref=e596]:
+                        - link "AWS Bedrock Agents" [ref=e597] [cursor=pointer]:
+                          - /url: https://aws.amazon.com/bedrock/agents/
+                      - cell "In Progress" [ref=e598]
+                      - cell "–" [ref=e599]
+              - heading "Navigate to header Agent Framework - Community" [level=3] [ref=e600]:
+                - link "Navigate to header" [ref=e601] [cursor=pointer]:
+                  - /url: "#agent-framework-community"
+                  - img [ref=e603]
+                - generic [ref=e606] [cursor=pointer]: Agent Framework - Community
+              - region "Scrollable table" [ref=e607]:
+                - table [ref=e609]:
+                  - rowgroup [ref=e610]:
+                    - row "Framework Status AG-UI Resources" [ref=e611]:
+                      - columnheader "Framework" [ref=e612]
+                      - columnheader "Status" [ref=e613]
+                      - columnheader "AG-UI Resources" [ref=e614]
+                  - rowgroup [ref=e615]:
+                    - row "OpenAI Agent SDK In Progress –" [ref=e616]:
+                      - cell "OpenAI Agent SDK" [ref=e617]:
+                        - link "OpenAI Agent SDK" [ref=e618] [cursor=pointer]:
+                          - /url: https://openai.github.io/openai-agents-python/
+                      - cell "In Progress" [ref=e619]
+                      - cell "–" [ref=e620]
+                    - row "Cloudflare Agents In Progress –" [ref=e621]:
+                      - cell "Cloudflare Agents" [ref=e622]:
+                        - link "Cloudflare Agents" [ref=e623] [cursor=pointer]:
+                          - /url: https://developers.cloudflare.com/agents/
+                      - cell "In Progress" [ref=e624]
+                      - cell "–" [ref=e625]
+              - heading "Navigate to header Agent Interaction Protocols" [level=3] [ref=e626]:
+                - link "Navigate to header" [ref=e627] [cursor=pointer]:
+                  - /url: "#agent-interaction-protocols"
+                  - img [ref=e629]
+                - generic [ref=e632] [cursor=pointer]: Agent Interaction Protocols
+              - region "Scrollable table" [ref=e633]:
+                - table [ref=e635]:
+                  - rowgroup [ref=e636]:
+                    - row "Protocol Status AG-UI Resources Integrations" [ref=e637]:
+                      - columnheader "Protocol" [ref=e638]
+                      - columnheader "Status" [ref=e639]
+                      - columnheader "AG-UI Resources" [ref=e640]
+                      - columnheader "Integrations" [ref=e641]
+                  - rowgroup [ref=e642]:
+                    - row "A2A Middleware Supported Docs Partnership" [ref=e643]:
+                      - cell "A2A Middleware" [ref=e644]:
+                        - link "A2A Middleware" [ref=e645] [cursor=pointer]:
+                          - /url: https://a2a-protocol.org/
+                      - cell "Supported" [ref=e646]
+                      - cell "Docs" [ref=e647]:
+                        - link "Docs" [ref=e648] [cursor=pointer]:
+                          - /url: https://docs.copilotkit.ai/a2a-protocol
+                      - cell "Partnership" [ref=e649]
+              - heading "Navigate to header Infrastructure / Deployment" [level=3] [ref=e650]:
+                - link "Navigate to header" [ref=e651] [cursor=pointer]:
+                  - /url: "#infrastructure-/-deployment"
+                  - img [ref=e653]
+                - generic [ref=e656] [cursor=pointer]: Infrastructure / Deployment
+              - region "Scrollable table" [ref=e657]:
+                - table [ref=e659]:
+                  - rowgroup [ref=e660]:
+                    - row "Platform Status AG-UI Resources Integrations" [ref=e661]:
+                      - columnheader "Platform" [ref=e662]
+                      - columnheader "Status" [ref=e663]
+                      - columnheader "AG-UI Resources" [ref=e664]
+                      - columnheader "Integrations" [ref=e665]
+                  - rowgroup [ref=e666]:
+                    - row "Amazon Bedrock AgentCore Supported Docs 1st Party" [ref=e667]:
+                      - cell "Amazon Bedrock AgentCore" [ref=e668]:
+                        - link "Amazon Bedrock AgentCore" [ref=e669] [cursor=pointer]:
+                          - /url: https://aws.amazon.com/bedrock/agentcore/
+                      - cell "Supported" [ref=e670]
+                      - cell "Docs" [ref=e671]:
+                        - link "Docs" [ref=e672] [cursor=pointer]:
+                          - /url: https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/runtime-agui.html
+                      - cell "1st Party" [ref=e673]
+              - heading "Navigate to header Specification (standard)" [level=3] [ref=e674]:
+                - link "Navigate to header" [ref=e675] [cursor=pointer]:
+                  - /url: "#specification-standard"
+                  - img [ref=e677]
+                - generic [ref=e680] [cursor=pointer]: Specification (standard)
+              - region "Scrollable table" [ref=e681]:
+                - table [ref=e683]:
+                  - rowgroup [ref=e684]:
+                    - row "Framework Status AG-UI Resources" [ref=e685]:
+                      - columnheader "Framework" [ref=e686]
+                      - columnheader "Status" [ref=e687]
+                      - columnheader "AG-UI Resources" [ref=e688]
+                  - rowgroup [ref=e689]:
+                    - row "Oracle Agent Spec Supported Docs, Demos" [ref=e690]:
+                      - cell "Oracle Agent Spec" [ref=e691]:
+                        - link "Oracle Agent Spec" [ref=e692] [cursor=pointer]:
+                          - /url: http://oracle.github.io/agent-spec/
+                      - cell "Supported" [ref=e693]
+                      - cell "Docs, Demos" [ref=e694]:
+                        - link "Docs" [ref=e695] [cursor=pointer]:
+                          - /url: https://go.copilotkit.ai/copilotkit-oracle-docs
+                        - text: ","
+                        - link "Demos" [ref=e696] [cursor=pointer]:
+                          - /url: https://dojo.ag-ui.com/agent-spec-langgraph/feature/tool_based_generative_ui
+              - heading "Navigate to header SDKs" [level=3] [ref=e697]:
+                - link "Navigate to header" [ref=e698] [cursor=pointer]:
+                  - /url: "#sdks"
+                  - img [ref=e700]
+                - generic [ref=e703] [cursor=pointer]: SDKs
+              - region "Scrollable table" [ref=e704]:
+                - table [ref=e706]:
+                  - rowgroup [ref=e707]:
+                    - row "SDK Status AG-UI Resources Integrations" [ref=e708]:
+                      - columnheader "SDK" [ref=e709]
+                      - columnheader "Status" [ref=e710]
+                      - columnheader "AG-UI Resources" [ref=e711]
+                      - columnheader "Integrations" [ref=e712]
+                  - rowgroup [ref=e713]:
+                    - row "Kotlin Supported Getting Started Community" [ref=e714]:
+                      - cell "Kotlin" [ref=e715]:
+                        - link "Kotlin" [ref=e716] [cursor=pointer]:
+                          - /url: ""
+                      - cell "Supported" [ref=e717]
+                      - cell "Getting Started" [ref=e718]:
+                        - link "Getting Started" [ref=e719] [cursor=pointer]:
+                          - /url: https://github.com/ag-ui-protocol/ag-ui/blob/main/docs/sdk/kotlin/overview.mdx
+                      - cell "Community" [ref=e720]
+                    - row "Golang Supported Getting Started Community" [ref=e721]:
+                      - cell "Golang" [ref=e722]:
+                        - link "Golang" [ref=e723] [cursor=pointer]:
+                          - /url: ""
+                      - cell "Supported" [ref=e724]
+                      - cell "Getting Started" [ref=e725]:
+                        - link "Getting Started" [ref=e726] [cursor=pointer]:
+                          - /url: https://github.com/ag-ui-protocol/ag-ui/blob/main/docs/sdk/go/overview.mdx
+                      - cell "Community" [ref=e727]
+                    - row "Dart Supported Getting Started Community" [ref=e728]:
+                      - cell "Dart" [ref=e729]:
+                        - link "Dart" [ref=e730] [cursor=pointer]:
+                          - /url: ""
+                      - cell "Supported" [ref=e731]
+                      - cell "Getting Started" [ref=e732]:
+                        - link "Getting Started" [ref=e733] [cursor=pointer]:
+                          - /url: https://github.com/ag-ui-protocol/ag-ui/tree/main/sdks/community/dart
+                      - cell "Community" [ref=e734]
+                    - row "Java Supported Getting Started Community" [ref=e735]:
+                      - cell "Java" [ref=e736]:
+                        - link "Java" [ref=e737] [cursor=pointer]:
+                          - /url: ""
+                      - cell "Supported" [ref=e738]
+                      - cell "Getting Started" [ref=e739]:
+                        - link "Getting Started" [ref=e740] [cursor=pointer]:
+                          - /url: https://github.com/ag-ui-protocol/ag-ui/blob/main/docs/sdk/java/overview.mdx
+                      - cell "Community" [ref=e741]
+                    - row "Rust Supported Getting Started Community" [ref=e742]:
+                      - cell "Rust" [ref=e743]:
+                        - link "Rust" [ref=e744] [cursor=pointer]:
+                          - /url: ""
+                      - cell "Supported" [ref=e745]
+                      - cell "Getting Started" [ref=e746]:
+                        - link "Getting Started" [ref=e747] [cursor=pointer]:
+                          - /url: https://github.com/ag-ui-protocol/ag-ui/tree/main/sdks/community/rust/crates/ag-ui-client
+                      - cell "Community" [ref=e748]
+                    - row ".NET In Progress PR Community" [ref=e749]:
+                      - cell ".NET" [ref=e750]:
+                        - link ".NET" [ref=e751] [cursor=pointer]:
+                          - /url: ""
+                      - cell "In Progress" [ref=e752]
+                      - cell "PR" [ref=e753]:
+                        - link "PR" [ref=e754] [cursor=pointer]:
+                          - /url: https://github.com/ag-ui-protocol/ag-ui/pull/38
+                      - cell "Community" [ref=e755]
+                    - row "Nim In Progress PR Community" [ref=e756]:
+                      - cell "Nim" [ref=e757]:
+                        - link "Nim" [ref=e758] [cursor=pointer]:
+                          - /url: ""
+                      - cell "In Progress" [ref=e759]
+                      - cell "PR" [ref=e760]:
+                        - link "PR" [ref=e761] [cursor=pointer]:
+                          - /url: https://github.com/ag-ui-protocol/ag-ui/pull/29
+                      - cell "Community" [ref=e762]
+                    - row "Flowise In Progress GitHub Source Community" [ref=e763]:
+                      - cell "Flowise" [ref=e764]:
+                        - link "Flowise" [ref=e765] [cursor=pointer]:
+                          - /url: ""
+                      - cell "In Progress" [ref=e766]
+                      - cell "GitHub Source" [ref=e767]:
+                        - link "GitHub Source" [ref=e768] [cursor=pointer]:
+                          - /url: https://github.com/ag-ui-protocol/ag-ui/issues/367
+                      - cell "Community" [ref=e769]
+                    - row "Langflow In Progress GitHub Source Community" [ref=e770]:
+                      - cell "Langflow" [ref=e771]:
+                        - link "Langflow" [ref=e772] [cursor=pointer]:
+                          - /url: ""
+                      - cell "In Progress" [ref=e773]
+                      - cell "GitHub Source" [ref=e774]:
+                        - link "GitHub Source" [ref=e775] [cursor=pointer]:
+                          - /url: https://github.com/ag-ui-protocol/ag-ui/issues/366
+                      - cell "Community" [ref=e776]
+              - heading "Navigate to header Clients" [level=3] [ref=e777]:
+                - link "Navigate to header" [ref=e778] [cursor=pointer]:
+                  - /url: "#clients"
+                  - img [ref=e780]
+                - generic [ref=e783] [cursor=pointer]: Clients
+              - region "Scrollable table" [ref=e784]:
+                - table [ref=e786]:
+                  - rowgroup [ref=e787]:
+                    - row "Client Status AG-UI Resources Integrations" [ref=e788]:
+                      - columnheader "Client" [ref=e789]
+                      - columnheader "Status" [ref=e790]
+                      - columnheader "AG-UI Resources" [ref=e791]
+                      - columnheader "Integrations" [ref=e792]
+                  - rowgroup [ref=e793]:
+                    - row "CopilotKit Supported Getting Started 1st Party" [ref=e794]:
+                      - cell "CopilotKit" [ref=e795]:
+                        - link "CopilotKit" [ref=e796] [cursor=pointer]:
+                          - /url: https://github.com/CopilotKit/CopilotKit
+                      - cell "Supported" [ref=e797]
+                      - cell "Getting Started" [ref=e798]:
+                        - link "Getting Started" [ref=e799] [cursor=pointer]:
+                          - /url: https://docs.copilotkit.ai/direct-to-llm/guides/quickstart
+                      - cell "1st Party" [ref=e800]
+                    - row "Terminal + Agent Supported Getting Started Community" [ref=e801]:
+                      - cell "Terminal + Agent" [ref=e802]:
+                        - link "Terminal + Agent" [ref=e803] [cursor=pointer]:
+                          - /url: ""
+                      - cell "Supported" [ref=e804]
+                      - cell "Getting Started" [ref=e805]:
+                        - link "Getting Started" [ref=e806] [cursor=pointer]:
+                          - /url: https://docs.ag-ui.com/quickstart/clients
+                      - cell "Community" [ref=e807]
+                    - row "React Native Help Wanted GitHub Source Community" [ref=e808]:
+                      - cell "React Native" [ref=e809]:
+                        - link "React Native" [ref=e810] [cursor=pointer]:
+                          - /url: https://reactnative.dev/
+                      - cell "Help Wanted" [ref=e811]
+                      - cell "GitHub Source" [ref=e812]:
+                        - link "GitHub Source" [ref=e813] [cursor=pointer]:
+                          - /url: https://github.com/ag-ui-protocol/ag-ui/issues/510
+                      - cell "Community" [ref=e814]
+              - separator [ref=e815]
+              - heading "Navigate to header Quick Start" [level=2] [ref=e816]:
+                - link "Navigate to header" [ref=e817] [cursor=pointer]:
+                  - /url: "#quick-start"
+                  - img [ref=e819]
+                - generic [ref=e822] [cursor=pointer]: Quick Start
+              - generic [ref=e823]: "Choose the path that fits your needs:"
+              - generic [ref=e824]:
+                - link "Build agentic applications" [ref=e825] [cursor=pointer]:
+                  - link [ref=e827]:
+                    - /url: /quickstart/applications
+                    - img [ref=e829]
+                    - generic [ref=e830]:
+                      - heading [level=2] [ref=e831]: Build agentic applications
+                      - generic [ref=e833]: Build agentic applications powered by AG-UI compatible agents.
+                - link "Build new AG-UI integrations" [ref=e834] [cursor=pointer]:
+                  - link [ref=e836]:
+                    - /url: /quickstart/introduction
+                    - img [ref=e838]
+                    - generic [ref=e839]:
+                      - heading [level=2] [ref=e840]: Build new AG-UI integrations
+                      - generic [ref=e842]: Build integrations for new agent frameworks, custom in-house solutions, or use AG-UI without any agent framework.
+                - link "Build AG-UI compatible clients" [ref=e843] [cursor=pointer]:
+                  - link [ref=e845]:
+                    - /url: /quickstart/clients
+                    - img [ref=e847]
+                    - generic [ref=e848]:
+                      - heading [level=2] [ref=e849]: Build AG-UI compatible clients
+                      - generic [ref=e851]: Build new clients for AG-UI-compatible agents (web, mobile, slack, messaging, etc.)
+              - heading "Navigate to header Explore AG-UI" [level=2] [ref=e852]:
+                - link "Navigate to header" [ref=e853] [cursor=pointer]:
+                  - /url: "#explore-ag-ui"
+                  - img [ref=e855]
+                - generic [ref=e858] [cursor=pointer]: Explore AG-UI
+              - generic [ref=e859]: "Dive deeper into AG-UI’s core concepts and capabilities:"
+              - generic [ref=e860]:
+                - link "Core architecture" [ref=e861] [cursor=pointer]:
+                  - link [ref=e863]:
+                    - /url: /concepts/architecture
+                    - img [ref=e865]
+                    - generic [ref=e866]:
+                      - heading [level=2] [ref=e867]: Core architecture
+                      - generic [ref=e869]: Understand how AG-UI connects agents, protocols, and front-ends
+                - link "Events" [ref=e870] [cursor=pointer]:
+                  - link [ref=e872]:
+                    - /url: /concepts/events
+                    - img [ref=e874]
+                    - generic [ref=e875]:
+                      - heading [level=2] [ref=e876]: Events
+                      - generic [ref=e878]: Learn about AG-UI’s event-driven protocol
+              - heading "Navigate to header Resources" [level=2] [ref=e879]:
+                - link "Navigate to header" [ref=e880] [cursor=pointer]:
+                  - /url: "#resources"
+                  - img [ref=e882]
+                - generic [ref=e885] [cursor=pointer]: Resources
+              - generic [ref=e886]: Explore guides, tools, and integrations to help you build, optimize, and extend your AG-UI implementation. These resources cover everything from practical development workflows to debugging techniques.
+              - generic [ref=e887]:
+                - link "Developing with Cursor" [ref=e888] [cursor=pointer]:
+                  - link [ref=e890]:
+                    - /url: /tutorials/cursor
+                    - img [ref=e892]
+                    - generic [ref=e893]:
+                      - heading [level=2] [ref=e894]: Developing with Cursor
+                      - generic [ref=e896]: Use Cursor to build AG-UI implementations faster
+                - link "Troubleshooting AG-UI" [ref=e897] [cursor=pointer]:
+                  - link [ref=e899]:
+                    - /url: /tutorials/debugging
+                    - img [ref=e901]
+                    - generic [ref=e902]:
+                      - heading [level=2] [ref=e903]: Troubleshooting AG-UI
+                      - generic [ref=e905]: Fix common issues when working with AG-UI servers and clients
+              - heading "Navigate to header Contributing" [level=2] [ref=e906]:
+                - link "Navigate to header" [ref=e907] [cursor=pointer]:
+                  - /url: "#contributing"
+                  - img [ref=e909]
+                - generic [ref=e912] [cursor=pointer]: Contributing
+              - generic [ref=e913]:
+                - text: Want to contribute? Check out our
+                - link "Contributing Guide" [ref=e914] [cursor=pointer]:
+                  - /url: /development/contributing
+                - text: to learn how you can help improve AG-UI.
+              - heading "Navigate to header Support and Feedback" [level=2] [ref=e915]:
+                - link "Navigate to header" [ref=e916] [cursor=pointer]:
+                  - /url: "#support-and-feedback"
+                  - img [ref=e918]
+                - generic [ref=e921] [cursor=pointer]: Support and Feedback
+              - generic [ref=e922]: "Here’s how to get help or provide feedback:"
+              - list [ref=e923]:
+                - listitem [ref=e924]:
+                  - text: For bug reports and feature requests related to the AG-UI specification, SDKs, or documentation (open source), please
+                  - link "create a GitHub issue" [ref=e925] [cursor=pointer]:
+                    - /url: https://github.com/ag-ui-protocol/ag-ui/issues
+                - listitem [ref=e926]:
+                  - text: For discussions or Q&A about AG-UI, please join the
+                  - link "Discord community" [ref=e927] [cursor=pointer]:
+                    - /url: https://discord.gg/Jd3FzfdJa8
+            - generic [ref=e929]:
+              - paragraph [ref=e930]: Was this page helpful?
+              - generic [ref=e932]:
+                - button "Yes" [ref=e933] [cursor=pointer]:
+                  - img [ref=e934]
+                  - generic [ref=e937]: "Yes"
+                - button "No" [ref=e938] [cursor=pointer]:
+                  - img [ref=e939]
+                  - generic [ref=e942]: "No"
+            - link "MCP, A2A, and AG-UI Next" [ref=e945] [cursor=pointer]:
+              - /url: /agentic-protocols
+              - generic [ref=e946]:
+                - generic [ref=e947]: MCP, A2A, and AG-UI
+                - generic [ref=e948]:
+                  - img [ref=e949]
+                  - generic [ref=e951]: Next
+            - generic [ref=e952]:
+              - link "github" [ref=e954] [cursor=pointer]:
+                - /url: https://github.com/ag-ui-protocol/ag-ui
+                - generic [ref=e955]: github
+                - img [ref=e956]
+              - link "Powered by This documentation is built and hosted on Mintlify, a developer documentation platform" [ref=e959] [cursor=pointer]:
+                - /url: https://www.mintlify.com?utm_campaign=poweredBy&utm_medium=referral&utm_source=tawkitai
+                - generic [ref=e960]: Powered by
+                - img [ref=e961]
+                - generic [ref=e970]: This documentation is built and hosted on Mintlify, a developer documentation platform
+  - alert [ref=e971]

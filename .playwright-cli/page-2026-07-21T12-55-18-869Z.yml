@@ -1,0 +1,276 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: https://a2ui.org/concepts/overview/#core-concepts
+  - banner [ref=e3]:
+    - navigation "Header" [ref=e4]:
+      - link "A2UI" [ref=e5] [cursor=pointer]:
+        - /url: https://a2ui.org/
+        - img "logo" [ref=e6]
+      - generic [ref=e8]:
+        - generic [ref=e10]: A2UI
+        - generic:
+          - generic: Overview
+      - generic [ref=e11]:
+        - radio "Switch to dark mode"
+        - generic "Switch to dark mode" [ref=e12] [cursor=pointer]:
+          - img [ref=e13]
+        - radio "Switch to light mode"
+      - dialog [ref=e15]:
+        - search [ref=e16]:
+          - generic [ref=e17]:
+            - textbox "Search" [ref=e18]
+            - generic:
+              - img
+            - navigation "Search":
+              - button "Clear":
+                - img
+          - generic [ref=e20]: Initializing search
+      - link "a2ui-project/a2ui" [ref=e22] [cursor=pointer]:
+        - /url: https://github.com/a2ui-project/a2ui
+        - img [ref=e24]
+        - generic [ref=e26]: a2ui-project/a2ui
+  - generic [ref=e27]:
+    - main [ref=e28]:
+      - generic [ref=e29]:
+        - navigation "Navigation" [ref=e33]:
+          - generic [ref=e34]: A2UI
+          - list [ref=e35]:
+            - listitem [ref=e36]:
+              - link "Home" [ref=e37] [cursor=pointer]:
+                - /url: https://a2ui.org/
+                - generic [ref=e38]: Home
+            - listitem [ref=e39]:
+              - generic [ref=e41]: Introduction & FAQ
+            - listitem [ref=e43]:
+              - link "Quickstart" [ref=e44] [cursor=pointer]:
+                - /url: https://a2ui.org/quickstart/
+                - generic [ref=e45]: Quickstart
+            - listitem [ref=e46]:
+              - link "A2UI Composer ⭐" [ref=e47] [cursor=pointer]:
+                - /url: https://a2ui.org/composer/
+                - generic [ref=e48]: A2UI Composer ⭐
+            - listitem [ref=e49]:
+              - generic [ref=e51]: Concepts
+              - navigation "Concepts" [ref=e53]:
+                - list [ref=e54]:
+                  - listitem [ref=e55]:
+                    - link "Overview" [ref=e56] [cursor=pointer]:
+                      - /url: https://a2ui.org/concepts/overview/
+                      - generic [ref=e57]: Overview
+                  - listitem [ref=e58]:
+                    - link "Glossary" [ref=e59] [cursor=pointer]:
+                      - /url: https://a2ui.org/concepts/glossary/
+                      - generic [ref=e60]: Glossary
+                  - listitem [ref=e61]:
+                    - link "Data Flow" [ref=e62] [cursor=pointer]:
+                      - /url: https://a2ui.org/concepts/data-flow/
+                      - generic [ref=e63]: Data Flow
+                  - listitem [ref=e64]:
+                    - link "Components & Structure" [ref=e65] [cursor=pointer]:
+                      - /url: https://a2ui.org/concepts/components/
+                      - generic [ref=e66]: Components & Structure
+                  - listitem [ref=e67]:
+                    - link "Data Binding" [ref=e68] [cursor=pointer]:
+                      - /url: https://a2ui.org/concepts/data-binding/
+                      - generic [ref=e69]: Data Binding
+                  - listitem [ref=e70]:
+                    - link "Catalogs" [ref=e71] [cursor=pointer]:
+                      - /url: https://a2ui.org/concepts/catalogs/
+                      - generic [ref=e72]: Catalogs
+                  - listitem [ref=e73]:
+                    - link "Transports" [ref=e74] [cursor=pointer]:
+                      - /url: https://a2ui.org/concepts/transports/
+                      - generic [ref=e75]: Transports
+                  - listitem [ref=e76]:
+                    - link "Actions" [ref=e77] [cursor=pointer]:
+                      - /url: https://a2ui.org/concepts/actions/
+                      - generic [ref=e78]: Actions
+            - listitem [ref=e79]:
+              - generic [ref=e81]: Guides
+            - listitem [ref=e83]:
+              - generic [ref=e85]: Reference
+            - listitem [ref=e87]:
+              - generic [ref=e89]: Specifications
+            - listitem [ref=e91]:
+              - generic [ref=e93]: Ecosystem
+            - listitem [ref=e95]:
+              - link "Roadmap" [ref=e96] [cursor=pointer]:
+                - /url: https://a2ui.org/roadmap/
+                - generic [ref=e97]: Roadmap
+        - navigation "Table of contents" [ref=e101]:
+          - generic [ref=e102]: Table of contents
+          - list [ref=e103]:
+            - listitem [ref=e104]:
+              - link "The Big Picture" [ref=e105] [cursor=pointer]:
+                - /url: https://a2ui.org/concepts/overview/#the-big-picture
+                - generic [ref=e106]: The Big Picture
+            - listitem [ref=e107]:
+              - link "Key Topics" [ref=e108] [cursor=pointer]:
+                - /url: https://a2ui.org/concepts/overview/#key-topics
+                - generic [ref=e109]: Key Topics
+              - navigation "Key Topics" [ref=e110]:
+                - list [ref=e111]:
+                  - listitem [ref=e112]:
+                    - link "Data Flow" [ref=e113] [cursor=pointer]:
+                      - /url: https://a2ui.org/concepts/overview/#data-flow
+                      - generic [ref=e114]: Data Flow
+                  - listitem [ref=e115]:
+                    - link "Component Structure" [ref=e116] [cursor=pointer]:
+                      - /url: https://a2ui.org/concepts/overview/#component-structure
+                      - generic [ref=e117]: Component Structure
+                  - listitem [ref=e118]:
+                    - link "Data Binding" [ref=e119] [cursor=pointer]:
+                      - /url: https://a2ui.org/concepts/overview/#data-binding
+                      - generic [ref=e120]: Data Binding
+            - listitem [ref=e121]:
+              - link "Message Types" [ref=e122] [cursor=pointer]:
+                - /url: https://a2ui.org/concepts/overview/#message-types
+                - generic [ref=e123]: Message Types
+        - generic [ref=e124]:
+          - navigation "Navigation" [ref=e125]:
+            - list [ref=e126]:
+              - listitem [ref=e127]:
+                - link "Home" [ref=e128] [cursor=pointer]:
+                  - /url: https://a2ui.org/
+                  - generic [ref=e129]: Home
+              - listitem [ref=e130]:
+                - link "Concepts" [ref=e131] [cursor=pointer]:
+                  - /url: https://a2ui.org/concepts/overview/
+                  - generic [ref=e132]: Concepts
+          - article [ref=e133]:
+            - link "View source of this page" [ref=e134] [cursor=pointer]:
+              - /url: https://github.com/a2ui-project/a2ui/raw/main/docs/public/concepts/overview.md
+              - img [ref=e135]
+            - heading "Core Concepts ¶" [level=1] [ref=e137]:
+              - text: Core Concepts
+              - link "¶" [ref=e138] [cursor=pointer]:
+                - /url: https://a2ui.org/concepts/overview/#core-concepts
+            - paragraph [ref=e139]: This section explains the fundamental architecture of A2UI. Understanding these concepts will help you build effective agent-driven interfaces.
+            - paragraph [ref=e140]:
+              - text: See
+              - link "Glossary" [ref=e141] [cursor=pointer]:
+                - /url: https://a2ui.org/concepts/glossary/
+              - text: for short definitions of key terms.
+            - heading "The Big Picture ¶" [level=2] [ref=e142]:
+              - text: The Big Picture
+              - link "¶" [ref=e143] [cursor=pointer]:
+                - /url: https://a2ui.org/concepts/overview/#the-big-picture
+            - paragraph [ref=e144]: "A2UI is built around three core ideas:"
+            - list [ref=e145]:
+              - listitem [ref=e146]:
+                - strong [ref=e147]: Streaming Messages
+                - text: ": UI updates flow as a sequence of JSON messages from agent to client"
+              - listitem [ref=e148]:
+                - strong [ref=e149]: Declarative Components
+                - text: ": UIs are described as data, not programmed as code"
+              - listitem [ref=e150]:
+                - strong [ref=e151]: Data Binding
+                - text: ": UI structure is separate from application state, enabling reactive updates"
+            - heading "Key Topics ¶" [level=2] [ref=e152]:
+              - text: Key Topics
+              - link "¶" [ref=e153] [cursor=pointer]:
+                - /url: https://a2ui.org/concepts/overview/#key-topics
+            - heading "Data Flow ¶" [level=3] [ref=e154]:
+              - link "Data Flow" [ref=e155] [cursor=pointer]:
+                - /url: https://a2ui.org/concepts/data-flow/
+              - link "¶" [ref=e156] [cursor=pointer]:
+                - /url: https://a2ui.org/concepts/overview/#data-flow
+            - paragraph [ref=e157]: How messages travel from agents to rendered UI. Includes a complete lifecycle example of a restaurant booking flow, transport options (SSE, WebSockets, A2A), progressive rendering, and error handling.
+            - heading "Component Structure ¶" [level=3] [ref=e158]:
+              - link "Component Structure" [ref=e159] [cursor=pointer]:
+                - /url: https://a2ui.org/concepts/components/
+              - link "¶" [ref=e160] [cursor=pointer]:
+                - /url: https://a2ui.org/concepts/overview/#component-structure
+            - paragraph [ref=e161]:
+              - text: A2UI's
+              - strong [ref=e162]: adjacency list model
+              - text: for representing component hierarchies. Learn why flat lists are better than nested trees, how to use static vs. dynamic children, and best practices for incremental updates.
+            - heading "Data Binding ¶" [level=3] [ref=e163]:
+              - link "Data Binding" [ref=e164] [cursor=pointer]:
+                - /url: https://a2ui.org/concepts/data-binding/
+              - link "¶" [ref=e165] [cursor=pointer]:
+                - /url: https://a2ui.org/concepts/overview/#data-binding
+            - paragraph [ref=e166]: How components connect to application state using JSON Pointer paths. Covers reactive components, dynamic lists, input bindings, and the separation of structure from state that makes A2UI powerful.
+            - heading "Message Types ¶" [level=2] [ref=e167]:
+              - text: Message Types
+              - link "¶" [ref=e168] [cursor=pointer]:
+                - /url: https://a2ui.org/concepts/overview/#message-types
+            - generic [ref=e169]:
+              - radio "v0.9 (Stable)" [checked]
+              - radio "v1.0 (Candidate)"
+              - radio "v0.8 (Legacy)"
+              - generic [ref=e170]:
+                - link "v0.9 (Stable)" [ref=e172] [cursor=pointer]:
+                  - /url: "#v09-stable"
+                - link "v1.0 (Candidate)" [ref=e174] [cursor=pointer]:
+                  - /url: "#v10-candidate"
+                - link "v0.8 (Legacy)" [ref=e176] [cursor=pointer]:
+                  - /url: "#v08-legacy"
+              - generic [ref=e178]:
+                - paragraph [ref=e179]: "Version 0.9 uses the following message types:"
+                - list [ref=e180]:
+                  - listitem [ref=e181]:
+                    - strong [ref=e182]:
+                      - code [ref=e183]: createSurface
+                    - text: ": Create a new surface and specify its catalog"
+                  - listitem [ref=e184]:
+                    - strong [ref=e185]:
+                      - code [ref=e186]: updateComponents
+                    - text: ": Add or update UI components in a surface"
+                  - listitem [ref=e187]:
+                    - strong [ref=e188]:
+                      - code [ref=e189]: updateDataModel
+                    - text: ": Update application state"
+                  - listitem [ref=e190]:
+                    - strong [ref=e191]:
+                      - code [ref=e192]: deleteSurface
+                    - text: ": Remove a UI surface"
+                - paragraph [ref=e193]:
+                  - text: v0.9 separates surface creation from rendering —
+                  - code [ref=e194]: createSurface
+                  - text: replaces both
+                  - code [ref=e195]: beginRendering
+                  - text: and the implicit surface creation in
+                  - code [ref=e196]: surfaceUpdate
+                  - text: . All messages include a
+                  - code [ref=e197]: version
+                  - text: field.
+              - button [ref=e198] [cursor=pointer]
+              - button [ref=e199] [cursor=pointer]
+            - paragraph [ref=e200]:
+              - text: For complete technical details, see
+              - link "Message Reference" [ref=e201] [cursor=pointer]:
+                - /url: https://a2ui.org/reference/messages/
+              - text: .
+      - button "Back to top":
+        - img
+        - text: Back to top
+    - contentinfo [ref=e202]:
+      - navigation "Footer" [ref=e203]:
+        - 'link "Previous: A2UI Composer ⭐" [ref=e204] [cursor=pointer]':
+          - /url: https://a2ui.org/composer/
+          - img [ref=e206]
+          - generic [ref=e208]:
+            - text: Previous
+            - generic [ref=e209]: A2UI Composer ⭐
+        - 'link "Next: Glossary" [ref=e210] [cursor=pointer]':
+          - /url: https://a2ui.org/concepts/glossary/
+          - generic [ref=e211]:
+            - text: Next
+            - generic [ref=e212]: Glossary
+          - img [ref=e214]
+      - generic [ref=e218]:
+        - generic [ref=e219]:
+          - text: Copyright Google 2025 |
+          - link "Terms" [ref=e220] [cursor=pointer]:
+            - /url: //policies.google.com/terms
+          - text: "|"
+          - link "Privacy" [ref=e221] [cursor=pointer]:
+            - /url: //policies.google.com/privacy
+          - text: "|"
+          - link "Manage cookies" [ref=e222] [cursor=pointer]:
+            - /url: https://a2ui.org/concepts/overview/#__consent
+        - text: Made with
+        - link "Material for MkDocs" [ref=e223] [cursor=pointer]:
+          - /url: https://squidfunk.github.io/mkdocs-material/
+  - progressbar

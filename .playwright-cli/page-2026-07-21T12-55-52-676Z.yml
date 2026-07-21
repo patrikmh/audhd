@@ -1,0 +1,956 @@
+- generic [active] [ref=e1]:
+  - blockquote [ref=e2]:
+    - heading [level=2] [ref=e3]: Documentation Index
+    - paragraph [ref=e4]:
+      - text: "Fetch the complete documentation index at:"
+      - link [ref=e5] [cursor=pointer]:
+        - /url: /llms.txt
+        - text: /llms.txt
+    - paragraph [ref=e6]: Use this file to discover all available pages before exploring further.
+  - generic [ref=e7]:
+    - link "Skip to main content" [ref=e8] [cursor=pointer]:
+      - /url: "#content-area"
+    - generic [ref=e10]:
+      - banner [ref=e11]:
+        - generic [ref=e14]:
+          - generic [ref=e17]:
+            - link "Agent User Interaction Protocol home page light logo" [ref=e19] [cursor=pointer]:
+              - /url: /
+              - generic [ref=e20]: Agent User Interaction Protocol home page
+              - img "light logo" [ref=e21]
+            - button "Open search" [ref=e23] [cursor=pointer]:
+              - generic [ref=e24]:
+                - img [ref=e25]
+                - generic [ref=e28]: Search...
+              - generic [ref=e29]: ⌘K
+            - generic [ref=e30]:
+              - navigation "Main" [ref=e32]:
+                - list [ref=e33]:
+                  - listitem [ref=e34]:
+                    - link "Discord" [ref=e35] [cursor=pointer]:
+                      - /url: https://discord.gg/Jd3FzfdJa8
+                      - img [ref=e36]
+                      - generic [ref=e37]: Discord
+                  - listitem [ref=e38] [cursor=pointer]:
+                    - link "ag-ui-protocol/ag-ui" [ref=e39]:
+                      - /url: https://github.com/ag-ui-protocol/ag-ui
+                      - generic [ref=e41]:
+                        - img [ref=e42]
+                        - generic [ref=e44]: ag-ui-protocol/ag-ui
+              - button "Change theme preference" [ref=e45] [cursor=pointer]:
+                - img [ref=e47]
+          - generic [ref=e51]:
+            - link "Documentation" [ref=e52] [cursor=pointer]:
+              - /url: /introduction
+              - text: Documentation
+            - link "SDKs" [ref=e54] [cursor=pointer]:
+              - /url: /sdk/js/core/overview
+              - img [ref=e55]
+              - text: SDKs
+      - generic [ref=e57]:
+        - navigation "Pages" [ref=e58]:
+          - generic [ref=e60]:
+            - list [ref=e61]:
+              - listitem [ref=e62]:
+                - link "TypeScript SDK" [ref=e63] [cursor=pointer]:
+                  - /url: https://docs.ag-ui.com/sdk/js/core/overview
+                  - img [ref=e64]
+                  - generic [ref=e65]: TypeScript SDK
+              - listitem [ref=e66]:
+                - link "Python SDK" [ref=e67] [cursor=pointer]:
+                  - /url: https://docs.ag-ui.com/sdk/python/core/overview
+                  - img [ref=e68]
+                  - generic [ref=e69]: Python SDK
+              - listitem [ref=e70]:
+                - link ".NET SDK" [ref=e71] [cursor=pointer]:
+                  - /url: https://docs.ag-ui.com/sdk/dotnet/abstractions/overview
+                  - img [ref=e72]
+                  - generic [ref=e73]: .NET SDK
+            - generic [ref=e74]:
+              - heading "Get Started" [level=3] [ref=e76]
+              - list [ref=e77]:
+                - listitem [ref=e78]:
+                  - link "AG-UI Overview" [ref=e79] [cursor=pointer]:
+                    - /url: /introduction
+                    - generic [ref=e82]: AG-UI Overview
+                - listitem [ref=e83]:
+                  - link "MCP, A2A, and AG-UI" [ref=e84] [cursor=pointer]:
+                    - /url: /agentic-protocols
+                    - generic [ref=e87]: MCP, A2A, and AG-UI
+                - listitem [ref=e88]:
+                  - button "Quickstart" [expanded] [ref=e89] [cursor=pointer]:
+                    - generic [ref=e91]: Quickstart
+                    - img [ref=e93]
+                  - list [ref=e95]:
+                    - listitem [ref=e96]:
+                      - link "Build applications" [ref=e97] [cursor=pointer]:
+                        - /url: /quickstart/applications
+                        - generic [ref=e100]: Build applications
+                    - listitem [ref=e101]:
+                      - button "Build integrations" [expanded] [ref=e102] [cursor=pointer]:
+                        - generic [ref=e104]: Build integrations
+                        - img [ref=e106]
+                      - list [ref=e108]:
+                        - listitem [ref=e109]:
+                          - link "Introduction" [ref=e110] [cursor=pointer]:
+                            - /url: /quickstart/introduction
+                            - generic [ref=e113]: Introduction
+                        - listitem [ref=e114]:
+                          - link "Server" [ref=e115] [cursor=pointer]:
+                            - /url: /quickstart/server
+                            - generic [ref=e118]: Server
+                        - listitem [ref=e119]:
+                          - link "Middleware" [ref=e120] [cursor=pointer]:
+                            - /url: /quickstart/middleware
+                            - generic [ref=e123]: Middleware
+                    - listitem [ref=e124]:
+                      - link "Build clients" [ref=e125] [cursor=pointer]:
+                        - /url: /quickstart/clients
+                        - generic [ref=e128]: Build clients
+            - generic [ref=e131]:
+              - heading "Concepts" [level=3] [ref=e133]
+              - list [ref=e134]:
+                - listitem [ref=e135]:
+                  - link "Core architecture" [ref=e136] [cursor=pointer]:
+                    - /url: /concepts/architecture
+                    - generic [ref=e139]: Core architecture
+                - listitem [ref=e140]:
+                  - link "Events" [ref=e141] [cursor=pointer]:
+                    - /url: /concepts/events
+                    - generic [ref=e144]: Events
+                - listitem [ref=e145]:
+                  - link "Agents" [ref=e146] [cursor=pointer]:
+                    - /url: /concepts/agents
+                    - generic [ref=e149]: Agents
+                - listitem [ref=e150]:
+                  - link "Middleware" [ref=e151] [cursor=pointer]:
+                    - /url: /concepts/middleware
+                    - generic [ref=e154]: Middleware
+                - listitem [ref=e155]:
+                  - link "Messages" [ref=e156] [cursor=pointer]:
+                    - /url: /concepts/messages
+                    - generic [ref=e159]: Messages
+                - listitem [ref=e160]:
+                  - link "Reasoning" [ref=e161] [cursor=pointer]:
+                    - /url: /concepts/reasoning
+                    - generic [ref=e164]: Reasoning
+                - listitem [ref=e165]:
+                  - link "State Management" [ref=e166] [cursor=pointer]:
+                    - /url: /concepts/state
+                    - generic [ref=e169]: State Management
+                - listitem [ref=e170]:
+                  - link "Interrupts" [ref=e171] [cursor=pointer]:
+                    - /url: /concepts/interrupts
+                    - generic [ref=e174]: Interrupts
+                - listitem [ref=e175]:
+                  - link "Serialization" [ref=e176] [cursor=pointer]:
+                    - /url: /concepts/serialization
+                    - generic [ref=e179]: Serialization
+                - listitem [ref=e180]:
+                  - link "Tools" [ref=e181] [cursor=pointer]:
+                    - /url: /concepts/tools
+                    - generic [ref=e184]: Tools
+                - listitem [ref=e185]:
+                  - link "Capabilities" [ref=e186] [cursor=pointer]:
+                    - /url: /concepts/capabilities
+                    - generic [ref=e189]: Capabilities
+                - listitem [ref=e190]:
+                  - link "Generative UI" [ref=e191] [cursor=pointer]:
+                    - /url: /concepts/generative-ui-specs
+                    - generic [ref=e194]: Generative UI
+            - generic [ref=e197]:
+              - heading "Draft Proposals" [level=3] [ref=e199]
+              - list [ref=e200]:
+                - listitem [ref=e201]:
+                  - link "Overview" [ref=e202] [cursor=pointer]:
+                    - /url: /drafts/overview
+                    - generic [ref=e205]: Overview
+                - listitem [ref=e206]:
+                  - link "Generative User Interfaces" [ref=e207] [cursor=pointer]:
+                    - /url: /drafts/generative-ui
+                    - generic [ref=e210]: Generative User Interfaces
+                - listitem [ref=e211]:
+                  - link "Meta Events" [ref=e212] [cursor=pointer]:
+                    - /url: /drafts/meta-events
+                    - generic [ref=e215]: Meta Events
+            - generic [ref=e218]:
+              - heading "Tutorials" [level=3] [ref=e220]
+              - list [ref=e221]:
+                - listitem [ref=e222]:
+                  - link "Developing with Cursor" [ref=e223] [cursor=pointer]:
+                    - /url: /tutorials/cursor
+                    - generic [ref=e226]: Developing with Cursor
+                - listitem [ref=e227]:
+                  - link "Debugging" [ref=e228] [cursor=pointer]:
+                    - /url: /tutorials/debugging
+                    - generic [ref=e231]: Debugging
+            - generic [ref=e234]:
+              - heading "Development" [level=3] [ref=e236]
+              - list [ref=e237]:
+                - listitem [ref=e238]:
+                  - link "What's New" [ref=e239] [cursor=pointer]:
+                    - /url: /development/updates
+                    - generic [ref=e242]: What's New
+                - listitem [ref=e243]:
+                  - link "Roadmap" [ref=e244] [cursor=pointer]:
+                    - /url: /development/roadmap
+                    - generic [ref=e247]: Roadmap
+                - listitem [ref=e248]:
+                  - link "Contributing" [ref=e249] [cursor=pointer]:
+                    - /url: /development/contributing
+                    - generic [ref=e252]: Contributing
+                - listitem [ref=e253]:
+                  - link "Enterprise" [ref=e254] [cursor=pointer]:
+                    - /url: /talk-to-us
+                    - generic [ref=e257]: Enterprise
+        - main [ref=e259]:
+          - navigation "On this page" [ref=e263]:
+            - heading "On this page" [level=2] [ref=e264]:
+              - button "On this page" [ref=e265] [cursor=pointer]:
+                - img [ref=e266]
+                - generic [ref=e267]: On this page
+            - list [ref=e269]:
+              - listitem [ref=e270]:
+                - link "Introduction" [ref=e271] [cursor=pointer]:
+                  - /url: "#introduction"
+              - listitem [ref=e272]:
+                - link "When to use a server implementation" [ref=e273] [cursor=pointer]:
+                  - /url: "#when-to-use-a-server-implementation"
+              - listitem [ref=e274]:
+                - link "What you’ll build" [ref=e275] [cursor=pointer]:
+                  - /url: "#what-you%E2%80%99ll-build"
+              - listitem [ref=e276]:
+                - link "Prerequisites" [ref=e277] [cursor=pointer]:
+                  - /url: "#prerequisites"
+                - list [ref=e278]:
+                  - listitem [ref=e279]:
+                    - link "1. Provide your OpenAI API key" [ref=e280] [cursor=pointer]:
+                      - /url: "#1-provide-your-openai-api-key"
+                  - listitem [ref=e281]:
+                    - link "2. Install build utilities" [ref=e282] [cursor=pointer]:
+                      - /url: "#2-install-build-utilities"
+              - listitem [ref=e283]:
+                - link "Step 1 – Scaffold your server" [ref=e284] [cursor=pointer]:
+                  - /url: "#step-1-%E2%80%93-scaffold-your-server"
+                - list [ref=e285]:
+                  - listitem [ref=e286]:
+                    - link "Update metadata" [ref=e287] [cursor=pointer]:
+                      - /url: "#update-metadata"
+              - listitem [ref=e288]:
+                - link "Step 2 – Add package to dojo dependencies" [ref=e289] [cursor=pointer]:
+                  - /url: "#step-2-%E2%80%93-add-package-to-dojo-dependencies"
+              - listitem [ref=e290]:
+                - link "Step 3 – Start the dojo and server" [ref=e291] [cursor=pointer]:
+                  - /url: "#step-3-%E2%80%93-start-the-dojo-and-server"
+              - listitem [ref=e292]:
+                - link "Implementing Basic Chat" [ref=e293] [cursor=pointer]:
+                  - /url: "#implementing-basic-chat"
+              - listitem [ref=e294]:
+                - link "Step 4 – Bridge OpenAI with AG-UI" [ref=e295] [cursor=pointer]:
+                  - /url: "#step-4-%E2%80%93-bridge-openai-with-ag-ui"
+                - list [ref=e296]:
+                  - listitem [ref=e297]:
+                    - link "Install the OpenAI SDK" [ref=e298] [cursor=pointer]:
+                      - /url: "#install-the-openai-sdk"
+                  - listitem [ref=e299]:
+                    - link "AG-UI recap" [ref=e300] [cursor=pointer]:
+                      - /url: "#ag-ui-recap"
+                  - listitem [ref=e301]:
+                    - link "Implement the streaming server" [ref=e302] [cursor=pointer]:
+                      - /url: "#implement-the-streaming-server"
+                  - listitem [ref=e303]:
+                    - link "What happens under the hood?" [ref=e304] [cursor=pointer]:
+                      - /url: "#what-happens-under-the-hood"
+              - listitem [ref=e305]:
+                - link "Step 5 – Chat with your server" [ref=e306] [cursor=pointer]:
+                  - /url: "#step-5-%E2%80%93-chat-with-your-server"
+              - listitem [ref=e307]:
+                - link "Share your integration" [ref=e308] [cursor=pointer]:
+                  - /url: "#share-your-integration"
+              - listitem [ref=e309]:
+                - link "Conclusion" [ref=e310] [cursor=pointer]:
+                  - /url: "#conclusion"
+          - generic [ref=e311]:
+            - generic [ref=e312]:
+              - generic [ref=e313]:
+                - generic [ref=e314]: Build integrations
+                - heading "Server" [level=1] [ref=e316]
+              - paragraph [ref=e318]: Implement AG-UI compatible servers
+            - generic [ref=e319]:
+              - heading "Navigate to header Introduction" [level=1] [ref=e320]:
+                - link "Navigate to header" [ref=e321] [cursor=pointer]:
+                  - /url: "#introduction"
+                  - img [ref=e323]
+                - generic [ref=e326] [cursor=pointer]: Introduction
+              - generic [ref=e327]:
+                - text: A server implementation allows you to
+                - strong [ref=e328]: emit AG-UI events directly from your agent or server
+                - text: . This approach is ideal when you’re building a new agent from scratch or want a dedicated service for your agent capabilities.
+              - heading "Navigate to header When to use a server implementation" [level=2] [ref=e329]:
+                - link "Navigate to header" [ref=e330] [cursor=pointer]:
+                  - /url: "#when-to-use-a-server-implementation"
+                  - img [ref=e332]
+                - generic [ref=e335] [cursor=pointer]: When to use a server implementation
+              - generic [ref=e336]: Server implementations allow you to directly emit AG-UI events from your agent or server. If you are not using an agent framework or haven’t created a protocol for your agent framework yet, this is the best way to get started.
+              - generic [ref=e337]: "Server implementations are also great for:"
+              - list [ref=e338]:
+                - listitem [ref=e339]:
+                  - text: Building a
+                  - strong [ref=e340]: new agent frameworks
+                  - text: from scratch
+                - listitem [ref=e341]:
+                  - strong [ref=e342]: Maximum control
+                  - text: over how and what events are emitted
+                - listitem [ref=e343]:
+                  - text: Exposing your agent as a
+                  - strong [ref=e344]: standalone API
+              - heading "Navigate to header What you’ll build" [level=2] [ref=e345]:
+                - link "Navigate to header" [ref=e346] [cursor=pointer]:
+                  - /url: "#what-you’ll-build"
+                  - img [ref=e348]
+                - generic [ref=e351] [cursor=pointer]: What you’ll build
+              - generic [ref=e352]: "In this guide, we’ll create a standalone HTTP server that:"
+              - list [ref=e353]:
+                - listitem [ref=e354]: Accepts AG-UI protocol requests
+                - listitem [ref=e355]: Connects to OpenAI’s GPT-4o model
+                - listitem [ref=e356]: Streams responses back as AG-UI events
+                - listitem [ref=e357]: Handles tool calls and state management
+              - generic [ref=e358]: Let’s get started!
+              - heading "Navigate to header Prerequisites" [level=2] [ref=e359]:
+                - link "Navigate to header" [ref=e360] [cursor=pointer]:
+                  - /url: "#prerequisites"
+                  - img [ref=e362]
+                - generic [ref=e365] [cursor=pointer]: Prerequisites
+              - generic [ref=e366]: "Before we begin, make sure you have:"
+              - list [ref=e367]:
+                - listitem [ref=e368]:
+                  - link "Python" [ref=e369] [cursor=pointer]:
+                    - /url: https://www.python.org/downloads/
+                  - strong [ref=e370]: 3.12 or later
+                - listitem [ref=e371]:
+                  - link "Poetry" [ref=e372] [cursor=pointer]:
+                    - /url: https://python-poetry.org/docs/#installation
+                  - text: for dependency management
+                - listitem [ref=e373]:
+                  - text: An
+                  - strong [ref=e374]: OpenAI API key
+              - heading "Navigate to header 1. Provide your OpenAI API key" [level=3] [ref=e375]:
+                - link "Navigate to header" [ref=e376] [cursor=pointer]:
+                  - /url: "#1-provide-your-openai-api-key"
+                  - img [ref=e378]
+                - generic [ref=e381] [cursor=pointer]: 1. Provide your OpenAI API key
+              - generic [ref=e382]: "First, let’s set up your API key:"
+              - generic [ref=e383]:
+                - button "Copy the contents from the code block" [ref=e386] [cursor=pointer]:
+                  - img [ref=e387]
+                - code [ref=e393]:
+                  - generic [ref=e394]: "# Set your OpenAI API key"
+                  - generic [ref=e395]: export OPENAI_API_KEY=your-api-key-here
+              - heading "Navigate to header 2. Install build utilities" [level=3] [ref=e396]:
+                - link "Navigate to header" [ref=e397] [cursor=pointer]:
+                  - /url: "#2-install-build-utilities"
+                  - img [ref=e399]
+                - generic [ref=e402] [cursor=pointer]: 2. Install build utilities
+              - generic [ref=e403]: "Install the following tools:"
+              - generic [ref=e404]:
+                - button "Copy the contents from the code block" [ref=e407] [cursor=pointer]:
+                  - img [ref=e408]
+                - code [ref=e414]:
+                  - generic [ref=e415]: brew install protobuf
+              - generic [ref=e416]:
+                - button "Copy the contents from the code block" [ref=e419] [cursor=pointer]:
+                  - img [ref=e420]
+                - code [ref=e426]:
+                  - generic [ref=e427]: npm i nx
+              - generic [ref=e428]:
+                - button "Copy the contents from the code block" [ref=e431] [cursor=pointer]:
+                  - img [ref=e432]
+                - code [ref=e438]:
+                  - generic [ref=e439]: curl -fsSL https://get.pnpm.io/install.sh | sh -
+              - heading "Navigate to header Step 1 – Scaffold your server" [level=2] [ref=e440]:
+                - link "Navigate to header" [ref=e441] [cursor=pointer]:
+                  - /url: "#step-1-–-scaffold-your-server"
+                  - img [ref=e443]
+                - generic [ref=e446] [cursor=pointer]: Step 1 – Scaffold your server
+              - generic [ref=e447]: "Start by cloning the repo:"
+              - generic [ref=e448]:
+                - button "Copy the contents from the code block" [ref=e451] [cursor=pointer]:
+                  - img [ref=e452]
+                - code [ref=e458]:
+                  - generic [ref=e459]: git clone git@github.com:ag-ui-protocol/ag-ui.git
+                  - generic [ref=e460]: cd ag-ui
+              - generic [ref=e461]: "Copy the server-starter template to create your OpenAI server:"
+              - generic [ref=e462]:
+                - button "Copy the contents from the code block" [ref=e465] [cursor=pointer]:
+                  - img [ref=e466]
+                - code [ref=e472]:
+                  - generic [ref=e473]: cp -r integrations/server-starter integrations/openai-server
+              - heading "Navigate to header Update metadata" [level=3] [ref=e474]:
+                - link "Navigate to header" [ref=e475] [cursor=pointer]:
+                  - /url: "#update-metadata"
+                  - img [ref=e477]
+                - generic [ref=e480] [cursor=pointer]: Update metadata
+              - generic [ref=e481]:
+                - text: Open
+                - code [ref=e482]: integrations/openai-server/package.json
+                - text: "and update the fields to match your new folder:"
+              - generic [ref=e483]:
+                - button "Copy the contents from the code block" [ref=e486] [cursor=pointer]:
+                  - img [ref=e487]
+                - code [ref=e493]:
+                  - generic [ref=e494]: "{"
+                  - generic [ref=e495]: "\"name\": \"@ag-ui/openai-server\","
+                  - generic [ref=e496]: "\"author\": \"Your Name <your-email@example.com>\","
+                  - generic [ref=e497]: "\"version\": \"0.0.1\","
+                  - generic [ref=e498]: ... rest of package.json
+                  - generic [ref=e499]: "}"
+              - generic [ref=e500]:
+                - text: Next, update the class name inside
+                - code [ref=e501]: integrations/openai-server/src/index.ts
+                - text: ":"
+              - generic [ref=e502]:
+                - button "Copy the contents from the code block" [ref=e505] [cursor=pointer]:
+                  - img [ref=e506]
+                - code [ref=e512]:
+                  - generic [ref=e513]: // Change the name to OpenAIServerAgent to add a minimal middleware for your integration.
+                  - generic [ref=e514]: // You can use this later on to add configuration etc.
+                  - generic [ref=e515]: "export class OpenAIServerAgent extends HttpAgent {}"
+              - generic [ref=e516]:
+                - text: Finally, introduce your integration to the dojo by adding it to
+                - code [ref=e517]: apps/dojo/src/menu.ts
+                - text: ":"
+              - generic [ref=e518]:
+                - button "Copy the contents from the code block" [ref=e521] [cursor=pointer]:
+                  - img [ref=e522]
+                - code [ref=e528]:
+                  - generic [ref=e529]: // ...
+                  - generic [ref=e530]: "export const menuIntegrations: MenuIntegrationConfig[] = ["
+                  - generic [ref=e531]: // ...
+                  - generic [ref=e532]: "{"
+                  - generic [ref=e533]: "id: \"openai-server\","
+                  - generic [ref=e534]: "name: \"OpenAI Server\","
+                  - generic [ref=e535]: "features: [\"agentic_chat\"],"
+                  - generic [ref=e536]: "},"
+                  - generic [ref=e537]: "]"
+              - generic [ref=e538]:
+                - text: And
+                - code [ref=e539]: apps/dojo/src/agents.ts
+                - text: ":"
+              - generic [ref=e540]:
+                - button "Copy the contents from the code block" [ref=e543] [cursor=pointer]:
+                  - img [ref=e544]
+                - code [ref=e550]:
+                  - generic [ref=e551]: // ...
+                  - generic [ref=e552]: "import { OpenAIServerAgent } from \"@ag-ui/openai-server\""
+                  - generic [ref=e553]: "export const agentsIntegrations: AgentIntegrationConfig[] = ["
+                  - generic [ref=e554]: // ...
+                  - generic [ref=e555]: "{"
+                  - generic [ref=e556]: "id: \"openai-server\","
+                  - generic [ref=e557]: "agents: async () => {"
+                  - generic [ref=e558]: "return {"
+                  - generic [ref=e559]: "agentic_chat: new OpenAIServerAgent(),"
+                  - generic [ref=e560]: "}"
+                  - generic [ref=e561]: "},"
+                  - generic [ref=e562]: "},"
+                  - generic [ref=e563]: "]"
+              - heading "Navigate to header Step 2 – Add package to dojo dependencies" [level=2] [ref=e564]:
+                - link "Navigate to header" [ref=e565] [cursor=pointer]:
+                  - /url: "#step-2-–-add-package-to-dojo-dependencies"
+                  - img [ref=e567]
+                - generic [ref=e570] [cursor=pointer]: Step 2 – Add package to dojo dependencies
+              - generic [ref=e571]:
+                - text: Open
+                - code [ref=e572]: apps/dojo/package.json
+                - text: and add
+                - code [ref=e573]: "\"@ag-ui/openai-server\": \"workspace:*\""
+                - text: to the
+                - code [ref=e574]: dependencies
+                - text: "object:"
+              - generic [ref=e575]:
+                - button "Copy the contents from the code block" [ref=e578] [cursor=pointer]:
+                  - img [ref=e579]
+                - code [ref=e585]:
+                  - generic [ref=e586]: "{"
+                  - generic [ref=e587]: "\"name\": \"demo-viewer\","
+                  - generic [ref=e588]: "\"version\": \"0.1.0\","
+                  - generic [ref=e589]: "\"private\": true,"
+                  - generic [ref=e590]: "\"scripts\": {"
+                  - generic [ref=e591]: "\"dev\": \"next dev\","
+                  - generic [ref=e592]: "\"build\": \"next build\","
+                  - generic [ref=e593]: "\"start\": \"next start\","
+                  - generic [ref=e594]: "\"lint\": \"next lint\""
+                  - generic [ref=e595]: "},"
+                  - generic [ref=e596]: "\"dependencies\": {"
+                  - generic [ref=e597]: "\"@ag-ui/agno\": \"workspace:*\","
+                  - generic [ref=e598]: "\"@ag-ui/langgraph\": \"workspace:*\","
+                  - generic [ref=e599]: "\"@ag-ui/mastra\": \"workspace:*\","
+                  - generic [ref=e600]: "\"@ag-ui/middleware-starter\": \"workspace:*\","
+                  - generic [ref=e601]: "\"@ag-ui/server-starter\": \"workspace:*\","
+                  - generic [ref=e602]: "\"@ag-ui/server-starter-all-features\": \"workspace:*\","
+                  - generic [ref=e603]: "\"@ag-ui/vercel-ai-sdk\": \"workspace:*\","
+                  - generic [ref=e604]: "\"@ag-ui/openai-server\": \"workspace:*\""
+                  - generic [ref=e605]: "}"
+                  - generic [ref=e606]: "}"
+              - heading "Navigate to header Step 3 – Start the dojo and server" [level=2] [ref=e607]:
+                - link "Navigate to header" [ref=e608] [cursor=pointer]:
+                  - /url: "#step-3-–-start-the-dojo-and-server"
+                  - img [ref=e610]
+                - generic [ref=e613] [cursor=pointer]: Step 3 – Start the dojo and server
+              - generic [ref=e614]: "Now let’s see your work in action. First, start your Python server:"
+              - generic [ref=e615]:
+                - button "Copy the contents from the code block" [ref=e618] [cursor=pointer]:
+                  - img [ref=e619]
+                - code [ref=e625]:
+                  - generic [ref=e626]: cd integrations/openai-server/server/python
+                  - generic [ref=e627]: poetry install && poetry run dev
+              - generic [ref=e628]: "In another terminal, start the dojo:"
+              - generic [ref=e629]:
+                - button "Copy the contents from the code block" [ref=e632] [cursor=pointer]:
+                  - img [ref=e633]
+                - code [ref=e639]:
+                  - generic [ref=e640]: "# Install dependencies"
+                  - generic [ref=e641]: pnpm install
+                  - generic [ref=e642]: "# Compile the project and run the dojo"
+                  - generic [ref=e643]: pnpm dev
+              - generic [ref=e644]:
+                - text: Head over to
+                - link "http://localhost:3000" [ref=e645] [cursor=pointer]:
+                  - /url: http://localhost:3000
+                - text: and choose
+                - strong [ref=e646]: OpenAI
+                - text: from the drop-down. You’ll see the stub server replies with
+                - strong [ref=e647]: Hello world!
+                - text: for now.
+              - generic [ref=e648]: "Here’s what’s happening with that stub server:"
+              - generic [ref=e649]:
+                - button "Copy the contents from the code block" [ref=e652] [cursor=pointer]:
+                  - img [ref=e653]
+                - code [ref=e659]:
+                  - generic [ref=e660]: "# integrations/openai-server/server/python/example_server/__init__.py"
+                  - generic [ref=e661]: "@app.post(\"/\")"
+                  - generic [ref=e662]: "async def agentic_chat_endpoint(input_data: RunAgentInput, request: Request):"
+                  - generic [ref=e663]: "\"\"\"Agentic chat endpoint\"\"\""
+                  - generic [ref=e664]: "# Get the accept header from the request"
+                  - generic [ref=e665]: accept_header = request.headers.get("accept")
+                  - generic [ref=e666]: "# Create an event encoder to properly format SSE events"
+                  - generic [ref=e667]: encoder = EventEncoder(accept=accept_header)
+                  - generic [ref=e668]: "async def event_generator():"
+                  - generic [ref=e669]: "# Send run started event"
+                  - generic [ref=e670]: yield encoder.encode(
+                  - generic [ref=e671]: RunStartedEvent(
+                  - generic [ref=e672]: type=EventType.RUN_STARTED,
+                  - generic [ref=e673]: thread_id=input_data.thread_id,
+                  - generic [ref=e674]: run_id=input_data.run_id
+                  - generic [ref=e675]: ),
+                  - generic [ref=e676]: )
+                  - generic [ref=e677]: message_id = str(uuid.uuid4())
+                  - generic [ref=e678]: return StreamingResponse(
+                  - generic [ref=e679]: event_generator(),
+                  - generic [ref=e680]: media_type="text/event-stream"
+                  - generic [ref=e681]: )
+                  - generic [ref=e682]: "if __name__ == \"__main__\":"
+                  - generic [ref=e683]: import uvicorn
+                  - generic [ref=e684]: uvicorn.run(app, host="0.0.0.0", port=8000)
+              - generic [ref=e685]:
+                - text: Awesome! We are already sending a
+                - code [ref=e686]: RunStartedEvent
+                - text: ", which is the first step toward an AG-UI compliant endpoint. Now let’s make it do something useful."
+              - heading "Navigate to header Implementing Basic Chat" [level=2] [ref=e687]:
+                - link "Navigate to header" [ref=e688] [cursor=pointer]:
+                  - /url: "#implementing-basic-chat"
+                  - img [ref=e690]
+                - generic [ref=e693] [cursor=pointer]: Implementing Basic Chat
+              - generic [ref=e694]: "Let’s enhance our endpoint to call OpenAI’s API and stream the responses back as AG-UI events:"
+              - generic [ref=e695]:
+                - button "Copy the contents from the code block" [ref=e698] [cursor=pointer]:
+                  - img [ref=e699]
+                - code [ref=e705]:
+                  - generic [ref=e706]: from fastapi import FastAPI, Request
+                  - generic [ref=e707]: from fastapi.responses import StreamingResponse
+                  - generic [ref=e708]: from ag_ui.core import (
+                  - generic [ref=e709]: RunAgentInput,
+                  - generic [ref=e710]: EventType,
+                  - generic [ref=e711]: RunStartedEvent,
+                  - generic [ref=e712]: RunFinishedEvent,
+                  - generic [ref=e713]: TextMessageStartEvent,
+                  - generic [ref=e714]: TextMessageContentEvent,
+                  - generic [ref=e715]: TextMessageEndEvent
+                  - generic [ref=e716]: )
+                  - generic [ref=e717]: from ag_ui.encoder import EventEncoder
+                  - generic [ref=e718]: import uuid
+                  - generic [ref=e719]: from openai import OpenAI
+                  - generic [ref=e720]: import os
+                  - generic [ref=e721]: app = FastAPI(title="AG-UI Endpoint")
+                  - generic [ref=e722]: "# Initialize OpenAI client"
+                  - generic [ref=e723]: client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+                  - generic [ref=e724]: "@app.post(\"/\")"
+                  - generic [ref=e725]: "async def agentic_chat_endpoint(input_data: RunAgentInput, request: Request):"
+                  - generic [ref=e726]: accept_header = request.headers.get("accept")
+                  - generic [ref=e727]: encoder = EventEncoder(accept=accept_header)
+                  - generic [ref=e728]: "async def event_generator():"
+                  - generic [ref=e729]: "# Send run started event"
+                  - generic [ref=e730]: yield encoder.encode(
+                  - generic [ref=e731]: RunStartedEvent(
+                  - generic [ref=e732]: type=EventType.RUN_STARTED,
+                  - generic [ref=e733]: thread_id=input_data.thread_id,
+                  - generic [ref=e734]: run_id=input_data.run_id
+                  - generic [ref=e735]: )
+                  - generic [ref=e736]: )
+                  - generic [ref=e737]: "# Convert AG-UI messages to OpenAI messages format"
+                  - generic [ref=e738]: openai_messages = []
+                  - generic [ref=e739]: "for msg in input_data.messages:"
+                  - generic [ref=e740]: "if msg.role in [\"user\", \"system\", \"assistant\"]:"
+                  - generic [ref=e741]: "openai_messages.append({"
+                  - generic [ref=e742]: "\"role\": msg.role,"
+                  - generic [ref=e743]: "\"content\": msg.content or \"\""
+                  - generic [ref=e744]: "})"
+                  - generic [ref=e745]: "# Call OpenAI with streaming enabled"
+                  - generic [ref=e746]: stream = client.chat.completions.create(
+                  - generic [ref=e747]: model="gpt-4o",
+                  - generic [ref=e748]: stream=True,
+                  - generic [ref=e749]: messages=openai_messages,
+                  - generic [ref=e750]: )
+                  - generic [ref=e751]: "# Generate a message ID for the assistant's response"
+                  - generic [ref=e752]: message_id = str(uuid.uuid4())
+                  - generic [ref=e753]: "# Send text message start event"
+                  - generic [ref=e754]: yield encoder.encode(
+                  - generic [ref=e755]: TextMessageStartEvent(
+                  - generic [ref=e756]: type=EventType.TEXT_MESSAGE_START,
+                  - generic [ref=e757]: message_id=message_id,
+                  - generic [ref=e758]: role="assistant"
+                  - generic [ref=e759]: )
+                  - generic [ref=e760]: )
+                  - generic [ref=e761]: "# Process the streaming response and send content events"
+                  - generic [ref=e762]: "for chunk in stream:"
+                  - generic [ref=e763]: if (chunk.choices and
+                  - generic [ref=e764]: len(chunk.choices) > 0 and
+                  - generic [ref=e765]: chunk.choices[0].delta and
+                  - generic [ref=e766]: hasattr(chunk.choices[0].delta, 'content') and
+                  - generic [ref=e767]: "chunk.choices[0].delta.content):"
+                  - generic [ref=e768]: content = chunk.choices[0].delta.content
+                  - generic [ref=e769]: yield encoder.encode(
+                  - generic [ref=e770]: TextMessageContentEvent(
+                  - generic [ref=e771]: type=EventType.TEXT_MESSAGE_CONTENT,
+                  - generic [ref=e772]: message_id=message_id,
+                  - generic [ref=e773]: delta=content
+                  - generic [ref=e774]: )
+                  - generic [ref=e775]: )
+                  - generic [ref=e776]: "# Send text message end event"
+                  - generic [ref=e777]: yield encoder.encode(
+                  - generic [ref=e778]: TextMessageEndEvent(
+                  - generic [ref=e779]: type=EventType.TEXT_MESSAGE_END,
+                  - generic [ref=e780]: message_id=message_id
+                  - generic [ref=e781]: )
+                  - generic [ref=e782]: )
+                  - generic [ref=e783]: "# Send run finished event"
+                  - generic [ref=e784]: yield encoder.encode(
+                  - generic [ref=e785]: RunFinishedEvent(
+                  - generic [ref=e786]: type=EventType.RUN_FINISHED,
+                  - generic [ref=e787]: thread_id=input_data.thread_id,
+                  - generic [ref=e788]: run_id=input_data.run_id
+                  - generic [ref=e789]: )
+                  - generic [ref=e790]: )
+                  - generic [ref=e791]: return StreamingResponse(
+                  - generic [ref=e792]: event_generator(),
+                  - generic [ref=e793]: media_type=encoder.get_content_type()
+                  - generic [ref=e794]: )
+              - heading "Navigate to header Step 4 – Bridge OpenAI with AG-UI" [level=2] [ref=e795]:
+                - link "Navigate to header" [ref=e796] [cursor=pointer]:
+                  - /url: "#step-4-–-bridge-openai-with-ag-ui"
+                  - img [ref=e798]
+                - generic [ref=e801] [cursor=pointer]: Step 4 – Bridge OpenAI with AG-UI
+              - generic [ref=e802]: Let’s transform our stub into a real server that streams completions from OpenAI.
+              - heading "Navigate to header Install the OpenAI SDK" [level=3] [ref=e803]:
+                - link "Navigate to header" [ref=e804] [cursor=pointer]:
+                  - /url: "#install-the-openai-sdk"
+                  - img [ref=e806]
+                - generic [ref=e809] [cursor=pointer]: Install the OpenAI SDK
+              - generic [ref=e810]: "First, we need the OpenAI SDK:"
+              - generic [ref=e811]:
+                - button "Copy the contents from the code block" [ref=e814] [cursor=pointer]:
+                  - img [ref=e815]
+                - code [ref=e821]:
+                  - generic [ref=e822]: cd integrations/openai-server/server/python
+                  - generic [ref=e823]: poetry add openai
+              - heading "Navigate to header AG-UI recap" [level=3] [ref=e824]:
+                - link "Navigate to header" [ref=e825] [cursor=pointer]:
+                  - /url: "#ag-ui-recap"
+                  - img [ref=e827]
+                - generic [ref=e830] [cursor=pointer]: AG-UI recap
+              - generic [ref=e831]: "An AG-UI server implements the endpoint and emits a sequence of events to signal:"
+              - list [ref=e832]:
+                - listitem [ref=e833]:
+                  - text: lifecycle events (
+                  - code [ref=e834]: RUN_STARTED
+                  - text: ","
+                  - code [ref=e835]: RUN_FINISHED
+                  - text: ","
+                  - code [ref=e836]: RUN_ERROR
+                  - text: )
+                - listitem [ref=e837]:
+                  - text: content events (
+                  - code [ref=e838]: TEXT_MESSAGE_*
+                  - text: ","
+                  - code [ref=e839]: TOOL_CALL_*
+                  - text: ", and more)"
+              - heading "Navigate to header Implement the streaming server" [level=3] [ref=e840]:
+                - link "Navigate to header" [ref=e841] [cursor=pointer]:
+                  - /url: "#implement-the-streaming-server"
+                  - img [ref=e843]
+                - generic [ref=e846] [cursor=pointer]: Implement the streaming server
+              - generic [ref=e847]: Now we’ll transform our stub server into a real OpenAI integration. The key difference is that instead of sending a hardcoded “Hello world!” message, we’ll connect to OpenAI’s API and stream the response back through AG-UI events.
+              - generic [ref=e848]: The implementation follows the same event flow as our stub, but we’ll add the OpenAI client initialization and replace our mock response with actual API calls. We’ll also handle tool calls if they’re present in the response, making our server fully capable of using functions when needed.
+              - generic [ref=e849]:
+                - button "Copy the contents from the code block" [ref=e852] [cursor=pointer]:
+                  - img [ref=e853]
+                - code [ref=e859]:
+                  - generic [ref=e860]: import os
+                  - generic [ref=e861]: import uuid
+                  - generic [ref=e862]: import uvicorn
+                  - generic [ref=e863]: from fastapi import FastAPI, Request
+                  - generic [ref=e864]: from fastapi.responses import StreamingResponse
+                  - generic [ref=e865]: from ag_ui.core import (
+                  - generic [ref=e866]: RunAgentInput,
+                  - generic [ref=e867]: EventType,
+                  - generic [ref=e868]: RunStartedEvent,
+                  - generic [ref=e869]: RunFinishedEvent,
+                  - generic [ref=e870]: RunErrorEvent,
+                  - generic [ref=e871]: TextMessageChunkEvent,
+                  - generic [ref=e872]: ToolCallChunkEvent,
+                  - generic [ref=e873]: )
+                  - generic [ref=e874]: from ag_ui.encoder import EventEncoder
+                  - generic [ref=e875]: from openai import OpenAI
+                  - generic [ref=e876]: app = FastAPI(title="AG-UI OpenAI Server")
+                  - generic [ref=e877]: "# Initialize OpenAI client - uses OPENAI_API_KEY from environment"
+                  - generic [ref=e878]: client = OpenAI()
+                  - generic [ref=e879]: "@app.post(\"/\")"
+                  - generic [ref=e880]: "async def agentic_chat_endpoint(input_data: RunAgentInput, request: Request):"
+                  - generic [ref=e881]: "\"\"\"OpenAI agentic chat endpoint\"\"\""
+                  - generic [ref=e882]: accept_header = request.headers.get("accept")
+                  - generic [ref=e883]: encoder = EventEncoder(accept=accept_header)
+                  - generic [ref=e884]: "async def event_generator():"
+                  - generic [ref=e885]: "try:"
+                  - generic [ref=e886]: yield encoder.encode(
+                  - generic [ref=e887]: RunStartedEvent(
+                  - generic [ref=e888]: type=EventType.RUN_STARTED,
+                  - generic [ref=e889]: thread_id=input_data.thread_id,
+                  - generic [ref=e890]: run_id=input_data.run_id
+                  - generic [ref=e891]: )
+                  - generic [ref=e892]: )
+                  - generic [ref=e893]: "# Call OpenAI's API with streaming enabled"
+                  - generic [ref=e894]: stream = client.chat.completions.create(
+                  - generic [ref=e895]: model="gpt-4o",
+                  - generic [ref=e896]: stream=True,
+                  - generic [ref=e897]: "# Convert AG-UI tools format to OpenAI's expected format"
+                  - generic [ref=e898]: tools=[
+                  - generic [ref=e899]: "{"
+                  - generic [ref=e900]: "\"type\": \"function\","
+                  - generic [ref=e901]: "\"function\": {"
+                  - generic [ref=e902]: "\"name\": tool.name,"
+                  - generic [ref=e903]: "\"description\": tool.description,"
+                  - generic [ref=e904]: "\"parameters\": tool.parameters,"
+                  - generic [ref=e905]: "}"
+                  - generic [ref=e906]: "}"
+                  - generic [ref=e907]: for tool in input_data.tools
+                  - generic [ref=e908]: "] if input_data.tools else None,"
+                  - generic [ref=e909]: "# Transform AG-UI messages to OpenAI's message format"
+                  - generic [ref=e910]: messages=[
+                  - generic [ref=e911]: "{"
+                  - generic [ref=e912]: "\"role\": message.role,"
+                  - generic [ref=e913]: "\"content\": message.content or \"\","
+                  - generic [ref=e914]: "# Include tool calls if this is an assistant message with tools"
+                  - generic [ref=e915]: "**({\"tool_calls\": message.tool_calls} if message.role == \"assistant\" and hasattr(message, 'tool_calls') and message.tool_calls else {}),"
+                  - generic [ref=e916]: "# Include tool call ID if this is a tool result message"
+                  - generic [ref=e917]: "**({\"tool_call_id\": message.tool_call_id} if message.role == \"tool\" and hasattr(message, 'tool_call_id') else {}),"
+                  - generic [ref=e918]: "}"
+                  - generic [ref=e919]: for message in input_data.messages
+                  - generic [ref=e920]: "],"
+                  - generic [ref=e921]: )
+                  - generic [ref=e922]: message_id = str(uuid.uuid4())
+                  - generic [ref=e923]: "# Stream each chunk from OpenAI's response"
+                  - generic [ref=e924]: "for chunk in stream:"
+                  - generic [ref=e925]: "# Handle text content chunks"
+                  - generic [ref=e926]: "if chunk.choices[0].delta.content:"
+                  - generic [ref=e927]: yield encoder.encode(
+                  - generic [ref=e928]: TextMessageChunkEvent(
+                  - generic [ref=e929]: type=EventType.TEXT_MESSAGE_CHUNK,
+                  - generic [ref=e930]: message_id=message_id,
+                  - generic [ref=e931]: delta=chunk.choices[0].delta.content,
+                  - generic [ref=e932]: )
+                  - generic [ref=e933]: )
+                  - generic [ref=e934]: "# Handle tool call chunks"
+                  - generic [ref=e935]: "elif chunk.choices[0].delta.tool_calls:"
+                  - generic [ref=e936]: tool_call = chunk.choices[0].delta.tool_calls[0]
+                  - generic [ref=e937]: yield encoder.encode(
+                  - generic [ref=e938]: ToolCallChunkEvent(
+                  - generic [ref=e939]: type=EventType.TOOL_CALL_CHUNK,
+                  - generic [ref=e940]: tool_call_id=tool_call.id,
+                  - generic [ref=e941]: tool_call_name=tool_call.function.name if tool_call.function else None,
+                  - generic [ref=e942]: parent_message_id=message_id,
+                  - generic [ref=e943]: delta=tool_call.function.arguments if tool_call.function else None,
+                  - generic [ref=e944]: )
+                  - generic [ref=e945]: )
+                  - generic [ref=e946]: yield encoder.encode(
+                  - generic [ref=e947]: RunFinishedEvent(
+                  - generic [ref=e948]: type=EventType.RUN_FINISHED,
+                  - generic [ref=e949]: thread_id=input_data.thread_id,
+                  - generic [ref=e950]: run_id=input_data.run_id
+                  - generic [ref=e951]: )
+                  - generic [ref=e952]: )
+                  - generic [ref=e953]: "except Exception as error:"
+                  - generic [ref=e954]: yield encoder.encode(
+                  - generic [ref=e955]: RunErrorEvent(
+                  - generic [ref=e956]: type=EventType.RUN_ERROR,
+                  - generic [ref=e957]: message=str(error)
+                  - generic [ref=e958]: )
+                  - generic [ref=e959]: )
+                  - generic [ref=e960]: return StreamingResponse(
+                  - generic [ref=e961]: event_generator(),
+                  - generic [ref=e962]: media_type=encoder.get_content_type()
+                  - generic [ref=e963]: )
+                  - generic [ref=e964]: "def main():"
+                  - generic [ref=e965]: "\"\"\"Run the uvicorn server.\"\"\""
+                  - generic [ref=e966]: port = int(os.getenv("PORT", "8000"))
+                  - generic [ref=e967]: uvicorn.run(
+                  - generic [ref=e968]: "\"example_server:app\","
+                  - generic [ref=e969]: host="0.0.0.0",
+                  - generic [ref=e970]: port=port,
+                  - generic [ref=e971]: reload=True
+                  - generic [ref=e972]: )
+                  - generic [ref=e973]: "if __name__ == \"__main__\":"
+                  - generic [ref=e974]: main()
+              - heading "Navigate to header What happens under the hood?" [level=3] [ref=e975]:
+                - link "Navigate to header" [ref=e976] [cursor=pointer]:
+                  - /url: "#what-happens-under-the-hood"
+                  - img [ref=e978]
+                - generic [ref=e981] [cursor=pointer]: What happens under the hood?
+              - generic [ref=e982]: "Let’s break down what your server is doing:"
+              - list [ref=e983]:
+                - listitem [ref=e984]:
+                  - strong [ref=e985]: Setup
+                  - text: – We create an OpenAI client and emit
+                  - code [ref=e986]: RUN_STARTED
+                - listitem [ref=e987]:
+                  - strong [ref=e988]: Request
+                  - text: – We send the user’s messages to
+                  - code [ref=e989]: chat.completions
+                  - text: with
+                  - code [ref=e990]: stream=True
+                - listitem [ref=e991]:
+                  - strong [ref=e992]: Streaming
+                  - text: – We forward each chunk as either
+                  - code [ref=e993]: TEXT_MESSAGE_CHUNK
+                  - text: or
+                  - code [ref=e994]: TOOL_CALL_CHUNK
+                - listitem [ref=e995]:
+                  - strong [ref=e996]: Finish
+                  - text: – We emit
+                  - code [ref=e997]: RUN_FINISHED
+                  - text: (or
+                  - code [ref=e998]: RUN_ERROR
+                  - text: if something goes wrong)
+              - generic [ref=e999]: "Test your endpoint with:"
+              - generic [ref=e1000]:
+                - button "Copy the contents from the code block" [ref=e1003] [cursor=pointer]:
+                  - img [ref=e1004]
+                - code [ref=e1010]:
+                  - generic [ref=e1011]: curl -X POST http://localhost:8000/ \
+                  - generic [ref=e1012]: "-H \"Content-Type: application/json\" \\"
+                  - generic [ref=e1013]: "-H \"Accept: text/event-stream\" \\"
+                  - generic [ref=e1014]: "-d '{"
+                  - generic [ref=e1015]: "\"threadId\": \"thread_123\","
+                  - generic [ref=e1016]: "\"runId\": \"run_456\","
+                  - generic [ref=e1017]: "\"state\": {},"
+                  - generic [ref=e1018]: "\"messages\": ["
+                  - generic [ref=e1019]: "{"
+                  - generic [ref=e1020]: "\"id\": \"msg_1\","
+                  - generic [ref=e1021]: "\"role\": \"user\","
+                  - generic [ref=e1022]: "\"content\": \"Hello, how are you?\""
+                  - generic [ref=e1023]: "}"
+                  - generic [ref=e1024]: "],"
+                  - generic [ref=e1025]: "\"tools\": [],"
+                  - generic [ref=e1026]: "\"context\": [],"
+                  - generic [ref=e1027]: "\"forwardedProps\": {}"
+                  - generic [ref=e1028]: "}'"
+              - generic [ref=e1029]: This implementation creates a fully functional AG-UI endpoint that processes messages and streams back the responses in real-time.
+              - heading "Navigate to header Step 5 – Chat with your server" [level=2] [ref=e1030]:
+                - link "Navigate to header" [ref=e1031] [cursor=pointer]:
+                  - /url: "#step-5-–-chat-with-your-server"
+                  - img [ref=e1033]
+                - generic [ref=e1036] [cursor=pointer]: Step 5 – Chat with your server
+              - generic [ref=e1037]: Reload the dojo page and start typing. You’ll see GPT-4o streaming its answer in real-time, word by word.
+              - generic [ref=e1038]:
+                - text: Tools like
+                - link "CopilotKit" [ref=e1039] [cursor=pointer]:
+                  - /url: https://docs.copilotkit.ai
+                - text: already understand AG-UI and provide plug-and-play React components. Point them at your server endpoint and you get a full-featured chat UI out of the box.
+              - heading "Navigate to header Share your integration" [level=2] [ref=e1040]:
+                - link "Navigate to header" [ref=e1041] [cursor=pointer]:
+                  - /url: "#share-your-integration"
+                  - img [ref=e1043]
+                - generic [ref=e1046] [cursor=pointer]: Share your integration
+              - generic [ref=e1047]: Did you build a custom server that others could reuse? We welcome community contributions!
+              - list [ref=e1048]:
+                - listitem [ref=e1049]:
+                  - text: Fork the
+                  - link "AG-UI repository" [ref=e1050] [cursor=pointer]:
+                    - /url: https://github.com/ag-ui-protocol/ag-ui
+                - listitem [ref=e1051]:
+                  - text: Add your package under
+                  - code [ref=e1052]: integrations/
+                  - text: . See
+                  - link "Contributing" [ref=e1053] [cursor=pointer]:
+                    - /url: ../development/contributing
+                  - text: for more details and naming conventions.
+                - listitem [ref=e1054]: Open a pull request describing your use-case and design decisions
+              - generic [ref=e1055]:
+                - text: "If you have questions, need feedback, or want to validate an idea first, start a thread in the GitHub Discussions board:"
+                - link "AG-UI GitHub Discussions board" [ref=e1056] [cursor=pointer]:
+                  - /url: https://github.com/orgs/ag-ui-protocol/discussions
+                - text: .
+              - generic [ref=e1057]: Your integration might ship in the next release and help the entire AG-UI ecosystem grow.
+              - heading "Navigate to header Conclusion" [level=2] [ref=e1058]:
+                - link "Navigate to header" [ref=e1059] [cursor=pointer]:
+                  - /url: "#conclusion"
+                  - img [ref=e1061]
+                - generic [ref=e1064] [cursor=pointer]: Conclusion
+              - generic [ref=e1065]: "You now have a fully-functional AG-UI server for OpenAI and a local playground to test it. From here you can:"
+              - list [ref=e1066]:
+                - listitem [ref=e1067]: Add tool calls to enhance your server
+                - listitem [ref=e1068]: Deploy your server to production
+                - listitem [ref=e1069]: Bring AG-UI to any other model or service
+              - generic [ref=e1070]: Happy building!
+            - generic [ref=e1072]:
+              - paragraph [ref=e1073]: Was this page helpful?
+              - generic [ref=e1075]:
+                - button "Yes" [ref=e1076] [cursor=pointer]:
+                  - img [ref=e1077]
+                  - generic [ref=e1080]: "Yes"
+                - button "No" [ref=e1081] [cursor=pointer]:
+                  - img [ref=e1082]
+                  - generic [ref=e1085]: "No"
+            - generic [ref=e1086]:
+              - link "Introduction Previous" [ref=e1087] [cursor=pointer]:
+                - /url: /quickstart/introduction
+                - generic [ref=e1088]:
+                  - generic [ref=e1089]: Introduction
+                  - generic [ref=e1090]:
+                    - img [ref=e1091]
+                    - generic [ref=e1093]: Previous
+              - link "Middleware Next" [ref=e1094] [cursor=pointer]:
+                - /url: /quickstart/middleware
+                - generic [ref=e1095]:
+                  - generic [ref=e1096]: Middleware
+                  - generic [ref=e1097]:
+                    - img [ref=e1098]
+                    - generic [ref=e1100]: Next
+            - generic [ref=e1101]:
+              - link "github" [ref=e1103] [cursor=pointer]:
+                - /url: https://github.com/ag-ui-protocol/ag-ui
+                - generic [ref=e1104]: github
+                - img [ref=e1105]
+              - link "Powered by This documentation is built and hosted on Mintlify, a developer documentation platform" [ref=e1108] [cursor=pointer]:
+                - /url: https://www.mintlify.com?utm_campaign=poweredBy&utm_medium=referral&utm_source=tawkitai
+                - generic [ref=e1109]: Powered by
+                - img [ref=e1110]
+                - generic [ref=e1119]: This documentation is built and hosted on Mintlify, a developer documentation platform

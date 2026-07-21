@@ -68,7 +68,7 @@ export function useAgUI() {
 
     const threadId = crypto.randomUUID();
     const runId = crypto.randomUUID();
-    const endpoint = a2ui ? "/ag-ui/run/a2ui" : "/ag-ui/run";
+    const endpoint = a2ui ? "/api/ag-ui/run/a2ui" : "/api/ag-ui/run";
 
     const auth = getAuth();
 

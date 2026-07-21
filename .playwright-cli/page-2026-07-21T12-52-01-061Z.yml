@@ -1,0 +1,556 @@
+- generic [active] [ref=e1]:
+  - blockquote [ref=e2]:
+    - heading [level=2] [ref=e3]: Documentation Index
+    - paragraph [ref=e4]:
+      - text: "Fetch the complete documentation index at:"
+      - link [ref=e5] [cursor=pointer]:
+        - /url: /llms.txt
+        - text: /llms.txt
+    - paragraph [ref=e6]: Use this file to discover all available pages before exploring further.
+  - generic [ref=e7]:
+    - link "Skip to main content" [ref=e8] [cursor=pointer]:
+      - /url: "#content-area"
+    - generic [ref=e10]:
+      - banner [ref=e11]:
+        - generic [ref=e14]:
+          - generic [ref=e17]:
+            - link "Agent User Interaction Protocol home page light logo" [ref=e19] [cursor=pointer]:
+              - /url: /
+              - generic [ref=e20]: Agent User Interaction Protocol home page
+              - img "light logo" [ref=e21]
+            - button "Open search" [ref=e23] [cursor=pointer]:
+              - generic [ref=e24]:
+                - img [ref=e25]
+                - generic [ref=e28]: Search...
+              - generic [ref=e29]: ⌘K
+            - generic [ref=e30]:
+              - navigation "Main" [ref=e32]:
+                - list [ref=e33]:
+                  - listitem [ref=e34]:
+                    - link "Discord" [ref=e35] [cursor=pointer]:
+                      - /url: https://discord.gg/Jd3FzfdJa8
+                      - img [ref=e36]
+                      - generic [ref=e37]: Discord
+                  - listitem [ref=e38] [cursor=pointer]:
+                    - link "ag-ui-protocol/ag-ui" [ref=e39]:
+                      - /url: https://github.com/ag-ui-protocol/ag-ui
+                      - generic [ref=e41]:
+                        - img [ref=e42]
+                        - generic [ref=e44]: ag-ui-protocol/ag-ui
+              - button "Change theme preference" [ref=e45] [cursor=pointer]:
+                - img [ref=e47]
+          - generic [ref=e51]:
+            - link "Documentation" [ref=e52] [cursor=pointer]:
+              - /url: /introduction
+              - text: Documentation
+            - link "SDKs" [ref=e54] [cursor=pointer]:
+              - /url: /sdk/js/core/overview
+              - img [ref=e55]
+              - text: SDKs
+      - generic [ref=e57]:
+        - navigation "Pages" [ref=e58]:
+          - generic [ref=e60]:
+            - list [ref=e61]:
+              - listitem [ref=e62]:
+                - link "TypeScript SDK" [ref=e63] [cursor=pointer]:
+                  - /url: https://docs.ag-ui.com/sdk/js/core/overview
+                  - img [ref=e64]
+                  - generic [ref=e65]: TypeScript SDK
+              - listitem [ref=e66]:
+                - link "Python SDK" [ref=e67] [cursor=pointer]:
+                  - /url: https://docs.ag-ui.com/sdk/python/core/overview
+                  - img [ref=e68]
+                  - generic [ref=e69]: Python SDK
+              - listitem [ref=e70]:
+                - link ".NET SDK" [ref=e71] [cursor=pointer]:
+                  - /url: https://docs.ag-ui.com/sdk/dotnet/abstractions/overview
+                  - img [ref=e72]
+                  - generic [ref=e73]: .NET SDK
+            - generic [ref=e74]:
+              - heading "Get Started" [level=3] [ref=e76]
+              - list [ref=e77]:
+                - listitem [ref=e78]:
+                  - link "AG-UI Overview" [ref=e79] [cursor=pointer]:
+                    - /url: /introduction
+                    - generic [ref=e82]: AG-UI Overview
+                - listitem [ref=e83]:
+                  - link "MCP, A2A, and AG-UI" [ref=e84] [cursor=pointer]:
+                    - /url: /agentic-protocols
+                    - generic [ref=e87]: MCP, A2A, and AG-UI
+                - listitem [ref=e88]:
+                  - button "Quickstart" [ref=e89] [cursor=pointer]:
+                    - generic [ref=e91]: Quickstart
+                    - img [ref=e93]
+            - generic [ref=e97]:
+              - heading "Concepts" [level=3] [ref=e99]
+              - list [ref=e100]:
+                - listitem [ref=e101]:
+                  - link "Core architecture" [ref=e102] [cursor=pointer]:
+                    - /url: /concepts/architecture
+                    - generic [ref=e105]: Core architecture
+                - listitem [ref=e106]:
+                  - link "Events" [ref=e107] [cursor=pointer]:
+                    - /url: /concepts/events
+                    - generic [ref=e110]: Events
+                - listitem [ref=e111]:
+                  - link "Agents" [ref=e112] [cursor=pointer]:
+                    - /url: /concepts/agents
+                    - generic [ref=e115]: Agents
+                - listitem [ref=e116]:
+                  - link "Middleware" [ref=e117] [cursor=pointer]:
+                    - /url: /concepts/middleware
+                    - generic [ref=e120]: Middleware
+                - listitem [ref=e121]:
+                  - link "Messages" [ref=e122] [cursor=pointer]:
+                    - /url: /concepts/messages
+                    - generic [ref=e125]: Messages
+                - listitem [ref=e126]:
+                  - link "Reasoning" [ref=e127] [cursor=pointer]:
+                    - /url: /concepts/reasoning
+                    - generic [ref=e130]: Reasoning
+                - listitem [ref=e131]:
+                  - link "State Management" [ref=e132] [cursor=pointer]:
+                    - /url: /concepts/state
+                    - generic [ref=e135]: State Management
+                - listitem [ref=e136]:
+                  - link "Interrupts" [ref=e137] [cursor=pointer]:
+                    - /url: /concepts/interrupts
+                    - generic [ref=e140]: Interrupts
+                - listitem [ref=e141]:
+                  - link "Serialization" [ref=e142] [cursor=pointer]:
+                    - /url: /concepts/serialization
+                    - generic [ref=e145]: Serialization
+                - listitem [ref=e146]:
+                  - link "Tools" [ref=e147] [cursor=pointer]:
+                    - /url: /concepts/tools
+                    - generic [ref=e150]: Tools
+                - listitem [ref=e151]:
+                  - link "Capabilities" [ref=e152] [cursor=pointer]:
+                    - /url: /concepts/capabilities
+                    - generic [ref=e155]: Capabilities
+                - listitem [ref=e156]:
+                  - link "Generative UI" [ref=e157] [cursor=pointer]:
+                    - /url: /concepts/generative-ui-specs
+                    - generic [ref=e160]: Generative UI
+            - generic [ref=e163]:
+              - heading "Draft Proposals" [level=3] [ref=e165]
+              - list [ref=e166]:
+                - listitem [ref=e167]:
+                  - link "Overview" [ref=e168] [cursor=pointer]:
+                    - /url: /drafts/overview
+                    - generic [ref=e171]: Overview
+                - listitem [ref=e172]:
+                  - link "Generative User Interfaces" [ref=e173] [cursor=pointer]:
+                    - /url: /drafts/generative-ui
+                    - generic [ref=e176]: Generative User Interfaces
+                - listitem [ref=e177]:
+                  - link "Meta Events" [ref=e178] [cursor=pointer]:
+                    - /url: /drafts/meta-events
+                    - generic [ref=e181]: Meta Events
+            - generic [ref=e184]:
+              - heading "Tutorials" [level=3] [ref=e186]
+              - list [ref=e187]:
+                - listitem [ref=e188]:
+                  - link "Developing with Cursor" [ref=e189] [cursor=pointer]:
+                    - /url: /tutorials/cursor
+                    - generic [ref=e192]: Developing with Cursor
+                - listitem [ref=e193]:
+                  - link "Debugging" [ref=e194] [cursor=pointer]:
+                    - /url: /tutorials/debugging
+                    - generic [ref=e197]: Debugging
+            - generic [ref=e200]:
+              - heading "Development" [level=3] [ref=e202]
+              - list [ref=e203]:
+                - listitem [ref=e204]:
+                  - link "What's New" [ref=e205] [cursor=pointer]:
+                    - /url: /development/updates
+                    - generic [ref=e208]: What's New
+                - listitem [ref=e209]:
+                  - link "Roadmap" [ref=e210] [cursor=pointer]:
+                    - /url: /development/roadmap
+                    - generic [ref=e213]: Roadmap
+                - listitem [ref=e214]:
+                  - link "Contributing" [ref=e215] [cursor=pointer]:
+                    - /url: /development/contributing
+                    - generic [ref=e218]: Contributing
+                - listitem [ref=e219]:
+                  - link "Enterprise" [ref=e220] [cursor=pointer]:
+                    - /url: /talk-to-us
+                    - generic [ref=e223]: Enterprise
+        - main [ref=e225]:
+          - navigation "On this page" [ref=e229]:
+            - heading "On this page" [level=2] [ref=e230]:
+              - button "On this page" [ref=e231] [cursor=pointer]:
+                - img [ref=e232]
+                - generic [ref=e233]: On this page
+            - list [ref=e235]:
+              - listitem [ref=e236]:
+                - link "Middleware" [ref=e237] [cursor=pointer]:
+                  - /url: "#middleware"
+              - listitem [ref=e238]:
+                - link "What is Middleware?" [ref=e239] [cursor=pointer]:
+                  - /url: "#what-is-middleware"
+              - listitem [ref=e240]:
+                - link "How Middleware Works" [ref=e241] [cursor=pointer]:
+                  - /url: "#how-middleware-works"
+              - listitem [ref=e242]:
+                - link "Function-Based Middleware" [ref=e243] [cursor=pointer]:
+                  - /url: "#function-based-middleware"
+              - listitem [ref=e244]:
+                - link "Class-Based Middleware" [ref=e245] [cursor=pointer]:
+                  - /url: "#class-based-middleware"
+              - listitem [ref=e246]:
+                - link "Built-in Middleware" [ref=e247] [cursor=pointer]:
+                  - /url: "#built-in-middleware"
+                - list [ref=e248]:
+                  - listitem [ref=e249]:
+                    - link "FilterToolCallsMiddleware" [ref=e250] [cursor=pointer]:
+                      - /url: "#filtertoolcallsmiddleware"
+              - listitem [ref=e251]:
+                - link "Middleware Patterns" [ref=e252] [cursor=pointer]:
+                  - /url: "#middleware-patterns"
+              - listitem [ref=e253]:
+                - link "Combining Middleware" [ref=e254] [cursor=pointer]:
+                  - /url: "#combining-middleware"
+              - listitem [ref=e255]:
+                - link "Execution Order" [ref=e256] [cursor=pointer]:
+                  - /url: "#execution-order"
+              - listitem [ref=e257]:
+                - link "Best Practices" [ref=e258] [cursor=pointer]:
+                  - /url: "#best-practices"
+              - listitem [ref=e259]:
+                - link "Advanced Use Cases" [ref=e260] [cursor=pointer]:
+                  - /url: "#advanced-use-cases"
+                - list [ref=e261]:
+                  - listitem [ref=e262]:
+                    - link "Conditional Middleware" [ref=e263] [cursor=pointer]:
+                      - /url: "#conditional-middleware"
+              - listitem [ref=e264]:
+                - link "Conclusion" [ref=e265] [cursor=pointer]:
+                  - /url: "#conclusion"
+          - generic [ref=e266]:
+            - generic [ref=e267]:
+              - generic [ref=e268]:
+                - generic [ref=e269]: Concepts
+                - heading "Middleware" [level=1] [ref=e271]
+              - paragraph [ref=e273]: Transform and intercept events in AG-UI agents
+            - generic [ref=e274]:
+              - heading "Navigate to header Middleware" [level=1] [ref=e275]:
+                - link "Navigate to header" [ref=e276] [cursor=pointer]:
+                  - /url: "#middleware"
+                  - img [ref=e278]
+                - generic [ref=e281] [cursor=pointer]: Middleware
+              - generic [ref=e282]: Middleware in AG-UI provides a powerful way to transform, filter, and augment the event streams that flow through agents. It enables you to add cross-cutting concerns like logging, authentication, rate limiting, and event filtering without modifying the core agent logic.
+              - generic [ref=e283]:
+                - text: Examples below assume the relevant RxJS operators/utilities (
+                - code [ref=e284]: map
+                - text: ","
+                - code [ref=e285]: tap
+                - text: ","
+                - code [ref=e286]: catchError
+                - text: ","
+                - code [ref=e287]: switchMap
+                - text: ","
+                - code [ref=e288]: timer
+                - text: ", etc.) are imported."
+              - heading "Navigate to header What is Middleware?" [level=2] [ref=e289]:
+                - link "Navigate to header" [ref=e290] [cursor=pointer]:
+                  - /url: "#what-is-middleware"
+                  - img [ref=e292]
+                - generic [ref=e295] [cursor=pointer]: What is Middleware?
+              - generic [ref=e296]: "Middleware sits between the agent execution and the event consumer, allowing you to:"
+              - list [ref=e297]:
+                - listitem [ref=e298]:
+                  - strong [ref=e299]: Transform events
+                  - text: – Modify or enhance events as they flow through the pipeline
+                - listitem [ref=e300]:
+                  - strong [ref=e301]: Filter events
+                  - text: – Selectively allow or block certain events
+                - listitem [ref=e302]:
+                  - strong [ref=e303]: Add metadata
+                  - text: – Inject additional context or tracking information
+                - listitem [ref=e304]:
+                  - strong [ref=e305]: Handle errors
+                  - text: – Implement custom error recovery strategies
+                - listitem [ref=e306]:
+                  - strong [ref=e307]: Monitor execution
+                  - text: – Add logging, metrics, or debugging capabilities
+              - heading "Navigate to header How Middleware Works" [level=2] [ref=e308]:
+                - link "Navigate to header" [ref=e309] [cursor=pointer]:
+                  - /url: "#how-middleware-works"
+                  - img [ref=e311]
+                - generic [ref=e314] [cursor=pointer]: How Middleware Works
+              - generic [ref=e315]: Middleware forms a chain where each middleware wraps the next, creating layers of functionality. When an agent runs, the event stream flows through each middleware in sequence.
+              - generic [ref=e316]:
+                - button "Copy the contents from the code block" [ref=e319] [cursor=pointer]:
+                  - img [ref=e320]
+                - code [ref=e326]:
+                  - generic [ref=e327]: "import { AbstractAgent } from \"@ag-ui/client\""
+                  - generic [ref=e328]: const agent = new MyAgent()
+                  - generic [ref=e329]: "// Middleware chain: logging -> auth -> filter -> agent"
+                  - generic [ref=e330]: agent.use(loggingMiddleware, authMiddleware, filterMiddleware)
+                  - generic [ref=e331]: // When agent runs, events flow through all middleware
+                  - generic [ref=e332]: await agent.runAgent()
+              - generic [ref=e333]:
+                - text: Middleware added with
+                - code [ref=e334]: agent.use(...)
+                - text: is applied in
+                - code [ref=e335]: runAgent()
+                - text: .
+                - code [ref=e336]: connectAgent()
+                - text: currently calls
+                - code [ref=e337]: connect()
+                - text: directly and does not run middleware.
+              - heading "Navigate to header Function-Based Middleware" [level=2] [ref=e338]:
+                - link "Navigate to header" [ref=e339] [cursor=pointer]:
+                  - /url: "#function-based-middleware"
+                  - img [ref=e341]
+                - generic [ref=e344] [cursor=pointer]: Function-Based Middleware
+              - generic [ref=e345]: "For simple transformations, you can use function-based middleware. This is the most concise way to add middleware:"
+              - generic [ref=e346]:
+                - button "Copy the contents from the code block" [ref=e349] [cursor=pointer]:
+                  - img [ref=e350]
+                - code [ref=e356]:
+                  - generic [ref=e357]: "import { MiddlewareFunction } from \"@ag-ui/client\""
+                  - generic [ref=e358]: "import { EventType } from \"@ag-ui/core\""
+                  - generic [ref=e359]: "const prefixMiddleware: MiddlewareFunction = (input, next) => {"
+                  - generic [ref=e360]: return next.run(input).pipe(
+                  - generic [ref=e361]: "map(event => {"
+                  - generic [ref=e362]: if (
+                  - generic [ref=e363]: event.type === EventType.TEXT_MESSAGE_CHUNK ||
+                  - generic [ref=e364]: event.type === EventType.TEXT_MESSAGE_CONTENT
+                  - generic [ref=e365]: ") {"
+                  - generic [ref=e366]: "return {"
+                  - generic [ref=e367]: ...event,
+                  - generic [ref=e368]: "delta: `[AI]: ${event.delta}`"
+                  - generic [ref=e369]: "}"
+                  - generic [ref=e370]: "}"
+                  - generic [ref=e371]: return event
+                  - generic [ref=e372]: "})"
+                  - generic [ref=e373]: )
+                  - generic [ref=e374]: "}"
+                  - generic [ref=e375]: agent.use(prefixMiddleware)
+              - heading "Navigate to header Class-Based Middleware" [level=2] [ref=e376]:
+                - link "Navigate to header" [ref=e377] [cursor=pointer]:
+                  - /url: "#class-based-middleware"
+                  - img [ref=e379]
+                - generic [ref=e382] [cursor=pointer]: Class-Based Middleware
+              - generic [ref=e383]: "For more complex scenarios requiring state or configuration, use class-based middleware:"
+              - generic [ref=e384]:
+                - button "Copy the contents from the code block" [ref=e387] [cursor=pointer]:
+                  - img [ref=e388]
+                - code [ref=e394]:
+                  - generic [ref=e395]: "import { Middleware } from \"@ag-ui/client\""
+                  - generic [ref=e396]: "import { Observable } from \"rxjs\""
+                  - generic [ref=e397]: "import { tap } from \"rxjs/operators\""
+                  - generic [ref=e398]: "class MetricsMiddleware extends Middleware {"
+                  - generic [ref=e399]: private eventCount = 0
+                  - generic [ref=e400]: "constructor(private metricsService: MetricsService) {"
+                  - generic [ref=e401]: super()
+                  - generic [ref=e402]: "}"
+                  - generic [ref=e403]: "run(input: RunAgentInput, next: AbstractAgent): Observable<BaseEvent> {"
+                  - generic [ref=e404]: const startTime = Date.now()
+                  - generic [ref=e405]: return this.runNext(input, next).pipe(
+                  - generic [ref=e406]: "tap(event => {"
+                  - generic [ref=e407]: this.eventCount++
+                  - generic [ref=e408]: this.metricsService.recordEvent(event.type)
+                  - generic [ref=e409]: "}),"
+                  - generic [ref=e410]: "finalize(() => {"
+                  - generic [ref=e411]: const duration = Date.now() - startTime
+                  - generic [ref=e412]: this.metricsService.recordDuration(duration)
+                  - generic [ref=e413]: this.metricsService.recordEventCount(this.eventCount)
+                  - generic [ref=e414]: "})"
+                  - generic [ref=e415]: )
+                  - generic [ref=e416]: "}"
+                  - generic [ref=e417]: "}"
+                  - generic [ref=e418]: agent.use(new MetricsMiddleware(metricsService))
+              - generic [ref=e419]: "If you are writing class middleware, prefer the helper methods:"
+              - list [ref=e420]:
+                - listitem [ref=e421]:
+                  - code [ref=e422]: runNext(input, next)
+                  - text: normalizes chunk events into full
+                  - code [ref=e423]: TEXT_MESSAGE_*
+                  - text: /
+                  - code [ref=e424]: TOOL_CALL_*
+                  - text: sequences.
+                - listitem [ref=e425]:
+                  - code [ref=e426]: runNextWithState(input, next)
+                  - text: also provides accumulated
+                  - code [ref=e427]: messages
+                  - text: and
+                  - code [ref=e428]: state
+                  - text: after each event.
+              - heading "Navigate to header Built-in Middleware" [level=2] [ref=e429]:
+                - link "Navigate to header" [ref=e430] [cursor=pointer]:
+                  - /url: "#built-in-middleware"
+                  - img [ref=e432]
+                - generic [ref=e435] [cursor=pointer]: Built-in Middleware
+              - generic [ref=e436]: "AG-UI provides several built-in middleware components for common use cases:"
+              - heading "Navigate to header FilterToolCallsMiddleware" [level=3] [ref=e437]:
+                - link "Navigate to header" [ref=e438] [cursor=pointer]:
+                  - /url: "#filtertoolcallsmiddleware"
+                  - img [ref=e440]
+                - generic [ref=e443] [cursor=pointer]: FilterToolCallsMiddleware
+              - generic [ref=e444]: "Filter tool calls based on allowed or disallowed lists:"
+              - generic [ref=e445]:
+                - button "Copy the contents from the code block" [ref=e448] [cursor=pointer]:
+                  - img [ref=e449]
+                - code [ref=e455]:
+                  - generic [ref=e456]: "import { FilterToolCallsMiddleware } from \"@ag-ui/client\""
+                  - generic [ref=e457]: // Only allow specific tools
+                  - generic [ref=e458]: "const allowedFilter = new FilterToolCallsMiddleware({"
+                  - generic [ref=e459]: "allowedToolCalls: [\"search\", \"calculate\"]"
+                  - generic [ref=e460]: "})"
+                  - generic [ref=e461]: // Or block specific tools
+                  - generic [ref=e462]: "const blockedFilter = new FilterToolCallsMiddleware({"
+                  - generic [ref=e463]: "disallowedToolCalls: [\"delete\", \"modify\"]"
+                  - generic [ref=e464]: "})"
+                  - generic [ref=e465]: agent.use(allowedFilter)
+              - generic [ref=e466]:
+                - code [ref=e467]: FilterToolCallsMiddleware
+                - text: filters emitted
+                - code [ref=e468]: TOOL_CALL_*
+                - text: events. It does not block tool execution in the upstream model/runtime.
+              - heading "Navigate to header Middleware Patterns" [level=2] [ref=e469]:
+                - link "Navigate to header" [ref=e470] [cursor=pointer]:
+                  - /url: "#middleware-patterns"
+                  - img [ref=e472]
+                - generic [ref=e475] [cursor=pointer]: Middleware Patterns
+              - generic [ref=e476]:
+                - text: Common patterns include logging, auth via
+                - code [ref=e477]: forwardedProps
+                - text: ", and rate limiting. See the"
+                - link "JS middleware reference" [ref=e478] [cursor=pointer]:
+                  - /url: /sdk/js/client/middleware
+                - text: for concrete implementations.
+              - heading "Navigate to header Combining Middleware" [level=2] [ref=e479]:
+                - link "Navigate to header" [ref=e480] [cursor=pointer]:
+                  - /url: "#combining-middleware"
+                  - img [ref=e482]
+                - generic [ref=e485] [cursor=pointer]: Combining Middleware
+              - generic [ref=e486]: "You can combine multiple middleware to create sophisticated processing pipelines:"
+              - generic [ref=e487]:
+                - button "Copy the contents from the code block" [ref=e490] [cursor=pointer]:
+                  - img [ref=e491]
+                - code [ref=e497]:
+                  - generic [ref=e498]: "const logMiddleware: MiddlewareFunction = (input, next) => next.run(input)"
+                  - generic [ref=e499]: const metricsMiddleware = new MetricsMiddleware(metricsService)
+                  - generic [ref=e500]: "const filterMiddleware = new FilterToolCallsMiddleware({ allowedToolCalls: [\"search\"] })"
+                  - generic [ref=e501]: agent.use(logMiddleware, metricsMiddleware, filterMiddleware)
+              - heading "Navigate to header Execution Order" [level=2] [ref=e502]:
+                - link "Navigate to header" [ref=e503] [cursor=pointer]:
+                  - /url: "#execution-order"
+                  - img [ref=e505]
+                - generic [ref=e508] [cursor=pointer]: Execution Order
+              - generic [ref=e509]: "Middleware executes in the order it’s added, with each middleware wrapping the next:"
+              - list [ref=e510]:
+                - listitem [ref=e511]: First middleware receives the original input
+                - listitem [ref=e512]: It can modify the input before passing to the next middleware
+                - listitem [ref=e513]: Each middleware processes events from the next in the chain
+                - listitem [ref=e514]: The final middleware calls the actual agent
+              - generic [ref=e515]:
+                - button "Copy the contents from the code block" [ref=e518] [cursor=pointer]:
+                  - img [ref=e519]
+                - code [ref=e525]:
+                  - generic [ref=e526]: agent.use(middleware1, middleware2, middleware3)
+                  - generic [ref=e527]: "// Execution flow:"
+                  - generic [ref=e528]: // → middleware1
+                  - generic [ref=e529]: // → middleware2
+                  - generic [ref=e530]: // → middleware3
+                  - generic [ref=e531]: // → agent.run()
+                  - generic [ref=e532]: // ← events flow back through middleware3
+                  - generic [ref=e533]: // ← events flow back through middleware2
+                  - generic [ref=e534]: // ← events flow back through middleware1
+              - heading "Navigate to header Best Practices" [level=2] [ref=e535]:
+                - link "Navigate to header" [ref=e536] [cursor=pointer]:
+                  - /url: "#best-practices"
+                  - img [ref=e538]
+                - generic [ref=e541] [cursor=pointer]: Best Practices
+              - list [ref=e542]:
+                - listitem [ref=e543]:
+                  - strong [ref=e544]: Keep middleware focused
+                  - text: – Each middleware should have a single responsibility
+                - listitem [ref=e545]:
+                  - strong [ref=e546]: Handle errors gracefully
+                  - text: – Use RxJS error handling operators
+                - listitem [ref=e547]:
+                  - strong [ref=e548]: Avoid blocking operations
+                  - text: – Use async patterns for I/O operations
+                - listitem [ref=e549]:
+                  - strong [ref=e550]: Document side effects
+                  - text: – Clearly indicate if middleware modifies state
+                - listitem [ref=e551]:
+                  - strong [ref=e552]: Test middleware independently
+                  - text: – Write unit tests for each middleware
+                - listitem [ref=e553]:
+                  - strong [ref=e554]: Consider performance
+                  - text: – Be mindful of processing overhead in the event stream
+              - heading "Navigate to header Advanced Use Cases" [level=2] [ref=e555]:
+                - link "Navigate to header" [ref=e556] [cursor=pointer]:
+                  - /url: "#advanced-use-cases"
+                  - img [ref=e558]
+                - generic [ref=e561] [cursor=pointer]: Advanced Use Cases
+              - heading "Navigate to header Conditional Middleware" [level=3] [ref=e562]:
+                - link "Navigate to header" [ref=e563] [cursor=pointer]:
+                  - /url: "#conditional-middleware"
+                  - img [ref=e565]
+                - generic [ref=e568] [cursor=pointer]: Conditional Middleware
+              - generic [ref=e569]: "Apply middleware based on runtime conditions:"
+              - generic [ref=e570]:
+                - button "Copy the contents from the code block" [ref=e573] [cursor=pointer]:
+                  - img [ref=e574]
+                - code [ref=e580]:
+                  - generic [ref=e581]: "const conditionalMiddleware: MiddlewareFunction = (input, next) => {"
+                  - generic [ref=e582]: "if (input.forwardedProps?.debug === true) {"
+                  - generic [ref=e583]: // Apply debug logging
+                  - generic [ref=e584]: return next.run(input).pipe(
+                  - generic [ref=e585]: tap(event => console.debug(event))
+                  - generic [ref=e586]: )
+                  - generic [ref=e587]: "}"
+                  - generic [ref=e588]: return next.run(input)
+                  - generic [ref=e589]: "}"
+              - generic [ref=e590]:
+                - text: For event transformation and stream-control variants, see the
+                - link "JS middleware reference" [ref=e591] [cursor=pointer]:
+                  - /url: /sdk/js/client/middleware
+                - text: .
+              - heading "Navigate to header Conclusion" [level=2] [ref=e592]:
+                - link "Navigate to header" [ref=e593] [cursor=pointer]:
+                  - /url: "#conclusion"
+                  - img [ref=e595]
+                - generic [ref=e598] [cursor=pointer]: Conclusion
+              - generic [ref=e599]: Middleware provides a flexible and powerful way to extend AG-UI agents without modifying their core logic. Whether you need simple event transformation or complex stateful processing, the middleware system offers the tools to build robust, maintainable agent applications.
+            - generic [ref=e601]:
+              - paragraph [ref=e602]: Was this page helpful?
+              - generic [ref=e604]:
+                - button "Yes" [ref=e605] [cursor=pointer]:
+                  - img [ref=e606]
+                  - generic [ref=e609]: "Yes"
+                - button "No" [ref=e610] [cursor=pointer]:
+                  - img [ref=e611]
+                  - generic [ref=e614]: "No"
+            - generic [ref=e615]:
+              - link "Agents Previous" [ref=e616] [cursor=pointer]:
+                - /url: /concepts/agents
+                - generic [ref=e617]:
+                  - generic [ref=e618]: Agents
+                  - generic [ref=e619]:
+                    - img [ref=e620]
+                    - generic [ref=e622]: Previous
+              - link "Messages Next" [ref=e623] [cursor=pointer]:
+                - /url: /concepts/messages
+                - generic [ref=e624]:
+                  - generic [ref=e625]: Messages
+                  - generic [ref=e626]:
+                    - img [ref=e627]
+                    - generic [ref=e629]: Next
+            - generic [ref=e630]:
+              - link "github" [ref=e632] [cursor=pointer]:
+                - /url: https://github.com/ag-ui-protocol/ag-ui
+                - generic [ref=e633]: github
+                - img [ref=e634]
+              - link "Powered by This documentation is built and hosted on Mintlify, a developer documentation platform" [ref=e637] [cursor=pointer]:
+                - /url: https://www.mintlify.com?utm_campaign=poweredBy&utm_medium=referral&utm_source=tawkitai
+                - generic [ref=e638]: Powered by
+                - img [ref=e639]
+                - generic [ref=e648]: This documentation is built and hosted on Mintlify, a developer documentation platform

@@ -1,0 +1,750 @@
+- generic [active] [ref=e1]:
+  - blockquote [ref=e2]:
+    - heading [level=2] [ref=e3]: Documentation Index
+    - paragraph [ref=e4]:
+      - text: "Fetch the complete documentation index at:"
+      - link [ref=e5] [cursor=pointer]:
+        - /url: /llms.txt
+        - text: /llms.txt
+    - paragraph [ref=e6]: Use this file to discover all available pages before exploring further.
+  - generic [ref=e7]:
+    - link "Skip to main content" [ref=e8] [cursor=pointer]:
+      - /url: "#content-area"
+    - generic [ref=e10]:
+      - banner [ref=e11]:
+        - generic [ref=e14]:
+          - generic [ref=e17]:
+            - link "Agent User Interaction Protocol home page light logo" [ref=e19] [cursor=pointer]:
+              - /url: /
+              - generic [ref=e20]: Agent User Interaction Protocol home page
+              - img "light logo" [ref=e21]
+            - button "Open search" [ref=e23] [cursor=pointer]:
+              - generic [ref=e24]:
+                - img [ref=e25]
+                - generic [ref=e28]: Search...
+              - generic [ref=e29]: ⌘K
+            - generic [ref=e30]:
+              - navigation "Main" [ref=e32]:
+                - list [ref=e33]:
+                  - listitem [ref=e34]:
+                    - link "Discord" [ref=e35] [cursor=pointer]:
+                      - /url: https://discord.gg/Jd3FzfdJa8
+                      - img [ref=e36]
+                      - generic [ref=e37]: Discord
+                  - listitem [ref=e38] [cursor=pointer]:
+                    - link "ag-ui-protocol/ag-ui" [ref=e39]:
+                      - /url: https://github.com/ag-ui-protocol/ag-ui
+                      - generic [ref=e41]:
+                        - img [ref=e42]
+                        - generic [ref=e44]: ag-ui-protocol/ag-ui
+              - button "Change theme preference" [ref=e45] [cursor=pointer]:
+                - img [ref=e47]
+          - generic [ref=e51]:
+            - link "Documentation" [ref=e52] [cursor=pointer]:
+              - /url: /introduction
+              - text: Documentation
+            - link "SDKs" [ref=e54] [cursor=pointer]:
+              - /url: /sdk/js/core/overview
+              - img [ref=e55]
+              - text: SDKs
+      - generic [ref=e57]:
+        - navigation "Pages" [ref=e58]:
+          - generic [ref=e60]:
+            - list [ref=e61]:
+              - listitem [ref=e62]:
+                - link "TypeScript SDK" [ref=e63] [cursor=pointer]:
+                  - /url: https://docs.ag-ui.com/sdk/js/core/overview
+                  - img [ref=e64]
+                  - generic [ref=e65]: TypeScript SDK
+              - listitem [ref=e66]:
+                - link "Python SDK" [ref=e67] [cursor=pointer]:
+                  - /url: https://docs.ag-ui.com/sdk/python/core/overview
+                  - img [ref=e68]
+                  - generic [ref=e69]: Python SDK
+              - listitem [ref=e70]:
+                - link ".NET SDK" [ref=e71] [cursor=pointer]:
+                  - /url: https://docs.ag-ui.com/sdk/dotnet/abstractions/overview
+                  - img [ref=e72]
+                  - generic [ref=e73]: .NET SDK
+            - generic [ref=e74]:
+              - heading "Get Started" [level=3] [ref=e76]
+              - list [ref=e77]:
+                - listitem [ref=e78]:
+                  - link "AG-UI Overview" [ref=e79] [cursor=pointer]:
+                    - /url: /introduction
+                    - generic [ref=e82]: AG-UI Overview
+                - listitem [ref=e83]:
+                  - link "MCP, A2A, and AG-UI" [ref=e84] [cursor=pointer]:
+                    - /url: /agentic-protocols
+                    - generic [ref=e87]: MCP, A2A, and AG-UI
+                - listitem [ref=e88]:
+                  - button "Quickstart" [ref=e89] [cursor=pointer]:
+                    - generic [ref=e91]: Quickstart
+                    - img [ref=e93]
+            - generic [ref=e97]:
+              - heading "Concepts" [level=3] [ref=e99]
+              - list [ref=e100]:
+                - listitem [ref=e101]:
+                  - link "Core architecture" [ref=e102] [cursor=pointer]:
+                    - /url: /concepts/architecture
+                    - generic [ref=e105]: Core architecture
+                - listitem [ref=e106]:
+                  - link "Events" [ref=e107] [cursor=pointer]:
+                    - /url: /concepts/events
+                    - generic [ref=e110]: Events
+                - listitem [ref=e111]:
+                  - link "Agents" [ref=e112] [cursor=pointer]:
+                    - /url: /concepts/agents
+                    - generic [ref=e115]: Agents
+                - listitem [ref=e116]:
+                  - link "Middleware" [ref=e117] [cursor=pointer]:
+                    - /url: /concepts/middleware
+                    - generic [ref=e120]: Middleware
+                - listitem [ref=e121]:
+                  - link "Messages" [ref=e122] [cursor=pointer]:
+                    - /url: /concepts/messages
+                    - generic [ref=e125]: Messages
+                - listitem [ref=e126]:
+                  - link "Reasoning" [ref=e127] [cursor=pointer]:
+                    - /url: /concepts/reasoning
+                    - generic [ref=e130]: Reasoning
+                - listitem [ref=e131]:
+                  - link "State Management" [ref=e132] [cursor=pointer]:
+                    - /url: /concepts/state
+                    - generic [ref=e135]: State Management
+                - listitem [ref=e136]:
+                  - link "Interrupts" [ref=e137] [cursor=pointer]:
+                    - /url: /concepts/interrupts
+                    - generic [ref=e140]: Interrupts
+                - listitem [ref=e141]:
+                  - link "Serialization" [ref=e142] [cursor=pointer]:
+                    - /url: /concepts/serialization
+                    - generic [ref=e145]: Serialization
+                - listitem [ref=e146]:
+                  - link "Tools" [ref=e147] [cursor=pointer]:
+                    - /url: /concepts/tools
+                    - generic [ref=e150]: Tools
+                - listitem [ref=e151]:
+                  - link "Capabilities" [ref=e152] [cursor=pointer]:
+                    - /url: /concepts/capabilities
+                    - generic [ref=e155]: Capabilities
+                - listitem [ref=e156]:
+                  - link "Generative UI" [ref=e157] [cursor=pointer]:
+                    - /url: /concepts/generative-ui-specs
+                    - generic [ref=e160]: Generative UI
+            - generic [ref=e163]:
+              - heading "Draft Proposals" [level=3] [ref=e165]
+              - list [ref=e166]:
+                - listitem [ref=e167]:
+                  - link "Overview" [ref=e168] [cursor=pointer]:
+                    - /url: /drafts/overview
+                    - generic [ref=e171]: Overview
+                - listitem [ref=e172]:
+                  - link "Generative User Interfaces" [ref=e173] [cursor=pointer]:
+                    - /url: /drafts/generative-ui
+                    - generic [ref=e176]: Generative User Interfaces
+                - listitem [ref=e177]:
+                  - link "Meta Events" [ref=e178] [cursor=pointer]:
+                    - /url: /drafts/meta-events
+                    - generic [ref=e181]: Meta Events
+            - generic [ref=e184]:
+              - heading "Tutorials" [level=3] [ref=e186]
+              - list [ref=e187]:
+                - listitem [ref=e188]:
+                  - link "Developing with Cursor" [ref=e189] [cursor=pointer]:
+                    - /url: /tutorials/cursor
+                    - generic [ref=e192]: Developing with Cursor
+                - listitem [ref=e193]:
+                  - link "Debugging" [ref=e194] [cursor=pointer]:
+                    - /url: /tutorials/debugging
+                    - generic [ref=e197]: Debugging
+            - generic [ref=e200]:
+              - heading "Development" [level=3] [ref=e202]
+              - list [ref=e203]:
+                - listitem [ref=e204]:
+                  - link "What's New" [ref=e205] [cursor=pointer]:
+                    - /url: /development/updates
+                    - generic [ref=e208]: What's New
+                - listitem [ref=e209]:
+                  - link "Roadmap" [ref=e210] [cursor=pointer]:
+                    - /url: /development/roadmap
+                    - generic [ref=e213]: Roadmap
+                - listitem [ref=e214]:
+                  - link "Contributing" [ref=e215] [cursor=pointer]:
+                    - /url: /development/contributing
+                    - generic [ref=e218]: Contributing
+                - listitem [ref=e219]:
+                  - link "Enterprise" [ref=e220] [cursor=pointer]:
+                    - /url: /talk-to-us
+                    - generic [ref=e223]: Enterprise
+        - main [ref=e225]:
+          - navigation "On this page" [ref=e229]:
+            - heading "On this page" [level=2] [ref=e230]:
+              - button "On this page" [ref=e231] [cursor=pointer]:
+                - img [ref=e232]
+                - generic [ref=e233]: On this page
+            - list [ref=e235]:
+              - listitem [ref=e236]:
+                - link "Agents" [ref=e237] [cursor=pointer]:
+                  - /url: "#agents"
+              - listitem [ref=e238]:
+                - link "What is an Agent?" [ref=e239] [cursor=pointer]:
+                  - /url: "#what-is-an-agent"
+              - listitem [ref=e240]:
+                - link "Agent Architecture" [ref=e241] [cursor=pointer]:
+                  - /url: "#agent-architecture"
+                - list [ref=e242]:
+                  - listitem [ref=e243]:
+                    - link "Core Components" [ref=e244] [cursor=pointer]:
+                      - /url: "#core-components"
+              - listitem [ref=e245]:
+                - link "Agent Types" [ref=e246] [cursor=pointer]:
+                  - /url: "#agent-types"
+                - list [ref=e247]:
+                  - listitem [ref=e248]:
+                    - link "AbstractAgent" [ref=e249] [cursor=pointer]:
+                      - /url: "#abstractagent"
+                  - listitem [ref=e250]:
+                    - link "HttpAgent" [ref=e251] [cursor=pointer]:
+                      - /url: "#httpagent"
+                  - listitem [ref=e252]:
+                    - link "Custom Agents" [ref=e253] [cursor=pointer]:
+                      - /url: "#custom-agents"
+              - listitem [ref=e254]:
+                - link "Implementing Agents" [ref=e255] [cursor=pointer]:
+                  - /url: "#implementing-agents"
+                - list [ref=e256]:
+                  - listitem [ref=e257]:
+                    - link "Basic Implementation" [ref=e258] [cursor=pointer]:
+                      - /url: "#basic-implementation"
+              - listitem [ref=e259]:
+                - link "Agent Capabilities" [ref=e260] [cursor=pointer]:
+                  - /url: "#agent-capabilities"
+                - list [ref=e261]:
+                  - listitem [ref=e262]:
+                    - link "Interactive Communication" [ref=e263] [cursor=pointer]:
+                      - /url: "#interactive-communication"
+                  - listitem [ref=e264]:
+                    - link "Tool Usage" [ref=e265] [cursor=pointer]:
+                      - /url: "#tool-usage"
+                  - listitem [ref=e266]:
+                    - link "State Management" [ref=e267] [cursor=pointer]:
+                      - /url: "#state-management"
+                  - listitem [ref=e268]:
+                    - link "Multi-Agent Collaboration" [ref=e269] [cursor=pointer]:
+                      - /url: "#multi-agent-collaboration"
+                  - listitem [ref=e270]:
+                    - link "Human-in-the-Loop Workflows" [ref=e271] [cursor=pointer]:
+                      - /url: "#human-in-the-loop-workflows"
+                  - listitem [ref=e272]:
+                    - link "Conversational Memory" [ref=e273] [cursor=pointer]:
+                      - /url: "#conversational-memory"
+                  - listitem [ref=e274]:
+                    - link "Metadata and Instrumentation" [ref=e275] [cursor=pointer]:
+                      - /url: "#metadata-and-instrumentation"
+              - listitem [ref=e276]:
+                - link "Using Agents" [ref=e277] [cursor=pointer]:
+                  - /url: "#using-agents"
+              - listitem [ref=e278]:
+                - link "Agent Configuration" [ref=e279] [cursor=pointer]:
+                  - /url: "#agent-configuration"
+              - listitem [ref=e280]:
+                - link "Agent State Management" [ref=e281] [cursor=pointer]:
+                  - /url: "#agent-state-management"
+              - listitem [ref=e282]:
+                - link "Conclusion" [ref=e283] [cursor=pointer]:
+                  - /url: "#conclusion"
+          - generic [ref=e284]:
+            - generic [ref=e285]:
+              - generic [ref=e286]:
+                - generic [ref=e287]: Concepts
+                - heading "Agents" [level=1] [ref=e289]
+              - paragraph [ref=e291]: Learn about agents in the Agent User Interaction Protocol
+            - generic [ref=e292]:
+              - heading "Navigate to header Agents" [level=1] [ref=e293]:
+                - link "Navigate to header" [ref=e294] [cursor=pointer]:
+                  - /url: "#agents"
+                  - img [ref=e296]
+                - generic [ref=e299] [cursor=pointer]: Agents
+              - generic [ref=e300]: Agents are the core components in the AG-UI protocol that process requests and generate responses. They establish a standardized way for front-end applications to communicate with AI services through a consistent interface, regardless of the underlying implementation.
+              - heading "Navigate to header What is an Agent?" [level=2] [ref=e301]:
+                - link "Navigate to header" [ref=e302] [cursor=pointer]:
+                  - /url: "#what-is-an-agent"
+                  - img [ref=e304]
+                - generic [ref=e307] [cursor=pointer]: What is an Agent?
+              - generic [ref=e308]: "In AG-UI, an agent is a class that:"
+              - list [ref=e309]:
+                - listitem [ref=e310]: Manages conversation state and message history
+                - listitem [ref=e311]: Processes incoming messages and context
+                - listitem [ref=e312]: Generates responses through an event-driven streaming interface
+                - listitem [ref=e313]: Follows a standardized protocol for communication
+              - generic [ref=e314]: "Agents can be implemented to connect with any AI service, including:"
+              - list [ref=e315]:
+                - listitem [ref=e316]: Large language models (LLMs) like GPT-4 or Claude
+                - listitem [ref=e317]: Custom AI systems
+                - listitem [ref=e318]: Retrieval augmented generation (RAG) systems
+                - listitem [ref=e319]: Multi-agent systems
+              - heading "Navigate to header Agent Architecture" [level=2] [ref=e320]:
+                - link "Navigate to header" [ref=e321] [cursor=pointer]:
+                  - /url: "#agent-architecture"
+                  - img [ref=e323]
+                - generic [ref=e326] [cursor=pointer]: Agent Architecture
+              - generic [ref=e327]:
+                - text: All agents in AG-UI extend the
+                - code [ref=e328]: AbstractAgent
+                - text: "class, which provides the foundation for:"
+              - list [ref=e329]:
+                - listitem [ref=e330]: State management
+                - listitem [ref=e331]: Message history tracking
+                - listitem [ref=e332]: Event stream processing
+                - listitem [ref=e333]: Tool usage
+              - generic [ref=e334]:
+                - button "Copy the contents from the code block" [ref=e337] [cursor=pointer]:
+                  - img [ref=e338]
+                - code [ref=e344]:
+                  - generic [ref=e345]: "import { AbstractAgent } from \"@ag-ui/client\""
+                  - generic [ref=e346]: "class MyAgent extends AbstractAgent {"
+                  - generic [ref=e347]: "run(input: RunAgentInput): RunAgent {"
+                  - generic [ref=e348]: // Implementation details
+                  - generic [ref=e349]: "}"
+                  - generic [ref=e350]: "}"
+              - heading "Navigate to header Core Components" [level=3] [ref=e351]:
+                - link "Navigate to header" [ref=e352] [cursor=pointer]:
+                  - /url: "#core-components"
+                  - img [ref=e354]
+                - generic [ref=e357] [cursor=pointer]: Core Components
+              - generic [ref=e358]: "AG-UI agents have several key components:"
+              - list [ref=e359]:
+                - listitem [ref=e360]:
+                  - strong [ref=e361]: Configuration
+                  - text: ": Agent ID, thread ID, and initial state"
+                - listitem [ref=e362]:
+                  - strong [ref=e363]: Messages
+                  - text: ": Conversation history with user and assistant messages"
+                - listitem [ref=e364]:
+                  - strong [ref=e365]: State
+                  - text: ": Structured data that persists across interactions"
+                - listitem [ref=e366]:
+                  - strong [ref=e367]: Events
+                  - text: ": Standardized messages for communication with clients"
+                - listitem [ref=e368]:
+                  - strong [ref=e369]: Tools
+                  - text: ": Functions that agents can use to interact with external systems"
+              - heading "Navigate to header Agent Types" [level=2] [ref=e370]:
+                - link "Navigate to header" [ref=e371] [cursor=pointer]:
+                  - /url: "#agent-types"
+                  - img [ref=e373]
+                - generic [ref=e376] [cursor=pointer]: Agent Types
+              - generic [ref=e377]: "AG-UI provides different agent implementations to suit various needs:"
+              - heading "Navigate to header AbstractAgent" [level=3] [ref=e378]:
+                - link "Navigate to header" [ref=e379] [cursor=pointer]:
+                  - /url: "#abstractagent"
+                  - img [ref=e381]
+                - generic [ref=e384] [cursor=pointer]: AbstractAgent
+              - generic [ref=e385]: The base class that all agents extend. It handles core event processing, state management, and message history.
+              - heading "Navigate to header HttpAgent" [level=3] [ref=e386]:
+                - link "Navigate to header" [ref=e387] [cursor=pointer]:
+                  - /url: "#httpagent"
+                  - img [ref=e389]
+                - generic [ref=e392] [cursor=pointer]: HttpAgent
+              - generic [ref=e393]: "A concrete implementation that connects to remote AI services via HTTP:"
+              - generic [ref=e394]:
+                - button "Copy the contents from the code block" [ref=e397] [cursor=pointer]:
+                  - img [ref=e398]
+                - code [ref=e404]:
+                  - generic [ref=e405]: "import { HttpAgent } from \"@ag-ui/client\""
+                  - generic [ref=e406]: "const agent = new HttpAgent({"
+                  - generic [ref=e407]: "url: \"https://your-agent-endpoint.com/agent\","
+                  - generic [ref=e408]: "headers: {"
+                  - generic [ref=e409]: "Authorization: \"Bearer your-api-key\","
+                  - generic [ref=e410]: "},"
+                  - generic [ref=e411]: "})"
+              - heading "Navigate to header Custom Agents" [level=3] [ref=e412]:
+                - link "Navigate to header" [ref=e413] [cursor=pointer]:
+                  - /url: "#custom-agents"
+                  - img [ref=e415]
+                - generic [ref=e418] [cursor=pointer]: Custom Agents
+              - generic [ref=e419]:
+                - text: You can create custom agents to integrate with any AI service by extending
+                - code [ref=e420]: AbstractAgent
+                - text: ":"
+              - generic [ref=e421]:
+                - button "Copy the contents from the code block" [ref=e424] [cursor=pointer]:
+                  - img [ref=e425]
+                - code [ref=e431]:
+                  - generic [ref=e432]: "class CustomAgent extends AbstractAgent {"
+                  - generic [ref=e433]: // Custom properties and methods
+                  - generic [ref=e434]: "run(input: RunAgentInput): RunAgent {"
+                  - generic [ref=e435]: // Implement the agent's logic
+                  - generic [ref=e436]: "}"
+                  - generic [ref=e437]: "}"
+              - heading "Navigate to header Implementing Agents" [level=2] [ref=e438]:
+                - link "Navigate to header" [ref=e439] [cursor=pointer]:
+                  - /url: "#implementing-agents"
+                  - img [ref=e441]
+                - generic [ref=e444] [cursor=pointer]: Implementing Agents
+              - heading "Navigate to header Basic Implementation" [level=3] [ref=e445]:
+                - link "Navigate to header" [ref=e446] [cursor=pointer]:
+                  - /url: "#basic-implementation"
+                  - img [ref=e448]
+                - generic [ref=e451] [cursor=pointer]: Basic Implementation
+              - generic [ref=e452]:
+                - text: To create a custom agent, extend the
+                - code [ref=e453]: AbstractAgent
+                - text: class and implement the required
+                - code [ref=e454]: run
+                - text: "method:"
+              - generic [ref=e455]:
+                - button "Copy the contents from the code block" [ref=e458] [cursor=pointer]:
+                  - img [ref=e459]
+                - code [ref=e465]:
+                  - generic [ref=e466]: "import {"
+                  - generic [ref=e467]: AbstractAgent,
+                  - generic [ref=e468]: RunAgent,
+                  - generic [ref=e469]: RunAgentInput,
+                  - generic [ref=e470]: EventType,
+                  - generic [ref=e471]: BaseEvent,
+                  - generic [ref=e472]: "} from \"@ag-ui/client\""
+                  - generic [ref=e473]: "import { Observable } from \"rxjs\""
+                  - generic [ref=e474]: "class SimpleAgent extends AbstractAgent {"
+                  - generic [ref=e475]: "run(input: RunAgentInput): RunAgent {"
+                  - generic [ref=e476]: "const { threadId, runId } = input"
+                  - generic [ref=e477]: return () =>
+                  - generic [ref=e478]: "new Observable<BaseEvent>((observer) => {"
+                  - generic [ref=e479]: // Emit RUN_STARTED event
+                  - generic [ref=e480]: "observer.next({"
+                  - generic [ref=e481]: "type: EventType.RUN_STARTED,"
+                  - generic [ref=e482]: threadId,
+                  - generic [ref=e483]: runId,
+                  - generic [ref=e484]: "})"
+                  - generic [ref=e485]: // Send a message
+                  - generic [ref=e486]: const messageId = Date.now().toString()
+                  - generic [ref=e487]: // Message start
+                  - generic [ref=e488]: "observer.next({"
+                  - generic [ref=e489]: "type: EventType.TEXT_MESSAGE_START,"
+                  - generic [ref=e490]: messageId,
+                  - generic [ref=e491]: "role: \"assistant\","
+                  - generic [ref=e492]: "})"
+                  - generic [ref=e493]: // Message content
+                  - generic [ref=e494]: "observer.next({"
+                  - generic [ref=e495]: "type: EventType.TEXT_MESSAGE_CONTENT,"
+                  - generic [ref=e496]: messageId,
+                  - generic [ref=e497]: "delta: \"Hello, world!\","
+                  - generic [ref=e498]: "})"
+                  - generic [ref=e499]: // Message end
+                  - generic [ref=e500]: "observer.next({"
+                  - generic [ref=e501]: "type: EventType.TEXT_MESSAGE_END,"
+                  - generic [ref=e502]: messageId,
+                  - generic [ref=e503]: "})"
+                  - generic [ref=e504]: // Emit RUN_FINISHED event
+                  - generic [ref=e505]: "observer.next({"
+                  - generic [ref=e506]: "type: EventType.RUN_FINISHED,"
+                  - generic [ref=e507]: threadId,
+                  - generic [ref=e508]: runId,
+                  - generic [ref=e509]: "})"
+                  - generic [ref=e510]: // Complete the observable
+                  - generic [ref=e511]: observer.complete()
+                  - generic [ref=e512]: "})"
+                  - generic [ref=e513]: "}"
+                  - generic [ref=e514]: "}"
+              - heading "Navigate to header Agent Capabilities" [level=2] [ref=e515]:
+                - link "Navigate to header" [ref=e516] [cursor=pointer]:
+                  - /url: "#agent-capabilities"
+                  - img [ref=e518]
+                - generic [ref=e521] [cursor=pointer]: Agent Capabilities
+              - generic [ref=e522]: "Agents in the AG-UI protocol provide a rich set of capabilities that enable sophisticated AI interactions:"
+              - heading "Navigate to header Interactive Communication" [level=3] [ref=e523]:
+                - link "Navigate to header" [ref=e524] [cursor=pointer]:
+                  - /url: "#interactive-communication"
+                  - img [ref=e526]
+                - generic [ref=e529] [cursor=pointer]: Interactive Communication
+              - generic [ref=e530]: "Agents establish bi-directional communication channels with front-end applications through event streams. This enables:"
+              - list [ref=e531]:
+                - listitem [ref=e532]: Real-time streaming responses character-by-character
+                - listitem [ref=e533]: Immediate feedback loops between user and AI
+                - listitem [ref=e534]: Progress indicators for long-running operations
+                - listitem [ref=e535]: Structured data exchange in both directions
+              - heading "Navigate to header Tool Usage" [level=3] [ref=e536]:
+                - link "Navigate to header" [ref=e537] [cursor=pointer]:
+                  - /url: "#tool-usage"
+                  - img [ref=e539]
+                - generic [ref=e542] [cursor=pointer]: Tool Usage
+              - generic [ref=e543]: "Agents can use tools to perform actions and access external resources. Importantly, tools are defined and passed in from the front-end application to the agent, allowing for a flexible and extensible system:"
+              - generic [ref=e544]:
+                - button "Copy the contents from the code block" [ref=e547] [cursor=pointer]:
+                  - img [ref=e548]
+                - code [ref=e554]:
+                  - generic [ref=e555]: // Tool definition
+                  - generic [ref=e556]: "const confirmAction = {"
+                  - generic [ref=e557]: "name: \"confirmAction\","
+                  - generic [ref=e558]: "description: \"Ask the user to confirm a specific action before proceeding\","
+                  - generic [ref=e559]: "parameters: {"
+                  - generic [ref=e560]: "type: \"object\","
+                  - generic [ref=e561]: "properties: {"
+                  - generic [ref=e562]: "action: {"
+                  - generic [ref=e563]: "type: \"string\","
+                  - generic [ref=e564]: "description: \"The action that needs user confirmation\","
+                  - generic [ref=e565]: "},"
+                  - generic [ref=e566]: "importance: {"
+                  - generic [ref=e567]: "type: \"string\","
+                  - generic [ref=e568]: "enum: [\"low\", \"medium\", \"high\", \"critical\"],"
+                  - generic [ref=e569]: "description: \"The importance level of the action\","
+                  - generic [ref=e570]: "},"
+                  - generic [ref=e571]: "details: {"
+                  - generic [ref=e572]: "type: \"string\","
+                  - generic [ref=e573]: "description: \"Additional details about the action\","
+                  - generic [ref=e574]: "},"
+                  - generic [ref=e575]: "},"
+                  - generic [ref=e576]: "required: [\"action\"],"
+                  - generic [ref=e577]: "},"
+                  - generic [ref=e578]: "}"
+                  - generic [ref=e579]: // Running an agent with tools from the frontend
+                  - generic [ref=e580]: "agent.runAgent({"
+                  - generic [ref=e581]: "tools: [confirmAction], // Frontend-defined tools passed to the agent"
+                  - generic [ref=e582]: // other parameters
+                  - generic [ref=e583]: "})"
+              - generic [ref=e584]: "Tools are invoked through a sequence of events:"
+              - list [ref=e585]:
+                - listitem [ref=e586]:
+                  - code [ref=e587]: TOOL_CALL_START
+                  - text: ": Indicates the beginning of a tool call"
+                - listitem [ref=e588]:
+                  - code [ref=e589]: TOOL_CALL_ARGS
+                  - text: ": Streams the arguments for the tool call"
+                - listitem [ref=e590]:
+                  - code [ref=e591]: TOOL_CALL_END
+                  - text: ": Marks the completion of the tool call"
+              - generic [ref=e592]: "Front-end applications can then execute the tool and provide results back to the agent. This bidirectional flow enables sophisticated human-in-the-loop workflows where:"
+              - list [ref=e593]:
+                - listitem [ref=e594]: The agent can request specific actions be performed
+                - listitem [ref=e595]: Humans can execute those actions with appropriate judgment
+                - listitem [ref=e596]: Results are fed back to the agent for continued reasoning
+                - listitem [ref=e597]: The agent maintains awareness of all decisions made in the process
+              - generic [ref=e598]:
+                - text: This mechanism is particularly powerful for implementing interfaces where AI and humans collaborate. For example,
+                - link "CopilotKit" [ref=e599] [cursor=pointer]:
+                  - /url: https://docs.copilotkit.ai/
+                - text: leverages this exact pattern with their
+                - link "useCopilotAction" [ref=e600] [cursor=pointer]:
+                  - /url: https://docs.copilotkit.ai/guides/frontend-actions
+                  - code [ref=e601]: useCopilotAction
+                - text: hook, which provides a simplified way to define and handle tools in React applications.
+              - generic [ref=e602]: By keeping the AI informed about human decisions through the tool mechanism, applications can maintain context and create more natural collaborative experiences between users and AI assistants.
+              - heading "Navigate to header State Management" [level=3] [ref=e603]:
+                - link "Navigate to header" [ref=e604] [cursor=pointer]:
+                  - /url: "#state-management"
+                  - img [ref=e606]
+                - generic [ref=e609] [cursor=pointer]: State Management
+              - generic [ref=e610]: "Agents maintain a structured state that persists across interactions. This state can be:"
+              - list [ref=e611]:
+                - listitem [ref=e612]:
+                  - text: Updated incrementally through
+                  - code [ref=e613]: STATE_DELTA
+                  - text: events
+                - listitem [ref=e614]:
+                  - text: Completely refreshed with
+                  - code [ref=e615]: STATE_SNAPSHOT
+                  - text: events
+                - listitem [ref=e616]: Accessed by both the agent and front-end
+                - listitem [ref=e617]: Used to store user preferences, conversation context, or application state
+              - generic [ref=e618]:
+                - button "Copy the contents from the code block" [ref=e621] [cursor=pointer]:
+                  - img [ref=e622]
+                - code [ref=e628]:
+                  - generic [ref=e629]: // Accessing agent state
+                  - generic [ref=e630]: console.log(agent.state.preferences)
+                  - generic [ref=e631]: // State is automatically updated during agent runs
+                  - generic [ref=e632]: "agent.runAgent().subscribe((event) => {"
+                  - generic [ref=e633]: "if (event.type === EventType.STATE_DELTA) {"
+                  - generic [ref=e634]: // State has been updated
+                  - generic [ref=e635]: console.log("New state:", agent.state)
+                  - generic [ref=e636]: "}"
+                  - generic [ref=e637]: "})"
+              - heading "Navigate to header Multi-Agent Collaboration" [level=3] [ref=e638]:
+                - link "Navigate to header" [ref=e639] [cursor=pointer]:
+                  - /url: "#multi-agent-collaboration"
+                  - img [ref=e641]
+                - generic [ref=e644] [cursor=pointer]: Multi-Agent Collaboration
+              - generic [ref=e645]: "AG-UI supports agent-to-agent handoff and collaboration:"
+              - list [ref=e646]:
+                - listitem [ref=e647]: Agents can delegate tasks to other specialized agents
+                - listitem [ref=e648]: Multiple agents can work together in a coordinated workflow
+                - listitem [ref=e649]: State and context can be transferred between agents
+                - listitem [ref=e650]: The front-end maintains a consistent experience across agent transitions
+              - generic [ref=e651]: For example, a general assistant agent might hand off to a specialized coding agent when programming help is needed, passing along the conversation context and specific requirements.
+              - heading "Navigate to header Human-in-the-Loop Workflows" [level=3] [ref=e652]:
+                - link "Navigate to header" [ref=e653] [cursor=pointer]:
+                  - /url: "#human-in-the-loop-workflows"
+                  - img [ref=e655]
+                - generic [ref=e658] [cursor=pointer]: Human-in-the-Loop Workflows
+              - generic [ref=e659]: "Agents support human intervention and assistance:"
+              - list [ref=e660]:
+                - listitem [ref=e661]: Agents can request human input on specific decisions
+                - listitem [ref=e662]: Front-ends can pause agent execution and resume it after human feedback
+                - listitem [ref=e663]: Human experts can review and modify agent outputs before they’re finalized
+                - listitem [ref=e664]: Hybrid workflows combine AI efficiency with human judgment
+              - generic [ref=e665]: This enables applications where the agent acts as a collaborative partner rather than an autonomous system.
+              - heading "Navigate to header Conversational Memory" [level=3] [ref=e666]:
+                - link "Navigate to header" [ref=e667] [cursor=pointer]:
+                  - /url: "#conversational-memory"
+                  - img [ref=e669]
+                - generic [ref=e672] [cursor=pointer]: Conversational Memory
+              - generic [ref=e673]: "Agents maintain a complete history of conversation messages:"
+              - list [ref=e674]:
+                - listitem [ref=e675]: Past interactions inform future responses
+                - listitem [ref=e676]: Message history is synchronized between client and server
+                - listitem [ref=e677]: Messages can include rich content (text, structured data, references)
+                - listitem [ref=e678]: The context window can be managed to focus on relevant information
+              - generic [ref=e679]:
+                - button "Copy the contents from the code block" [ref=e682] [cursor=pointer]:
+                  - img [ref=e683]
+                - code [ref=e689]:
+                  - generic [ref=e690]: // Accessing message history
+                  - generic [ref=e691]: console.log(agent.messages)
+                  - generic [ref=e692]: // Adding a new user message
+                  - generic [ref=e693]: "agent.messages.push({"
+                  - generic [ref=e694]: "id: \"msg_123\","
+                  - generic [ref=e695]: "role: \"user\","
+                  - generic [ref=e696]: "content: \"Can you explain that in more detail?\","
+                  - generic [ref=e697]: "})"
+              - heading "Navigate to header Metadata and Instrumentation" [level=3] [ref=e698]:
+                - link "Navigate to header" [ref=e699] [cursor=pointer]:
+                  - /url: "#metadata-and-instrumentation"
+                  - img [ref=e701]
+                - generic [ref=e704] [cursor=pointer]: Metadata and Instrumentation
+              - generic [ref=e705]: "Agents can emit metadata about their internal processes:"
+              - list [ref=e706]:
+                - listitem [ref=e707]: Reasoning steps through custom events
+                - listitem [ref=e708]: Performance metrics and timing information
+                - listitem [ref=e709]: Source citations and reference tracking
+                - listitem [ref=e710]: Confidence scores for different response options
+              - generic [ref=e711]: This allows front-ends to provide transparency into the agent’s decision-making process and help users understand how conclusions were reached.
+              - heading "Navigate to header Using Agents" [level=2] [ref=e712]:
+                - link "Navigate to header" [ref=e713] [cursor=pointer]:
+                  - /url: "#using-agents"
+                  - img [ref=e715]
+                - generic [ref=e718] [cursor=pointer]: Using Agents
+              - generic [ref=e719]: "Once you’ve implemented or instantiated an agent, you can use it like this:"
+              - generic [ref=e720]:
+                - button "Copy the contents from the code block" [ref=e723] [cursor=pointer]:
+                  - img [ref=e724]
+                - code [ref=e730]:
+                  - generic [ref=e731]: // Create an agent instance
+                  - generic [ref=e732]: "const agent = new HttpAgent({"
+                  - generic [ref=e733]: "url: \"https://your-agent-endpoint.com/agent\","
+                  - generic [ref=e734]: "})"
+                  - generic [ref=e735]: // Add initial messages if needed
+                  - generic [ref=e736]: agent.messages = [
+                  - generic [ref=e737]: "{"
+                  - generic [ref=e738]: "id: \"1\","
+                  - generic [ref=e739]: "role: \"user\","
+                  - generic [ref=e740]: "content: \"Hello, how can you help me today?\","
+                  - generic [ref=e741]: "},"
+                  - generic [ref=e742]: "]"
+                  - generic [ref=e743]: // Run the agent
+                  - generic [ref=e744]: agent
+                  - generic [ref=e745]: ".runAgent({"
+                  - generic [ref=e746]: "runId: \"run_123\","
+                  - generic [ref=e747]: "tools: [], // Optional tools"
+                  - generic [ref=e748]: "context: [], // Optional context"
+                  - generic [ref=e749]: "})"
+                  - generic [ref=e750]: ".subscribe({"
+                  - generic [ref=e751]: "next: (event) => {"
+                  - generic [ref=e752]: // Handle different event types
+                  - generic [ref=e753]: "switch (event.type) {"
+                  - generic [ref=e754]: "case EventType.TEXT_MESSAGE_CONTENT:"
+                  - generic [ref=e755]: console.log("Content:", event.delta)
+                  - generic [ref=e756]: break
+                  - generic [ref=e757]: // Handle other events
+                  - generic [ref=e758]: "}"
+                  - generic [ref=e759]: "},"
+                  - generic [ref=e760]: "error: (error) => console.error(\"Error:\", error),"
+                  - generic [ref=e761]: "complete: () => console.log(\"Run complete\"),"
+                  - generic [ref=e762]: "})"
+              - heading "Navigate to header Agent Configuration" [level=2] [ref=e763]:
+                - link "Navigate to header" [ref=e764] [cursor=pointer]:
+                  - /url: "#agent-configuration"
+                  - img [ref=e766]
+                - generic [ref=e769] [cursor=pointer]: Agent Configuration
+              - generic [ref=e770]: "Agents accept configuration through the constructor:"
+              - generic [ref=e771]:
+                - button "Copy the contents from the code block" [ref=e774] [cursor=pointer]:
+                  - img [ref=e775]
+                - code [ref=e781]:
+                  - generic [ref=e782]: "interface AgentConfig {"
+                  - generic [ref=e783]: "agentId?: string // Unique identifier for the agent"
+                  - generic [ref=e784]: "description?: string // Human-readable description"
+                  - generic [ref=e785]: "threadId?: string // Conversation thread identifier"
+                  - generic [ref=e786]: "initialMessages?: Message[] // Initial messages"
+                  - generic [ref=e787]: "initialState?: State // Initial state object"
+                  - generic [ref=e788]: "}"
+                  - generic [ref=e789]: // Using the configuration
+                  - generic [ref=e790]: "const agent = new HttpAgent({"
+                  - generic [ref=e791]: "agentId: \"my-agent-123\","
+                  - generic [ref=e792]: "description: \"A helpful assistant\","
+                  - generic [ref=e793]: "threadId: \"thread-456\","
+                  - generic [ref=e794]: "initialMessages: ["
+                  - generic [ref=e795]: "{ id: \"1\", role: \"system\", content: \"You are a helpful assistant.\" },"
+                  - generic [ref=e796]: "],"
+                  - generic [ref=e797]: "initialState: { preferredLanguage: \"English\" },"
+                  - generic [ref=e798]: "})"
+              - heading "Navigate to header Agent State Management" [level=2] [ref=e799]:
+                - link "Navigate to header" [ref=e800] [cursor=pointer]:
+                  - /url: "#agent-state-management"
+                  - img [ref=e802]
+                - generic [ref=e805] [cursor=pointer]: Agent State Management
+              - generic [ref=e806]: "AG-UI agents maintain state across interactions:"
+              - generic [ref=e807]:
+                - button "Copy the contents from the code block" [ref=e810] [cursor=pointer]:
+                  - img [ref=e811]
+                - code [ref=e817]:
+                  - generic [ref=e818]: // Access current state
+                  - generic [ref=e819]: console.log(agent.state)
+                  - generic [ref=e820]: // Access messages
+                  - generic [ref=e821]: console.log(agent.messages)
+                  - generic [ref=e822]: // Clone an agent with its state
+                  - generic [ref=e823]: const clonedAgent = agent.clone()
+              - heading "Navigate to header Conclusion" [level=2] [ref=e824]:
+                - link "Navigate to header" [ref=e825] [cursor=pointer]:
+                  - /url: "#conclusion"
+                  - img [ref=e827]
+                - generic [ref=e830] [cursor=pointer]: Conclusion
+              - generic [ref=e831]:
+                - text: Agents are the foundation of the AG-UI protocol, providing a standardized way to connect front-end applications with AI services. By implementing the
+                - code [ref=e832]: AbstractAgent
+                - text: class, you can create custom integrations with any AI service while maintaining a consistent interface for your applications.
+              - generic [ref=e833]: The event-driven architecture enables real-time, streaming interactions that are essential for modern AI applications, and the standardized protocol ensures compatibility across different implementations.
+            - generic [ref=e835]:
+              - paragraph [ref=e836]: Was this page helpful?
+              - generic [ref=e838]:
+                - button "Yes" [ref=e839] [cursor=pointer]:
+                  - img [ref=e840]
+                  - generic [ref=e843]: "Yes"
+                - button "No" [ref=e844] [cursor=pointer]:
+                  - img [ref=e845]
+                  - generic [ref=e848]: "No"
+            - generic [ref=e849]:
+              - link "Events Previous" [ref=e850] [cursor=pointer]:
+                - /url: /concepts/events
+                - generic [ref=e851]:
+                  - generic [ref=e852]: Events
+                  - generic [ref=e853]:
+                    - img [ref=e854]
+                    - generic [ref=e856]: Previous
+              - link "Middleware Next" [ref=e857] [cursor=pointer]:
+                - /url: /concepts/middleware
+                - generic [ref=e858]:
+                  - generic [ref=e859]: Middleware
+                  - generic [ref=e860]:
+                    - img [ref=e861]
+                    - generic [ref=e863]: Next
+            - generic [ref=e864]:
+              - link "github" [ref=e866] [cursor=pointer]:
+                - /url: https://github.com/ag-ui-protocol/ag-ui
+                - generic [ref=e867]: github
+                - img [ref=e868]
+              - link "Powered by This documentation is built and hosted on Mintlify, a developer documentation platform" [ref=e871] [cursor=pointer]:
+                - /url: https://www.mintlify.com?utm_campaign=poweredBy&utm_medium=referral&utm_source=tawkitai
+                - generic [ref=e872]: Powered by
+                - img [ref=e873]
+                - generic [ref=e882]: This documentation is built and hosted on Mintlify, a developer documentation platform

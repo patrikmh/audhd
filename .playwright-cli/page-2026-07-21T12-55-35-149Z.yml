@@ -1,0 +1,517 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: https://a2ui.org/concepts/components/#components-structure
+  - banner [ref=e3]:
+    - navigation "Header" [ref=e4]:
+      - link "A2UI" [ref=e5] [cursor=pointer]:
+        - /url: https://a2ui.org/
+        - img "logo" [ref=e6]
+      - generic [ref=e8]:
+        - generic [ref=e10]: A2UI
+        - generic:
+          - generic: Components & Structure
+      - generic [ref=e11]:
+        - radio "Switch to dark mode"
+        - generic "Switch to dark mode" [ref=e12] [cursor=pointer]:
+          - img [ref=e13]
+        - radio "Switch to light mode"
+      - dialog [ref=e15]:
+        - search [ref=e16]:
+          - generic [ref=e17]:
+            - textbox "Search" [ref=e18]
+            - generic:
+              - img
+            - navigation "Search":
+              - button "Clear":
+                - img
+          - generic [ref=e20]: Initializing search
+      - link "a2ui-project/a2ui" [ref=e22] [cursor=pointer]:
+        - /url: https://github.com/a2ui-project/a2ui
+        - img [ref=e24]
+        - generic [ref=e26]: a2ui-project/a2ui
+  - generic [ref=e27]:
+    - main [ref=e28]:
+      - generic [ref=e29]:
+        - navigation "Navigation" [ref=e33]:
+          - generic [ref=e34]: A2UI
+          - list [ref=e35]:
+            - listitem [ref=e36]:
+              - link "Home" [ref=e37] [cursor=pointer]:
+                - /url: https://a2ui.org/
+                - generic [ref=e38]: Home
+            - listitem [ref=e39]:
+              - generic [ref=e41]: Introduction & FAQ
+            - listitem [ref=e43]:
+              - link "Quickstart" [ref=e44] [cursor=pointer]:
+                - /url: https://a2ui.org/quickstart/
+                - generic [ref=e45]: Quickstart
+            - listitem [ref=e46]:
+              - link "A2UI Composer ⭐" [ref=e47] [cursor=pointer]:
+                - /url: https://a2ui.org/composer/
+                - generic [ref=e48]: A2UI Composer ⭐
+            - listitem [ref=e49]:
+              - generic [ref=e51]: Concepts
+              - navigation "Concepts" [ref=e53]:
+                - list [ref=e54]:
+                  - listitem [ref=e55]:
+                    - link "Overview" [ref=e56] [cursor=pointer]:
+                      - /url: https://a2ui.org/concepts/overview/
+                      - generic [ref=e57]: Overview
+                  - listitem [ref=e58]:
+                    - link "Glossary" [ref=e59] [cursor=pointer]:
+                      - /url: https://a2ui.org/concepts/glossary/
+                      - generic [ref=e60]: Glossary
+                  - listitem [ref=e61]:
+                    - link "Data Flow" [ref=e62] [cursor=pointer]:
+                      - /url: https://a2ui.org/concepts/data-flow/
+                      - generic [ref=e63]: Data Flow
+                  - listitem [ref=e64]:
+                    - link "Components & Structure" [ref=e65] [cursor=pointer]:
+                      - /url: https://a2ui.org/concepts/components/
+                      - generic [ref=e66]: Components & Structure
+                  - listitem [ref=e67]:
+                    - link "Data Binding" [ref=e68] [cursor=pointer]:
+                      - /url: https://a2ui.org/concepts/data-binding/
+                      - generic [ref=e69]: Data Binding
+                  - listitem [ref=e70]:
+                    - link "Catalogs" [ref=e71] [cursor=pointer]:
+                      - /url: https://a2ui.org/concepts/catalogs/
+                      - generic [ref=e72]: Catalogs
+                  - listitem [ref=e73]:
+                    - link "Transports" [ref=e74] [cursor=pointer]:
+                      - /url: https://a2ui.org/concepts/transports/
+                      - generic [ref=e75]: Transports
+                  - listitem [ref=e76]:
+                    - link "Actions" [ref=e77] [cursor=pointer]:
+                      - /url: https://a2ui.org/concepts/actions/
+                      - generic [ref=e78]: Actions
+            - listitem [ref=e79]:
+              - generic [ref=e81]: Guides
+            - listitem [ref=e83]:
+              - generic [ref=e85]: Reference
+            - listitem [ref=e87]:
+              - generic [ref=e89]: Specifications
+            - listitem [ref=e91]:
+              - generic [ref=e93]: Ecosystem
+            - listitem [ref=e95]:
+              - link "Roadmap" [ref=e96] [cursor=pointer]:
+                - /url: https://a2ui.org/roadmap/
+                - generic [ref=e97]: Roadmap
+        - navigation "Table of contents" [ref=e101]:
+          - generic [ref=e102]: Table of contents
+          - list [ref=e103]:
+            - listitem [ref=e104]:
+              - link "Why Flat Lists?" [ref=e105] [cursor=pointer]:
+                - /url: https://a2ui.org/concepts/components/#why-flat-lists
+                - generic [ref=e106]: Why Flat Lists?
+            - listitem [ref=e107]:
+              - link "The Adjacency List Model" [ref=e108] [cursor=pointer]:
+                - /url: https://a2ui.org/concepts/components/#the-adjacency-list-model
+                - generic [ref=e109]: The Adjacency List Model
+            - listitem [ref=e110]:
+              - link "Component Basics" [ref=e111] [cursor=pointer]:
+                - /url: https://a2ui.org/concepts/components/#component-basics
+                - generic [ref=e112]: Component Basics
+            - listitem [ref=e113]:
+              - link "The Basic Catalog" [ref=e114] [cursor=pointer]:
+                - /url: https://a2ui.org/concepts/components/#the-basic-catalog
+                - generic [ref=e115]: The Basic Catalog
+            - listitem [ref=e116]:
+              - link "Static vs. Dynamic Children" [ref=e117] [cursor=pointer]:
+                - /url: https://a2ui.org/concepts/components/#static-vs-dynamic-children
+                - generic [ref=e118]: Static vs. Dynamic Children
+            - listitem [ref=e119]:
+              - link "Hydrating with Values" [ref=e120] [cursor=pointer]:
+                - /url: https://a2ui.org/concepts/components/#hydrating-with-values
+                - generic [ref=e121]: Hydrating with Values
+            - listitem [ref=e122]:
+              - link "Composing Surfaces" [ref=e123] [cursor=pointer]:
+                - /url: https://a2ui.org/concepts/components/#composing-surfaces
+                - generic [ref=e124]: Composing Surfaces
+            - listitem [ref=e125]:
+              - link "Incremental Updates" [ref=e126] [cursor=pointer]:
+                - /url: https://a2ui.org/concepts/components/#incremental-updates
+                - generic [ref=e127]: Incremental Updates
+            - listitem [ref=e128]:
+              - link "Defining Your Own Catalog" [ref=e129] [cursor=pointer]:
+                - /url: https://a2ui.org/concepts/components/#defining-your-own-catalog
+                - generic [ref=e130]: Defining Your Own Catalog
+            - listitem [ref=e131]:
+              - link "Best Practices" [ref=e132] [cursor=pointer]:
+                - /url: https://a2ui.org/concepts/components/#best-practices
+                - generic [ref=e133]: Best Practices
+        - generic [ref=e134]:
+          - navigation "Navigation" [ref=e135]:
+            - list [ref=e136]:
+              - listitem [ref=e137]:
+                - link "Home" [ref=e138] [cursor=pointer]:
+                  - /url: https://a2ui.org/
+                  - generic [ref=e139]: Home
+              - listitem [ref=e140]:
+                - link "Concepts" [ref=e141] [cursor=pointer]:
+                  - /url: https://a2ui.org/concepts/overview/
+                  - generic [ref=e142]: Concepts
+          - article [ref=e143]:
+            - link "View source of this page" [ref=e144] [cursor=pointer]:
+              - /url: https://github.com/a2ui-project/a2ui/raw/main/docs/public/concepts/components.md
+              - img [ref=e145]
+            - heading "Components & Structure ¶" [level=1] [ref=e147]:
+              - text: Components & Structure
+              - link "¶" [ref=e148] [cursor=pointer]:
+                - /url: https://a2ui.org/concepts/components/#components-structure
+            - paragraph [ref=e149]:
+              - text: A2UI uses an
+              - strong [ref=e150]: adjacency list model
+              - text: for component hierarchies. Instead of nested JSON trees, components are a flat list with ID references.
+            - heading "Why Flat Lists? ¶" [level=2] [ref=e151]:
+              - text: Why Flat Lists?
+              - link "¶" [ref=e152] [cursor=pointer]:
+                - /url: https://a2ui.org/concepts/components/#why-flat-lists
+            - paragraph [ref=e153]:
+              - strong [ref=e154]: "Traditional nested approach:"
+            - list [ref=e155]:
+              - listitem [ref=e156]: LLM must generate perfect nesting in one pass
+              - listitem [ref=e157]: Hard to update deeply nested components
+              - listitem [ref=e158]: Difficult to stream incrementally
+            - paragraph [ref=e159]:
+              - strong [ref=e160]: "A2UI adjacency list:"
+            - list [ref=e161]:
+              - listitem [ref=e162]: Flat structure, easy for LLMs to generate.
+              - listitem [ref=e163]: Send components incrementally.
+              - listitem [ref=e164]: Update any component by ID.
+              - listitem [ref=e165]: Clear separation of structure and data.
+            - heading "The Adjacency List Model ¶" [level=2] [ref=e166]:
+              - text: The Adjacency List Model
+              - link "¶" [ref=e167] [cursor=pointer]:
+                - /url: https://a2ui.org/concepts/components/#the-adjacency-list-model
+            - generic [ref=e168]:
+              - radio "v0.8" [checked]
+              - radio "v0.9 and later"
+              - generic [ref=e169]:
+                - link "v0.8" [ref=e171] [cursor=pointer]:
+                  - /url: "#v08"
+                - link "v0.9 and later" [ref=e173] [cursor=pointer]:
+                  - /url: "#v09-and-later"
+              - generic [ref=e177]:
+                - navigation [ref=e178]:
+                  - button "Toggle line selection" [ref=e179] [cursor=pointer]
+                  - button "Copy to clipboard" [ref=e180] [cursor=pointer]
+                - code [ref=e181]:
+                  - generic [ref=e182]: "{"
+                  - generic [ref=e183]: "\"surfaceUpdate\": {"
+                  - generic [ref=e184]: "\"components\": ["
+                  - generic [ref=e185]: "{"
+                  - generic [ref=e186]: "\"id\": \"root\","
+                  - generic [ref=e187]: "\"component\": {"
+                  - generic [ref=e188]: "\"Column\": {"
+                  - generic [ref=e189]: "\"children\": { \"explicitList\": [\"greeting\", \"buttons\"] }"
+                  - generic [ref=e190]: "}"
+                  - generic [ref=e191]: "}"
+                  - generic [ref=e192]: "},"
+                  - generic [ref=e193]: "{"
+                  - generic [ref=e194]: "\"id\": \"greeting\","
+                  - generic [ref=e195]: "\"component\": {"
+                  - generic [ref=e196]: "\"Text\": { \"text\": { \"literalString\": \"Hello\" } }"
+                  - generic [ref=e197]: "}"
+                  - generic [ref=e198]: "},"
+                  - generic [ref=e199]: "{"
+                  - generic [ref=e200]: "\"id\": \"buttons\","
+                  - generic [ref=e201]: "\"component\": {"
+                  - generic [ref=e202]: "\"Row\": {"
+                  - generic [ref=e203]: "\"children\": { \"explicitList\": [\"cancel-btn\", \"ok-btn\"] }"
+                  - generic [ref=e204]: "}"
+                  - generic [ref=e205]: "}"
+                  - generic [ref=e206]: "},"
+                  - generic [ref=e207]: "{"
+                  - generic [ref=e208]: "\"id\": \"cancel-btn\","
+                  - generic [ref=e209]: "\"component\": {"
+                  - generic [ref=e210]: "\"Button\": {"
+                  - generic [ref=e211]: "\"child\": \"cancel-text\","
+                  - generic [ref=e212]: "\"action\": { \"name\": \"cancel\" }"
+                  - generic [ref=e213]: "}"
+                  - generic [ref=e214]: "}"
+                  - generic [ref=e215]: "},"
+                  - generic [ref=e216]: "{"
+                  - generic [ref=e217]: "\"id\": \"cancel-text\","
+                  - generic [ref=e218]: "\"component\": {"
+                  - generic [ref=e219]: "\"Text\": { \"text\": { \"literalString\": \"Cancel\" } }"
+                  - generic [ref=e220]: "}"
+                  - generic [ref=e221]: "},"
+                  - generic [ref=e222]: "{"
+                  - generic [ref=e223]: "\"id\": \"ok-btn\","
+                  - generic [ref=e224]: "\"component\": {"
+                  - generic [ref=e225]: "\"Button\": {"
+                  - generic [ref=e226]: "\"child\": \"ok-text\","
+                  - generic [ref=e227]: "\"action\": { \"name\": \"ok\" }"
+                  - generic [ref=e228]: "}"
+                  - generic [ref=e229]: "}"
+                  - generic [ref=e230]: "},"
+                  - generic [ref=e231]: "{"
+                  - generic [ref=e232]: "\"id\": \"ok-text\","
+                  - generic [ref=e233]: "\"component\": {"
+                  - generic [ref=e234]: "\"Text\": { \"text\": { \"literalString\": \"OK\" } }"
+                  - generic [ref=e235]: "}"
+                  - generic [ref=e236]: "}"
+                  - generic [ref=e237]: "]"
+                  - generic [ref=e238]: "}"
+                  - generic [ref=e239]: "}"
+              - button [ref=e240] [cursor=pointer]
+              - button [ref=e241] [cursor=pointer]
+            - paragraph [ref=e242]: Components reference children by ID, not by nesting.
+            - heading "Component Basics ¶" [level=2] [ref=e243]:
+              - text: Component Basics
+              - link "¶" [ref=e244] [cursor=pointer]:
+                - /url: https://a2ui.org/concepts/components/#component-basics
+            - paragraph [ref=e245]: "Every component has:"
+            - list [ref=e246]:
+              - listitem [ref=e247]:
+                - strong [ref=e248]: ID
+                - text: ": Unique identifier ("
+                - code [ref=e249]: "\"welcome\""
+                - text: )
+              - listitem [ref=e250]:
+                - strong [ref=e251]: Type
+                - text: ": Component type ("
+                - code [ref=e252]: Text
+                - text: ","
+                - code [ref=e253]: Button
+                - text: ","
+                - code [ref=e254]: Card
+                - text: )
+              - listitem [ref=e255]:
+                - strong [ref=e256]: Properties
+                - text: ": Configuration specific to that type"
+            - generic [ref=e257]:
+              - radio "v0.8" [checked]
+              - radio "v0.9 and later"
+              - generic [ref=e258]:
+                - link "v0.8" [ref=e260] [cursor=pointer]:
+                  - /url: "#v08_1"
+                - link "v0.9 and later" [ref=e262] [cursor=pointer]:
+                  - /url: "#v09-and-later_1"
+              - generic [ref=e266]:
+                - navigation [ref=e267]:
+                  - button "Toggle line selection" [ref=e268] [cursor=pointer]
+                  - button "Copy to clipboard" [ref=e269] [cursor=pointer]
+                - code [ref=e270]:
+                  - generic [ref=e271]: "{"
+                  - generic [ref=e272]: "\"id\": \"welcome\","
+                  - generic [ref=e273]: "\"component\": {"
+                  - generic [ref=e274]: "\"Text\": {"
+                  - generic [ref=e275]: "\"text\": { \"literalString\": \"Hello\" },"
+                  - generic [ref=e276]: "\"usageHint\": \"h1\""
+                  - generic [ref=e277]: "}"
+                  - generic [ref=e278]: "}"
+                  - generic [ref=e279]: "}"
+              - button [ref=e280] [cursor=pointer]
+              - button [ref=e281] [cursor=pointer]
+            - heading "The Basic Catalog ¶" [level=2] [ref=e282]:
+              - text: The Basic Catalog
+              - link "¶" [ref=e283] [cursor=pointer]:
+                - /url: https://a2ui.org/concepts/components/#the-basic-catalog
+            - paragraph [ref=e284]:
+              - text: To help developers get started quickly, the A2UI team maintains the
+              - link "Basic Catalog" [ref=e285] [cursor=pointer]:
+                - /url: https://a2ui.org/specification/v0_9_1/catalogs/basic/catalog.json
+              - text: .
+            - paragraph [ref=e286]: This is a pre-defined catalog file that contains a basic set of general-purpose components (Buttons, Inputs, Cards). It is not a special "type" of catalog; it is simply a version of a catalog that has open source renderers available.
+            - paragraph [ref=e287]:
+              - text: For the complete component gallery with examples, see
+              - link "Component Reference" [ref=e288] [cursor=pointer]:
+                - /url: https://a2ui.org/reference/components/
+              - text: .
+            - heading "Static vs. Dynamic Children ¶" [level=2] [ref=e289]:
+              - text: Static vs. Dynamic Children
+              - link "¶" [ref=e290] [cursor=pointer]:
+                - /url: https://a2ui.org/concepts/components/#static-vs-dynamic-children
+            - generic [ref=e291]:
+              - radio "v0.8" [checked]
+              - radio "v0.9 and later"
+              - generic [ref=e292]:
+                - link "v0.8" [ref=e294] [cursor=pointer]:
+                  - /url: "#v08_2"
+                - link "v0.9 and later" [ref=e296] [cursor=pointer]:
+                  - /url: "#v09-and-later_2"
+              - generic [ref=e298]:
+                - paragraph [ref=e299]:
+                  - strong [ref=e300]:
+                    - text: Static (
+                    - code [ref=e301]: explicitList
+                    - text: )
+                  - text: "- Fixed list of child IDs:"
+                - generic [ref=e303]:
+                  - navigation [ref=e304]:
+                    - button "Toggle line selection" [ref=e305] [cursor=pointer]
+                    - button "Copy to clipboard" [ref=e306] [cursor=pointer]
+                  - code [ref=e307]:
+                    - generic [ref=e308]: "{"
+                    - generic [ref=e309]: "\"children\": {"
+                    - generic [ref=e310]: "\"explicitList\": [\"back-btn\", \"title\", \"menu-btn\"]"
+                    - generic [ref=e311]: "}"
+                    - generic [ref=e312]: "}"
+                - paragraph [ref=e313]:
+                  - strong [ref=e314]:
+                    - text: Dynamic (
+                    - code [ref=e315]: template
+                    - text: )
+                  - text: "- Generate children from data array:"
+                - generic [ref=e317]:
+                  - navigation [ref=e318]:
+                    - button "Toggle line selection" [ref=e319] [cursor=pointer]
+                    - button "Copy to clipboard" [ref=e320] [cursor=pointer]
+                  - code [ref=e321]:
+                    - generic [ref=e322]: "{"
+                    - generic [ref=e323]: "\"children\": {"
+                    - generic [ref=e324]: "\"template\": {"
+                    - generic [ref=e325]: "\"dataBinding\": \"/items\","
+                    - generic [ref=e326]: "\"componentId\": \"item-template\""
+                    - generic [ref=e327]: "}"
+                    - generic [ref=e328]: "}"
+                    - generic [ref=e329]: "}"
+                - paragraph [ref=e330]:
+                  - text: For each item in
+                  - code [ref=e331]: /items
+                  - text: ", render the"
+                  - code [ref=e332]: item-template
+                  - text: . See
+                  - link "Data Binding" [ref=e333] [cursor=pointer]:
+                    - /url: https://a2ui.org/concepts/data-binding/
+                  - text: for details.
+              - button [ref=e334] [cursor=pointer]
+              - button [ref=e335] [cursor=pointer]
+            - heading "Hydrating with Values ¶" [level=2] [ref=e336]:
+              - text: Hydrating with Values
+              - link "¶" [ref=e337] [cursor=pointer]:
+                - /url: https://a2ui.org/concepts/components/#hydrating-with-values
+            - paragraph [ref=e338]: "Components get their values two ways:"
+            - generic [ref=e339]:
+              - radio "v0.8" [checked]
+              - radio "v0.9 and later"
+              - generic [ref=e340]:
+                - link "v0.8" [ref=e342] [cursor=pointer]:
+                  - /url: "#v08_3"
+                - link "v0.9 and later" [ref=e344] [cursor=pointer]:
+                  - /url: "#v09-and-later_3"
+              - list [ref=e347]:
+                - listitem [ref=e348]:
+                  - strong [ref=e349]: Literal
+                  - text: "- Fixed value:"
+                  - code [ref=e350]: "{\"text\": {\"literalString\": \"Welcome\"}}"
+                - listitem [ref=e351]:
+                  - strong [ref=e352]: Data-bound
+                  - text: "- From data model:"
+                  - code [ref=e353]: "{\"text\": {\"path\": \"/user/name\"}}"
+              - button [ref=e354] [cursor=pointer]
+              - button [ref=e355] [cursor=pointer]
+            - paragraph [ref=e356]: LLMs can generate components with literal values or bind them to data paths for dynamic content.
+            - heading "Composing Surfaces ¶" [level=2] [ref=e357]:
+              - text: Composing Surfaces
+              - link "¶" [ref=e358] [cursor=pointer]:
+                - /url: https://a2ui.org/concepts/components/#composing-surfaces
+            - paragraph [ref=e359]:
+              - text: Components compose into
+              - strong [ref=e360]: surfaces
+              - text: "(widgets):"
+            - generic [ref=e361]:
+              - radio "v0.8" [checked]
+              - radio "v0.9 and later"
+              - generic [ref=e362]:
+                - link "v0.8" [ref=e364] [cursor=pointer]:
+                  - /url: "#v08_4"
+                - link "v0.9 and later" [ref=e366] [cursor=pointer]:
+                  - /url: "#v09-and-later_4"
+              - list [ref=e369]:
+                - listitem [ref=e370]:
+                  - text: LLM generates component definitions via
+                  - code [ref=e371]: surfaceUpdate
+                - listitem [ref=e372]:
+                  - text: LLM populates data via
+                  - code [ref=e373]: dataModelUpdate
+                - listitem [ref=e374]:
+                  - text: LLM signals render via
+                  - code [ref=e375]: beginRendering
+                - listitem [ref=e376]: Client renders all components as native widgets
+              - button [ref=e377] [cursor=pointer]
+              - button [ref=e378] [cursor=pointer]
+            - paragraph [ref=e379]: A surface is a complete, cohesive UI (form, dashboard, chat, etc.).
+            - heading "Incremental Updates ¶" [level=2] [ref=e380]:
+              - text: Incremental Updates
+              - link "¶" [ref=e381] [cursor=pointer]:
+                - /url: https://a2ui.org/concepts/components/#incremental-updates
+            - paragraph [ref=e382]: "Incremental updates support the following operations:"
+            - list [ref=e383]:
+              - listitem [ref=e384]:
+                - strong [ref=e385]: Add
+                - text: "- Send new component definitions with new IDs"
+              - listitem [ref=e386]:
+                - strong [ref=e387]: Update
+                - text: "- Send component definitions with existing ID and new properties"
+              - listitem [ref=e388]:
+                - strong [ref=e389]: Remove
+                - text: "- Update parent's"
+                - code [ref=e390]: children
+                - text: list to exclude removed IDs
+            - paragraph [ref=e391]: The flat structure makes all updates simple ID-based operations.
+            - heading "Defining Your Own Catalog ¶" [level=2] [ref=e392]:
+              - text: Defining Your Own Catalog
+              - link "¶" [ref=e393] [cursor=pointer]:
+                - /url: https://a2ui.org/concepts/components/#defining-your-own-catalog
+            - paragraph [ref=e394]: While the Basic Catalog is useful for starting out, most production applications will define their own catalog to reflect their specific design system.
+            - paragraph [ref=e395]: By defining your own catalog, you restrict the agent to using exactly the components and visual language that exist in your application, rather than generic inputs or buttons.
+            - paragraph [ref=e396]:
+              - text: See
+              - link "Defining Your Own Catalog Guide" [ref=e397] [cursor=pointer]:
+                - /url: https://a2ui.org/guides/defining-your-own-catalog/
+              - text: for implementation details.
+            - heading "Best Practices ¶" [level=2] [ref=e398]:
+              - text: Best Practices
+              - link "¶" [ref=e399] [cursor=pointer]:
+                - /url: https://a2ui.org/concepts/components/#best-practices
+            - list [ref=e400]:
+              - listitem [ref=e401]:
+                - strong [ref=e402]: Descriptive IDs
+                - text: ": Use"
+                - code [ref=e403]: "\"user-profile-card\""
+                - text: not
+                - code [ref=e404]: "\"c1\""
+              - listitem [ref=e405]:
+                - strong [ref=e406]: Shallow hierarchies
+                - text: ": Avoid deep nesting"
+              - listitem [ref=e407]:
+                - strong [ref=e408]: Separate structure from content
+                - text: ": Use data bindings, not literals"
+              - listitem [ref=e409]:
+                - strong [ref=e410]: Reuse with templates
+                - text: ": One template, many instances via dynamic children"
+      - button "Back to top":
+        - img
+        - text: Back to top
+    - contentinfo [ref=e411]:
+      - navigation "Footer" [ref=e412]:
+        - 'link "Previous: Data Flow" [ref=e413] [cursor=pointer]':
+          - /url: https://a2ui.org/concepts/data-flow/
+          - img [ref=e415]
+          - generic [ref=e417]:
+            - text: Previous
+            - generic [ref=e418]: Data Flow
+        - 'link "Next: Data Binding" [ref=e419] [cursor=pointer]':
+          - /url: https://a2ui.org/concepts/data-binding/
+          - generic [ref=e420]:
+            - text: Next
+            - generic [ref=e421]: Data Binding
+          - img [ref=e423]
+      - generic [ref=e427]:
+        - generic [ref=e428]:
+          - text: Copyright Google 2025 |
+          - link "Terms" [ref=e429] [cursor=pointer]:
+            - /url: //policies.google.com/terms
+          - text: "|"
+          - link "Privacy" [ref=e430] [cursor=pointer]:
+            - /url: //policies.google.com/privacy
+          - text: "|"
+          - link "Manage cookies" [ref=e431] [cursor=pointer]:
+            - /url: https://a2ui.org/concepts/components/#__consent
+        - text: Made with
+        - link "Material for MkDocs" [ref=e432] [cursor=pointer]:
+          - /url: https://squidfunk.github.io/mkdocs-material/
+  - progressbar
