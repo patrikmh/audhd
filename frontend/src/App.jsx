@@ -363,6 +363,13 @@ function VarvApp({ username, onLogout }) {
     return state.lastCheckinDate !== todayKey();
   });
 
+  // Update overlay flags when server data arrives (async load)
+  useEffect(() => {
+    if (!loaded) return;
+    if (state.setupDone) setShowSetup(false);
+    if (state.setupDone && state.lastCheckinDate !== todayKey()) setShowCheckin(true);
+  }, [state.setupDone, state.lastCheckinDate, loaded]);
+
   const completeTask = (task) => {
     if (task.done) return;
     setState((s) => ({
