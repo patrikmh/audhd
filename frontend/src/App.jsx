@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, lazy, Suspense } from "react";
 import { useSync } from "./hooks/useSync";
 import { WorkingMemoryDisplay } from "./components/WorkingMemoryDisplay";
 import { SystemStatus } from "./components/SystemStatus";
@@ -14,6 +14,9 @@ import { getAuth, setAuth, clearAuth, login } from "./utils/auth";
 import { INTEGRATIONS } from "./constants/integrations";
 import { useModalDialog } from "./hooks/useModalDialog";
 import { useTheme } from "./hooks/useTheme";
+// Cytoscape.js is ~230kb gzipped — split it into its own chunk so opening the
+// app (or the Ideas list view) never pays for it; only "karta" mode does.
+const IdeaGraph = lazy(() => import("./components/IdeaGraph").then((m) => ({ default: m.IdeaGraph })));
 
 /* ============================================================
    VARV — an AuDHD day companion
@@ -1208,14 +1211,6 @@ function VarvApp({ username, onLogout }) {
           </section>
         )}
 
-        {/* ============ dagsöversikt ============ */}
-        <section style={{ ...s.section, display: "flex", gap: 14, flexWrap: "wrap", fontSize: 13, color: T.soft }}>
-          <span><b style={{ color: T.ink }}>{doneForSelectedDate.length}</b> klara idag</span>
-          <span><b style={{ color: T.ink }}>{visibleTasks.length}</b> kvar</span>
-          <span><b style={{ color: T.ink }}>{spent}⚡</b> förbrukat · <b style={{ color: T.ink }}>{recharged}⚡</b> återladdat</span>
-          <span><b style={{ color: T.ink }}>{winsToday.length}</b> vinster</span>
-        </section>
-
         {/* ============ tasks ============ */}
         <section style={s.section}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
@@ -1225,14 +1220,16 @@ function VarvApp({ username, onLogout }) {
             </button>
           </div>
 
-          {/* Day selector — strip covers a 6-day window; arrows shift by week */}
-          <div style={{ display: "flex", gap: 6, marginBottom: 8, alignItems: "center" }}>
+          {/* Day selector — strip covers a 6-day window; arrows shift by week. Bigger
+              and bolder than a typical filter chip since this is the primary "which
+              day am I looking at" control, not incidental chrome. */}
+          <div style={{ display: "flex", gap: 8, marginBottom: 4, alignItems: "center" }}>
             <button
               onClick={() => setWeekOffset((w) => w - 1)}
-              style={{ ...s.linkBtn, minWidth: 44, minHeight: 44, fontSize: 14 }}
+              style={{ ...s.linkBtn, minWidth: 44, minHeight: 60, fontSize: 20 }}
               aria-label="Föregående vecka"
             >‹</button>
-            <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4, flex: 1 }}>
+            <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4, flex: 1 }}>
               {[-2, -1, 0, 1, 2, 3].map((offset) => {
                 const d = new Date(Date.now() + (offset + weekOffset * 7) * 86400000);
                 const dateStr = todayKey(d);
@@ -1247,32 +1244,40 @@ function VarvApp({ username, onLogout }) {
                     aria-current={isSelected ? "date" : undefined}
                     aria-label={`${dayName} ${dayNum}${isTodayDate ? " (idag)" : ""}`}
                     style={{
-                      padding: '6px 10px',
-                      minWidth: 44,
-                      minHeight: 44,
+                      padding: '8px 6px',
+                      minWidth: 54,
+                      minHeight: 60,
                       boxSizing: 'border-box',
-                      borderRadius: 8,
-                      border: `1px solid ${isSelected ? T.petrol : '#E8E7E2'}`,
+                      borderRadius: 10,
+                      border: isSelected ? `2px solid ${T.petrol}` : isTodayDate ? `1.5px solid ${T.petrol}` : `1px solid ${T.line}`,
                       background: isSelected ? T.petrol : 'transparent',
                       color: isSelected ? 'white' : T.ink,
-                      fontSize: 12,
-                      fontFamily: "'IBM Plex Mono', monospace",
                       cursor: 'pointer',
                       flexShrink: 0,
-                      fontWeight: isTodayDate ? 600 : 400,
+                      fontFamily: "inherit",
+                      textAlign: 'center',
                     }}
                   >
-                    <div>{dayName}</div>
-                    <div style={{ fontSize: 14, fontWeight: 600 }}>{dayNum}</div>
+                    <div style={{ fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.03em', opacity: isSelected ? 0.9 : 0.7 }}>{dayName}</div>
+                    <div style={{ fontSize: 22, fontWeight: 700, fontFamily: "'Fraunces', serif", marginTop: 2 }}>{dayNum}</div>
                   </button>
                 );
               })}
             </div>
             <button
               onClick={() => setWeekOffset((w) => w + 1)}
-              style={{ ...s.linkBtn, minWidth: 44, minHeight: 44, fontSize: 14 }}
+              style={{ ...s.linkBtn, minWidth: 44, minHeight: 60, fontSize: 20 }}
               aria-label="Nästa vecka"
             >›</button>
+          </div>
+
+          {/* Stats for the day shown above — grouped right under the day-nav instead
+              of floating elsewhere, since they describe that same day (proximity). */}
+          <div style={{ display: "flex", gap: 14, flexWrap: "wrap", fontSize: 13, color: T.soft, marginBottom: 10 }}>
+            <span><b style={{ color: T.ink }}>{doneForSelectedDate.length}</b> klara</span>
+            <span><b style={{ color: T.ink }}>{visibleTasks.length}</b> kvar</span>
+            <span><b style={{ color: T.ink }}>{spent}⚡</b> förbrukat · <b style={{ color: T.ink }}>{recharged}⚡</b> återladdat</span>
+            <span><b style={{ color: T.ink }}>{winsToday.length}</b> vinster</span>
           </div>
 
           {/* Jump to any date + back to today */}
@@ -1429,7 +1434,9 @@ function VarvApp({ username, onLogout }) {
               </p>
             )}
             {ideaMode === "map" && state.ideas.length > 0 && (
-              <IdeaMap ideas={state.ideas} onSelect={(id) => setState((st) => ({ ...st, _selIdea: id }))} selectedId={state._selIdea} />
+              <Suspense fallback={<p style={s.body}>Laddar grafen…</p>}>
+                <IdeaGraph ideas={state.ideas} onSelect={(id) => setState((st) => ({ ...st, _selIdea: id }))} selectedId={state._selIdea} />
+              </Suspense>
             )}
             {ideaMode === "map" && state._selIdea && state.ideas.find((i) => i.id === state._selIdea) && (
               <IdeaCard
@@ -3291,83 +3298,6 @@ function IdeaCard({ idea, onRefine, onToTask, onRemove, onUpdate, onContextMenu 
   );
 }
 
-/* ============================================================ */
-/* Idékarta — radiell mindmap grupperad på primär tagg           */
-/* ============================================================ */
-function IdeaMap({ ideas, onSelect, selectedId }) {
-  const s = styles;
-  const groups = useMemo(() => {
-    const g = {};
-    ideas.forEach((i) => {
-      const key = (i.tags && i.tags[0]) || "osorterat";
-      (g[key] = g[key] || []).push(i);
-    });
-    return Object.entries(g).sort((a, b) => b[1].length - a[1].length).slice(0, 6);
-  }, [ideas]);
-
-  const W = 340, C = W / 2;
-  const cut = (t) => (t.length > 16 ? t.slice(0, 15) + "…" : t);
-
-  return (
-    <div style={{ ...s.card, padding: "8px 4px" }}>
-      <svg width="100%" viewBox={`0 0 ${W} ${W}`} style={{ display: "block" }}>
-        {groups.map(([tag, items], gi) => {
-          const a = (gi / groups.length) * 2 * Math.PI - Math.PI / 2;
-          const bx = C + Math.cos(a) * 72;
-          const by = C + Math.sin(a) * 72;
-          const leaves = items.slice(0, 4);
-          return (
-            <g key={tag}>
-              <line x1={C} y1={C} x2={bx} y2={by} stroke={T.track} strokeWidth="1.5" />
-              {leaves.map((idea, li) => {
-                const la = a + (li - (leaves.length - 1) / 2) * 0.34;
-                const lx = C + Math.cos(la) * 134;
-                const ly = C + Math.sin(la) * 134;
-                const right = Math.cos(la) >= 0;
-                const sel = idea.id === selectedId;
-                return (
-                  <g
-                    key={idea.id}
-                    onClick={() => onSelect(idea.id)}
-                    onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSelect(idea.id); } }}
-                    role="button"
-                    tabIndex={0}
-                    aria-label={idea.title || idea.raw}
-                    aria-pressed={sel}
-                    style={{ cursor: "pointer" }}
-                  >
-                    <line x1={bx} y1={by} x2={lx} y2={ly} stroke={T.track} strokeWidth="1" />
-                    <circle cx={lx} cy={ly} r={sel ? 6 : 4.5} fill={sel ? T.petrol : T.moss} />
-                    <text
-                      x={lx + (right ? 9 : -9)} y={ly + 3.5}
-                      textAnchor={right ? "start" : "end"}
-                      style={{ font: `${sel ? 700 : 400} 10.5px 'Atkinson Hyperlegible', sans-serif`, fill: sel ? T.petrolDark : T.ink }}
-                    >
-                      {cut(idea.title || idea.raw)}
-                    </text>
-                  </g>
-                );
-              })}
-              <circle cx={bx} cy={by} r="5.5" fill={T.petrol} />
-              <text x={bx} y={by - 10} textAnchor="middle"
-                style={{ font: "500 10px 'IBM Plex Mono', monospace", fill: T.spruce, letterSpacing: "0.06em" }}>
-                #{tag} · {items.length}
-              </text>
-            </g>
-          );
-        })}
-        <circle cx={C} cy={C} r="24" fill={T.card} stroke={T.petrol} strokeWidth="1.5" />
-        <text x={C} y={C + 5} textAnchor="middle" style={{ font: "500 13px 'Fraunces', serif", fill: T.ink }}>
-          Idéer
-        </text>
-      </svg>
-      <div style={{ fontSize: 11, color: T.soft, textAlign: "center", paddingBottom: 4 }}>
-        grenar = vanligaste taggar · tryck på en nod för att öppna idén
-        {groups.length === 6 ? " · visar de 6 största grenarna" : ""}
-      </div>
-    </div>
-  );
-}
 
 /* ============================================================ */
 function ToolBtn({ label, sub, onClick, active }) {

@@ -31,6 +31,13 @@ export function WorkingMemoryDisplay({ state, settings, onWinddownClick }) {
   // Current focus — only a lap that's actually running, never a guessed-at task.
   const activeFocus = state.activeFocus;
 
+  const now = new Date();
+  const dayNum = new Intl.DateTimeFormat('sv-SE', { day: 'numeric', timeZone: 'Europe/Stockholm' }).format(now);
+  const monthShort = new Intl.DateTimeFormat('sv-SE', { month: 'short', timeZone: 'Europe/Stockholm' }).format(now).replace('.', '');
+  const weekdayFull = {
+    mon: 'måndag', tue: 'tisdag', wed: 'onsdag', thu: 'torsdag', fri: 'fredag', sat: 'lördag', sun: 'söndag',
+  }[todayWeekday()];
+
   return (
     <div style={{
       background: T.card,
@@ -40,30 +47,49 @@ export function WorkingMemoryDisplay({ state, settings, onWinddownClick }) {
       border: `1px solid ${T.line}`,
       boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
     }}>
-      {/* Header with greeting */}
-      <div style={{ marginBottom: '12px' }}>
-        <h2 style={{
-          fontFamily: 'Fraunces',
-          fontSize: '1.5rem',
-          fontWeight: '300',
-          margin: '0 0 4px 0',
-          color: T.ink
+      {/* Header: a tear-off-calendar date tile is the first thing the eye lands on
+          (figure-ground via strong color contrast), placed right next to the
+          greeting so "what day is it" and "hello" read as one unit (proximity). */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: '14px' }}>
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minWidth: 60,
+          padding: '6px 8px',
+          borderRadius: 12,
+          background: T.petrol,
+          color: 'white',
+          lineHeight: 1,
+          flexShrink: 0,
         }}>
-          Hej{settings.displayName ? ` ${settings.displayName}` : ''}! Idag är {todayWeekday() === 'mon' ? 'måndag' :
-                      todayWeekday() === 'tue' ? 'tisdag' :
-                      todayWeekday() === 'wed' ? 'onsdag' :
-                      todayWeekday() === 'thu' ? 'torsdag' :
-                      todayWeekday() === 'fri' ? 'fredag' :
-                      todayWeekday() === 'sat' ? 'lördag' : 'söndag'}
-        </h2>
-        <p style={{
-          fontFamily: 'Atkinson Hyperlegible',
-          fontSize: '0.9rem',
-          color: T.soft,
-          margin: 0
-        }}>
-          {currentMode.label} · {currentMode.blurb}
-        </p>
+          <span style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.06em', opacity: 0.85, fontFamily: 'Atkinson Hyperlegible' }}>
+            {monthShort}
+          </span>
+          <span style={{ fontFamily: "'Fraunces', serif", fontSize: '2rem', fontWeight: 600, marginTop: 2 }}>
+            {dayNum}
+          </span>
+        </div>
+        <div>
+          <h2 style={{
+            fontFamily: 'Fraunces',
+            fontSize: '1.5rem',
+            fontWeight: '300',
+            margin: '0 0 4px 0',
+            color: T.ink,
+          }}>
+            Hej{settings.displayName ? ` ${settings.displayName}` : ''}! Idag är {weekdayFull}
+          </h2>
+          <p style={{
+            fontFamily: 'Atkinson Hyperlegible',
+            fontSize: '0.9rem',
+            color: T.soft,
+            margin: 0
+          }}>
+            {currentMode.label} · {currentMode.blurb}
+          </p>
+        </div>
       </div>
 
       {/* Main grid */}
