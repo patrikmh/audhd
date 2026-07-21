@@ -6,7 +6,7 @@ Run on Pi: python3 add_user_setup_fields.py
 import sqlite3
 import os
 
-DB_PATH = os.path.expanduser("~/varv/varv.db")
+DB_PATH = os.path.expanduser("~/varv-server/varv.db")
 
 def migrate():
     conn = sqlite3.connect(DB_PATH)
