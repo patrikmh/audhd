@@ -191,6 +191,15 @@ function VarvApp({ username, onLogout }) {
         const raw = localStorage.getItem(storageKey);
         if (raw) {
           const s = JSON.parse(raw);
+          // Alltid: rensa korrupta uppgifter + migrera saknade day-fält
+          const today = todayWeekday();
+          s.tasks = (s.tasks || [])
+            .filter((t) => t.title && t.id) // drop corrupted tasks (stale-closure bug created titleless entries)
+            .map((t) =>
+              (!t.day && !t.scheduled_date && !(t.repeatDays || []).length)
+                ? { ...t, day: (t.createdAt || new Date().toISOString()).slice(0, 10) }
+                : t
+            );
           if (s.day !== todayKey()) {
             s.day = todayKey();
             const cutoff = new Date(Date.now() - 14 * 86400000).toISOString().slice(0, 10);
@@ -201,15 +210,8 @@ function VarvApp({ username, onLogout }) {
             // Återkommande uppgifter (repeatDays) tas aldrig bort — de återställs till
             // ogjorda när deras nästa schemalagda veckodag kommer, istället för att bara
             // rensas bort som en engångsuppgift.
-            const today = todayWeekday();
-            s.tasks = (s.tasks || [])
-              .map((t) => {
-                // Migration: tasks without day/scheduled_date get their creation day
-                const withDay = (!t.day && !t.scheduled_date && !(t.repeatDays || []).length)
-                  ? { ...t, day: (t.createdAt || new Date().toISOString()).slice(0, 10) }
-                  : t;
-                return (withDay.repeatDays || []).includes(today) ? { ...withDay, done: false } : withDay;
-              })
+            s.tasks = s.tasks
+              .map((t) => ((t.repeatDays || []).includes(today) ? { ...t, done: false } : t))
               .filter((t) => (t.repeatDays || []).length > 0 || !t.done);
           }
           s.settings = { ...DEFAULT_STATE.settings, ...(s.settings || {}) };
@@ -444,14 +446,15 @@ function VarvApp({ username, onLogout }) {
   };
 
   const updateTask = (id, p) => {
-    const task = state.tasks.find(t => t.id === id);
+    const task = stateRef.current.tasks.find(t => t.id === id);
+    if (!task) return;
     const updatedTask = { ...task, ...p, updatedAt: new Date().toISOString() };
     setState((s) => ({ ...s, tasks: s.tasks.map((t) => (t.id === id ? updatedTask : t)) }));
     sync.trackChange('task', id, 'upsert', updatedTask);
   };
 
   const removeTask = (id) => {
-    const task = state.tasks.find(t => t.id === id);
+    const task = stateRef.current.tasks.find(t => t.id === id);
     if (!task) return;
     const deletedTask = { ...task, deletedAt: new Date().toISOString() };
     setState((s) => ({ ...s, tasks: s.tasks.filter((t) => t.id !== id) }));
@@ -594,7 +597,8 @@ function VarvApp({ username, onLogout }) {
 
   /* ---------- idéer: spara direkt, förfina i bakgrunden ---------- */
   const refineIdea = async (id, raw) => {
-    const updatingIdea = state.ideas.find(i => i.id === id);
+    const updatingIdea = stateRef.current.ideas.find(i => i.id === id);
+    if (!updatingIdea) return;
     const refiningIdea = { ...updatingIdea, status: "refining", attempts: (updatingIdea.attempts || 0) + 1, updatedAt: new Date().toISOString() };
 
     setState((st) => ({ ...st, ideas: st.ideas.map((i) => (i.id === id ? refiningIdea : i)) }));
@@ -638,7 +642,7 @@ function VarvApp({ username, onLogout }) {
   };
 
   const removeIdea = (id) => {
-    const idea = state.ideas.find(i => i.id === id);
+    const idea = stateRef.current.ideas.find(i => i.id === id);
     if (!idea) return;
     const deletedIdea = { ...idea, deletedAt: new Date().toISOString() };
     setState((st) => ({ ...st, ideas: st.ideas.filter((i) => i.id !== id) }));
@@ -646,7 +650,7 @@ function VarvApp({ username, onLogout }) {
   };
 
   const updateIdea = (id, updates) => {
-    const idea = state.ideas.find(i => i.id === id);
+    const idea = stateRef.current.ideas.find(i => i.id === id);
     if (!idea) return;
     const updatedIdea = { ...idea, ...updates, updatedAt: new Date().toISOString() };
     setState((st) => ({ ...st, ideas: st.ideas.map((i) => (i.id === id ? updatedIdea : i)) }));
