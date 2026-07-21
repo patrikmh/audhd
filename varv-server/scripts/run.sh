@@ -31,8 +31,14 @@ fi
 # shellcheck disable=SC1091
 source .venv/bin/activate
 
-echo "==> Installerar beroenden (fastapi/pydantic-ai/alembic + transcribe/topics/dev)"
-pip install -q -e ".[transcribe,topics,dev]"
+echo "==> Installerar beroenden (fastapi/pydantic-ai/alembic + dev)"
+# transcribe/topics (faster-whisper, bertopic, sentence-transformers, torch) är
+# avsiktligt exkluderade som default: de saknar ofta färdigbyggda hjul för Pi:ns
+# ARM + en ny Python-version, vilket får pip att bygga från källa (mycket
+# långsamt eller omöjligt). Lägg till dem manuellt om du behöver
+# röstinspelning/BERTopic och vet att din Pi klarar bygget:
+#   pip install -e ".[transcribe,topics]"
+pip install -q -e ".[dev]"
 
 if [ ! -f .env ]; then
   echo "==> Ingen .env hittades — kopierar .env.example till .env"
