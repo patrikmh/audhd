@@ -99,6 +99,7 @@ class Task(SQLModel, table=True):
     deleted_at: datetime | None = None        # mjuk radering — se synkkommentar överst
     day: str = Field(default_factory=today, index=True)
     scheduled_date: str | None = None         # YYYY-MM-DD för framtida uppgifter
+    due_by: str | None = None                 # YYYY-MM-DD — "floater": inget fast datum, men klar senast detta
     note: str | None = None                   # fritextanteckning
     image: str | None = None                  # base64-data-uri för miniatyr
     tags: list[str] = Field(default_factory=list, sa_column=Column(JSON, nullable=False))

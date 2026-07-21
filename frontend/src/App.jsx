@@ -281,9 +281,16 @@ function VarvApp({ username, onLogout }) {
     const selectedWeekday = todayWeekday(new Date(selectedDate + "T12:00:00"));
     let open = state.tasks.filter((t) => {
       const hasRepeat = (t.repeatDays || []).length > 0;
+      // Floater: inget fast datum, bara en deadline (dueBy) — syns varje dag från
+      // idag och framåt tills den bockas av, inklusive efter deadline (försenad
+      // räknas som mer akut, inte som "försvinn tyst").
+      const isFloater = !hasRepeat && !t.scheduled_date && t.dueBy;
       if (hasRepeat) {
         if (!t.repeatDays.includes(selectedWeekday)) return false;
         if (t.occurrences?.[selectedDate]?.done) return false; // klar för just den här dagen
+      } else if (isFloater) {
+        if (t.done) return false;
+        if (selectedDate < todayKey()) return false;
       } else {
         if (t.done) return false;
         const taskDay = t.scheduled_date || t.day;
@@ -2226,6 +2233,8 @@ function AddTask({ onAdd, defaultDate }) {
   const [pickIcon, setPickIcon] = useState(false);
   const [repeatDays, setRepeatDays] = useState([]);
   const [scheduledDate, setScheduledDate] = useState(defaultDate || todayKey());
+  const [isFloater, setIsFloater] = useState(false);
+  const [dueBy, setDueBy] = useState("");
   const s = styles;
   const shownIcon = icon || guessIcon(title || " ");
   const toggleDay = (key) =>
@@ -2283,50 +2292,76 @@ function AddTask({ onAdd, defaultDate }) {
         </label>
       </div>
       <div style={{ marginTop: 8 }}>
-        <span style={s.smallLabel}>schema</span>
-        <input
-          type="date"
-          style={s.select}
-          value={scheduledDate}
-          onChange={(e) => setScheduledDate(e.target.value)}
-          min={todayKey()}
-        />
-        {scheduledDate !== todayKey() && (
-          <div style={{ fontSize: 12, color: T.soft, marginTop: 4 }}>
-            schemalagt för {new Date(scheduledDate + 'T12:00:00').toLocaleDateString('sv-SE', { weekday: 'long', month: 'long', day: 'numeric' })}
-          </div>
-        )}
+        <label style={{ ...s.smallLabel, flexDirection: "row", alignItems: "center", gap: 6 }}>
+          <input type="checkbox" checked={isFloater} onChange={(e) => setIsFloater(e.target.checked)} />
+          flytande — inget fast datum, bara klar senast ett visst datum
+        </label>
       </div>
-      <div style={{ marginTop: 8 }}>
-        <span style={s.smallLabel}>upprepas</span>
-        <div style={{ display: "flex", gap: 4, marginTop: 4, flexWrap: "wrap" }}>
-          {WEEKDAYS.map((d) => (
-            <button
-              key={d.key}
-              type="button"
-              onClick={() => toggleDay(d.key)}
-              style={{
-                fontSize: 12, padding: "5px 9px", borderRadius: 8, cursor: "pointer",
-                border: `1.5px solid ${T.spruce}`,
-                background: repeatDays.includes(d.key) ? T.spruce : "transparent",
-                color: repeatDays.includes(d.key) ? T.card : T.spruce,
-              }}
-            >
-              {d.label}
-            </button>
-          ))}
+      {isFloater ? (
+        <div style={{ marginTop: 8 }}>
+          <span style={s.smallLabel}>klar senast</span>
+          <input
+            type="date"
+            style={s.select}
+            value={dueBy}
+            onChange={(e) => setDueBy(e.target.value)}
+            min={todayKey()}
+          />
+          <div style={{ fontSize: 12, color: T.soft, marginTop: 4 }}>
+            Syns varje dag från idag tills den bockas av — försvinner aldrig av sig själv, blir bara mer brådskande.
+          </div>
         </div>
-        {repeatDays.length > 0 && (
-          <div style={{ fontSize: 12, color: T.soft, marginTop: 4 }}>
-            Återkommer varje {repeatDays.map((k) => WEEKDAYS.find((d) => d.key === k).label).join(", ")} — dyker upp igen nästa gång den dagen kommer, även efter att den bockats av.
+      ) : (
+        <>
+          <div style={{ marginTop: 8 }}>
+            <span style={s.smallLabel}>schema</span>
+            <input
+              type="date"
+              style={s.select}
+              value={scheduledDate}
+              onChange={(e) => setScheduledDate(e.target.value)}
+              min={todayKey()}
+            />
+            {scheduledDate !== todayKey() && (
+              <div style={{ fontSize: 12, color: T.soft, marginTop: 4 }}>
+                schemalagt för {new Date(scheduledDate + 'T12:00:00').toLocaleDateString('sv-SE', { weekday: 'long', month: 'long', day: 'numeric' })}
+              </div>
+            )}
           </div>
-        )}
-      </div>
+          <div style={{ marginTop: 8 }}>
+            <span style={s.smallLabel}>upprepas</span>
+            <div style={{ display: "flex", gap: 4, marginTop: 4, flexWrap: "wrap" }}>
+              {WEEKDAYS.map((d) => (
+                <button
+                  key={d.key}
+                  type="button"
+                  onClick={() => toggleDay(d.key)}
+                  style={{
+                    fontSize: 12, padding: "5px 9px", borderRadius: 8, cursor: "pointer",
+                    border: `1.5px solid ${T.spruce}`,
+                    background: repeatDays.includes(d.key) ? T.spruce : "transparent",
+                    color: repeatDays.includes(d.key) ? T.card : T.spruce,
+                  }}
+                >
+                  {d.label}
+                </button>
+              ))}
+            </div>
+            {repeatDays.length > 0 && (
+              <div style={{ fontSize: 12, color: T.soft, marginTop: 4 }}>
+                Återkommer varje {repeatDays.map((k) => WEEKDAYS.find((d) => d.key === k).label).join(", ")} — dyker upp igen nästa gång den dagen kommer, även efter att den bockats av.
+              </div>
+            )}
+          </div>
+        </>
+      )}
       <button
-        style={{ ...s.primaryBtn, marginTop: 12, opacity: title.trim() ? 1 : 0.5 }}
-        disabled={!title.trim()}
+        style={{ ...s.primaryBtn, marginTop: 12, opacity: title.trim() && (!isFloater || dueBy) ? 1 : 0.5 }}
+        disabled={!title.trim() || (isFloater && !dueBy)}
         onClick={() =>
-          onAdd({ title: title.trim(), icon: shownIcon, trigger: trigger.trim(), energy, time, essential, priority: null, inbox: false, repeatDays, scheduled_date: scheduledDate !== todayKey() ? scheduledDate : null })
+          onAdd(isFloater
+            ? { title: title.trim(), icon: shownIcon, trigger: trigger.trim(), energy, time, essential, priority: null, inbox: false, repeatDays: [], scheduled_date: null, dueBy }
+            : { title: title.trim(), icon: shownIcon, trigger: trigger.trim(), energy, time, essential, priority: null, inbox: false, repeatDays, scheduled_date: scheduledDate !== todayKey() ? scheduledDate : null })
         }
       >
         Lägg till uppgift
@@ -2431,9 +2466,21 @@ function TaskCard({ task, onDone, onUpdate, onRemove, onWin, agentBusy }) {
               )}
               {task.scheduled_date && task.scheduled_date !== todayKey() && (
                 <span style={{ color: T.petrol, fontWeight: 500 }}>
-                  {new Date(task.scheduled_date + 'T12:00:00').toLocaleDateString('sv-SE', { weekday: 'short', month: 'short', day: 'numeric' })} · 
+                  {new Date(task.scheduled_date + 'T12:00:00').toLocaleDateString('sv-SE', { weekday: 'short', month: 'short', day: 'numeric' })} ·
                 </span>
               )}
+              {task.dueBy && (() => {
+                const daysLeft = Math.round((new Date(task.dueBy + 'T12:00:00') - new Date(todayKey() + 'T12:00:00')) / 86400000);
+                const urgent = daysLeft <= 3;
+                const label = daysLeft < 0 ? `försenad ${-daysLeft}d`
+                  : daysLeft === 0 ? "klar idag"
+                  : `klar senast ${new Date(task.dueBy + 'T12:00:00').toLocaleDateString('sv-SE', { weekday: 'short', day: 'numeric' })}`;
+                return (
+                  <span style={{ color: urgent ? T.warn : T.spruce, fontWeight: 500 }}>
+                    ⏳ {label} ·
+                  </span>
+                );
+              })()}
               {task.time ? `${task.time} · ` : ""}{task.energy}⚡{stepsLeft > 0 ? ` · ${stepsLeft} steg kvar` : ""}{expanded ? "" : " · tryck för mer"}
             </span>
           </span>

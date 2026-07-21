@@ -74,6 +74,20 @@ test("incremental step pulls preserve all existing task fields", () => {
 });
 
 
+test("a floater task's dueBy round-trips through the wire contract", () => {
+  const localTask = { id: "task-1", title: "Boka tandläkare", dueBy: "2026-08-01", scheduled_date: null };
+  const changes = toWireChanges("task", localTask.id, "upsert", localTask);
+  const taskChange = changes.find((c) => c.kind === "task");
+  assert.equal(taskChange.data.due_by, "2026-08-01");
+  assert.equal(taskChange.data.scheduled_date, null);
+
+  const merged = mergeServerChanges({ tasks: [], ideas: [], lists: [], wins: [], energyLog: [] }, {
+    task: [{ id: "task-1", title: "Boka tandläkare", due_by: "2026-08-01", updated_at: "2026-07-21T00:00:00Z" }],
+  });
+  assert.equal(merged.tasks[0].dueBy, "2026-08-01");
+});
+
+
 test("completing a recurring task's occurrence sends a task_occurrence change, not a task update", () => {
   const localTask = {
     id: "task-1",

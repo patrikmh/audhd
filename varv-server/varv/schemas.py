@@ -65,6 +65,7 @@ class TaskPatch(BaseModel):
     essential: bool | None = None
     done: bool | None = None
     scheduled_date: str | None = Field(default=None, pattern=r"^\d{4}-\d{2}-\d{2}$", description="YYYY-MM-DD for future tasks")
+    due_by: str | None = Field(default=None, pattern=r"^\d{4}-\d{2}-\d{2}$", description="YYYY-MM-DD floater deadline")
     note: str | None = None
     image: str | None = None
 
@@ -145,6 +146,7 @@ class SyncTaskData(StrictSyncData):
     done_at: datetime | None = None
     day: str | None = Field(default=None, pattern=r"^\d{4}-\d{2}-\d{2}$")
     scheduled_date: str | None = Field(default=None, pattern=r"^\d{4}-\d{2}-\d{2}$")
+    due_by: str | None = Field(default=None, pattern=r"^\d{4}-\d{2}-\d{2}$")
     note: str | None = Field(default=None, max_length=5000)
     image: str | None = Field(default=None, max_length=4_000_000)
     tags: list[str] | None = Field(default=None, max_length=4)

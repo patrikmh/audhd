@@ -146,6 +146,7 @@ def upgrade() -> None:
     sa.Column('deleted_at', sa.DateTime(), nullable=True),
     sa.Column('day', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('scheduled_date', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+    sa.Column('due_by', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
     sa.Column('note', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
     sa.Column('image', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
     sa.Column('tags', sa.JSON(), nullable=False),
