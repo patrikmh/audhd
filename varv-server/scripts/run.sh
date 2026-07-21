@@ -6,9 +6,26 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$ROOT_DIR"
 
+# Hitta en Python >= 3.11 oavsett vad OS:et råkar kalla den (python3.11,
+# python3.12, eller bara python3 om distron redan är ny nog).
+PYTHON_BIN=""
+for candidate in python3.13 python3.12 python3.11 python3; do
+  if command -v "$candidate" >/dev/null 2>&1; then
+    if "$candidate" -c 'import sys; sys.exit(0 if sys.version_info >= (3, 11) else 1)' 2>/dev/null; then
+      PYTHON_BIN="$candidate"
+      break
+    fi
+  fi
+done
+if [ -z "$PYTHON_BIN" ]; then
+  echo "Hittade ingen Python >= 3.11. Installera en (t.ex. 'sudo apt install python3.11 python3.11-venv') och kör om." >&2
+  exit 1
+fi
+echo "==> Använder $PYTHON_BIN ($($PYTHON_BIN --version))"
+
 if [ ! -d .venv ]; then
   echo "==> Skapar venv (.venv)"
-  python3.11 -m venv .venv
+  "$PYTHON_BIN" -m venv .venv
 fi
 
 # shellcheck disable=SC1091
