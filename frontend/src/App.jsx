@@ -481,7 +481,7 @@ function VarvApp({ username, onLogout }) {
   };
 
   const addTask = (draft) => {
-    const task = { ...DEFAULT_TASK, id: uid(), icon: guessIcon(draft.title), ...draft, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+    const task = { ...DEFAULT_TASK, id: uid(), icon: guessIcon(draft.title), day: todayKey(), ...draft, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
     setState((st) => ({ ...st, tasks: [...st.tasks, task] }));
     sync.trackChange('task', task.id, 'upsert', task);
     breakdownTask(task.id, task.title);
@@ -1272,6 +1272,7 @@ function VarvApp({ username, onLogout }) {
                 onRemove={() => removeTask(t.id)}
                 onWin={addWin}
                 onPushCal={pushTaskToCalendar}
+                agentBusy={streamAgent.isRunning && streamAgent.activeInput === t.title}
               />
             </div>
           ))}
@@ -2340,7 +2341,7 @@ function AddTask({ onAdd, defaultDate }) {
 /* ============================================================ */
 /* Task card with AI breakdown                                   */
 /* ============================================================ */
-function TaskCard({ task, onDone, onUpdate, onRemove, onWin, onPushCal }) {
+function TaskCard({ task, onDone, onUpdate, onRemove, onWin, onPushCal, agentBusy }) {
   const [expanded, setExpanded] = useState(false);
   const [busy, setBusy] = useState(false);
   const [calBusy, setCalBusy] = useState(false);
@@ -2384,6 +2385,11 @@ function TaskCard({ task, onDone, onUpdate, onRemove, onWin, onPushCal }) {
               {task.title}
             </span>
             <span style={{ display: "block", fontSize: 12, color: T.soft, marginTop: 2 }}>
+              {agentBusy && (
+                <span style={{ color: T.petrol, fontWeight: 500 }}>
+                  🤖 Nedbrytaren jobbar… · 
+                </span>
+              )}
               {task.scheduled_date && task.scheduled_date !== todayKey() && (
                 <span style={{ color: T.petrol, fontWeight: 500 }}>
                   {new Date(task.scheduled_date + 'T12:00:00').toLocaleDateString('sv-SE', { weekday: 'short', month: 'short', day: 'numeric' })} · 

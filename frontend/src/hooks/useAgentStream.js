@@ -38,6 +38,7 @@ export function useAgentStream() {
   const [step, setStep] = useState(null);
   const [text, setText] = useState("");
   const [isRunning, setIsRunning] = useState(false);
+  const [activeInput, setActiveInput] = useState(null); // input being processed — for inline UI indicators
   const [error, setError] = useState(null);
   const abortRef = useRef(null);
 
@@ -64,6 +65,7 @@ export function useAgentStream() {
     setError(null);
     setStep(STEP_LABELS[agent] || agent);
     setText("");
+    setActiveInput(input);
 
     const auth = getAuth();
     const controller = new AbortController();
@@ -169,7 +171,10 @@ export function useAgentStream() {
       clearTimeout(timeoutId);
       setIsRunning(false);
       setStep(null);
+      setActiveInput(null);
       abortRef.current = null;
+      // Keep final text visible briefly, then clear so AgentProgress hides
+      setTimeout(() => setText(""), 2500);
     }
 
     return result;
@@ -179,7 +184,8 @@ export function useAgentStream() {
     abortRef.current?.abort();
     setIsRunning(false);
     setStep(null);
+    setActiveInput(null);
   }, []);
 
-  return { run, abort, step, text, isRunning, error };
+  return { run, abort, step, text, isRunning, activeInput, error };
 }
