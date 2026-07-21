@@ -2333,6 +2333,7 @@ function TaskCard({ task, onDone, onUpdate, onRemove, onWin, agentBusy }) {
   const [editTitle, setEditTitle] = useState(task.title);
   const [editNote, setEditNote] = useState(task.note || "");
   const [imgBusy, setImgBusy] = useState(false);
+  const [editingSteps, setEditingSteps] = useState(false);
   const s = styles;
 
   // Compress an image File to a base64 data-URI thumbnail (max 800px, JPEG 0.7).
@@ -2378,6 +2379,18 @@ function TaskCard({ task, onDone, onUpdate, onRemove, onWin, agentBusy }) {
     onUpdate({ steps });
     const st = task.steps.find((x) => x.id === id);
     if (st && !st.done) onWin(`Steg klart: ${st.title}`);
+  };
+
+  const updateStep = (id, patch) => {
+    onUpdate({ steps: task.steps.map((st) => (st.id === id ? { ...st, ...patch } : st)) });
+  };
+  const removeStep = (id) => {
+    onUpdate({ steps: task.steps.filter((st) => st.id !== id) });
+  };
+  const addStep = () => {
+    const newStep = { id: uid(), title: "", minutes: 5, done: false };
+    onUpdate({ steps: [...(task.steps || []), newStep] });
+    setEditingSteps(true);
   };
 
   const stepsLeft = (task.steps || []).filter((st) => !st.done).length;
@@ -2557,21 +2570,56 @@ function TaskCard({ task, onDone, onUpdate, onRemove, onWin, agentBusy }) {
             <button style={s.linkBtn} onClick={breakDown} disabled={busy}>
               {busy ? "bryter ner…" : task.steps.length ? "bryt ner igen (AI)" : "bryt ner (AI)"}
             </button>
+            <button style={s.linkBtn} onClick={() => setEditingSteps((v) => !v)}>
+              {editingSteps ? "klar med steg" : "redigera steg"}
+            </button>
             <button style={{ ...s.linkBtn, color: T.soft }} onClick={onRemove}>ta bort</button>
           </div>
           {err && <div style={{ color: T.warn, fontSize: 13, marginTop: 6 }}>{err}</div>}
 
-          {task.steps.length > 0 && (
-            <div style={{ marginTop: 4 }}>
-              {task.steps.map((st) => (
-                <button key={st.id} style={s.stepRow} onClick={() => toggleStep(st.id)}>
-                  <span style={{ ...s.stepBox, background: st.done ? T.moss : "transparent" }}>{st.done ? "✓" : ""}</span>
-                  <span style={{ textDecoration: st.done ? "line-through" : "none", color: st.done ? T.soft : T.ink, textAlign: "left" }}>
-                    {st.title} <span style={{ color: T.soft }}>· {st.minutes} min</span>
-                  </span>
-                </button>
+          {editingSteps ? (
+            <div style={{ marginTop: 8 }}>
+              {task.steps.map((st, i) => (
+                <div key={st.id} style={{ display: "flex", gap: 6, alignItems: "center", padding: "4px 0" }}>
+                  <input
+                    style={{ ...s.captureInput, flex: 1, padding: "6px 10px", fontSize: 13 }}
+                    value={st.title}
+                    onChange={(e) => updateStep(st.id, { title: e.target.value })}
+                    placeholder={`steg ${i + 1}`}
+                    aria-label={`Steg ${i + 1} titel`}
+                  />
+                  <input
+                    type="number"
+                    min="1"
+                    style={{ width: 56, padding: "6px 6px", borderRadius: 8, border: `1px solid ${T.line}`, fontSize: 13, fontFamily: "inherit" }}
+                    value={st.minutes}
+                    onChange={(e) => updateStep(st.id, { minutes: Number(e.target.value) || 1 })}
+                    aria-label={`Steg ${i + 1} minuter`}
+                  />
+                  <button
+                    style={{ ...s.linkBtn, color: T.warn, minWidth: 44, minHeight: 44, padding: "4px 8px" }}
+                    onClick={() => removeStep(st.id)}
+                    aria-label={`Ta bort steg: ${st.title || `steg ${i + 1}`}`}
+                  >
+                    ✕
+                  </button>
+                </div>
               ))}
+              <button style={{ ...s.linkBtn, marginTop: 6 }} onClick={addStep}>+ lägg till steg</button>
             </div>
+          ) : (
+            task.steps.length > 0 && (
+              <div style={{ marginTop: 4 }}>
+                {task.steps.map((st) => (
+                  <button key={st.id} style={s.stepRow} onClick={() => toggleStep(st.id)}>
+                    <span style={{ ...s.stepBox, background: st.done ? T.moss : "transparent" }}>{st.done ? "✓" : ""}</span>
+                    <span style={{ textDecoration: st.done ? "line-through" : "none", color: st.done ? T.soft : T.ink, textAlign: "left" }}>
+                      {st.title} <span style={{ color: T.soft }}>· {st.minutes} min</span>
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )
           )}
         </>
       )}
