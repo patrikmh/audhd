@@ -2,6 +2,8 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { useSync } from "./hooks/useSync";
 import { WorkingMemoryDisplay } from "./components/WorkingMemoryDisplay";
 import { SystemStatus } from "./components/SystemStatus";
+import SetupWizard from "./components/SetupWizard";
+import DailyCheckin from "./components/DailyCheckin";
 import { TaskInitiationSupport } from "./components/TaskInitiationSupport";
 import { TimeAnchor } from "./components/TimeBlindnessSupport";
 import { T, MODES, ENERGY_LABELS, MOVEMENT_IDEAS, REST_MENU, EDU_CARDS, ICON_CHOICES, WEEKDAYS, ICON_KEYWORDS, PRIORITY_ORDER, API_BASE, AUTH_KEY } from "./constants/tokens";
@@ -323,6 +325,11 @@ function VarvApp({ username, onLogout }) {
   const [undoTask, setUndoTask] = useState(null);
   const undoTimer = useRef(null);
   const [contextMenu, setContextMenu] = useState(null); // { x, y, items }
+  const [showSetup, setShowSetup] = useState(() => !state.setupDone);
+  const [showCheckin, setShowCheckin] = useState(() => {
+    if (!state.setupDone) return false;
+    return state.lastCheckinDate !== todayKey();
+  });
 
   const completeTask = (task) => {
     if (task.done) return;
@@ -345,6 +352,28 @@ function VarvApp({ username, onLogout }) {
     }));
     setUndoTask(null);
     clearTimeout(undoTimer.current);
+  };
+
+  /* --- Setup wizard completion --- */
+  const handleSetupComplete = ({ settings, capacity, tasks: newTasks }) => {
+    setState((s) => ({
+      ...s,
+      setupDone: true,
+      settings: { ...s.settings, ...settings },
+      capacity,
+      tasks: [...s.tasks, ...newTasks],
+    }));
+    setShowSetup(false);
+    setShowCheckin(true);
+  };
+
+  /* --- Daily check-in --- */
+  const handleCheckinEnergy = (cap) => {
+    setState((s) => ({ ...s, capacity: cap, capacityBy: { day: todayKey(), by: "user" } }));
+  };
+  const handleCheckinDismiss = () => {
+    setState((s) => ({ ...s, lastCheckinDate: todayKey() }));
+    setShowCheckin(false);
   };
 
   const updateTask = (id, p) => {
@@ -1299,6 +1328,8 @@ function VarvApp({ username, onLogout }) {
             <ToolBtn active={tool === "edu"} onClick={() => setTool(tool === "edu" ? null : "edu")} label="Varför det funkar" sub="evidensen" />
             <ToolBtn active={tool === "connect"} onClick={() => setTool(tool === "connect" ? null : "connect")} label="Kopplingar" sub="Google · Notion · Oura" />
             <ToolBtn active={tool === "agents"} onClick={() => setTool(tool === "agents" ? null : "agents")} label="Agenter" sub={`${Object.values(state.agents).filter(Boolean).length}/5 aktiva`} />
+            <ToolBtn onClick={() => setShowCheckin(true)} label="Morgoncheck" sub="översikt + energi" />
+            <ToolBtn onClick={() => setShowSetup(true)} label="Inställningar" sub="guidad setup" />
           </div>
 
           {tool === "agents" && (
@@ -1505,6 +1536,19 @@ function VarvApp({ username, onLogout }) {
             Ångra
           </button>
         </div>
+      )}
+
+      {/* ============ setup wizard ============ */}
+      {showSetup && <SetupWizard onComplete={handleSetupComplete} />}
+
+      {/* ============ daily check-in ============ */}
+      {showCheckin && !showSetup && (
+        <DailyCheckin
+          state={state}
+          onSetEnergy={handleCheckinEnergy}
+          onDismiss={handleCheckinDismiss}
+          onAddTask={addTask}
+        />
       )}
 
       {/* ============ bottom navigation ============ */}

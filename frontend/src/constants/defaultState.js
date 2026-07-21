@@ -40,6 +40,8 @@ export const DEFAULT_STATE = {
   capacityBy: { day: null, by: null }, // 'auto' | 'user'
   notionArchivedDay: null,
   day: todayKey(),
+  setupDone: false,
+  lastCheckinDate: null,
 };
 
 export const DEFAULT_TASK = {
