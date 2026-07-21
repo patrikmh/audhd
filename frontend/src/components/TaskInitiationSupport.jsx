@@ -190,7 +190,7 @@ export function TaskInitiationSupport({ task, onStartStep, onSetTrigger }) {
             alignItems: 'flex-start',
             gap: '8px'
           }}>
-            <span style={{ fontSize: '1.2rem }}>⚠️</span>
+            <span style={{ fontSize: '1.2rem }}>⚠</span>
             <div>
               <div style={{
                 fontFamily: 'Atkinson Hyperlegible',
@@ -254,7 +254,7 @@ export function TaskInitiationSupport({ task, onStartStep, onSetTrigger }) {
             transition: 'all 0.2s ease'
           }}
         >
-          Aktivera fokus-buddy 🧑‍🤝‍🧑
+          Aktivera fokus-buddy 
         </button>
       </div>
     </div>
@@ -292,7 +292,7 @@ export function TaskInitiationButton({ task, onClick, disabled = false }) {
       onClick={disabled ? undefined : onClick}
       disabled={disabled}
     >
-      {disabled ? '⏳ Väntar...' : '▶️ Starta'}
+      {disabled ? '... Väntar...' : '> Starta'}
     </button>
   );
 }
