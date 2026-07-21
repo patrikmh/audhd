@@ -220,6 +220,7 @@ function VarvApp({ username, onLogout }) {
             s.lists = s.lists.filter((l) => l.id !== "ideas");
           }
           setState({ ...DEFAULT_STATE, ...s });
+          if (s.activeFocus) setLapRunning(true); // ett pågående varv ska överleva en omladdning
         }
       } catch (e) {
         /* first run — nothing stored yet */
@@ -1547,14 +1548,17 @@ function VarvApp({ username, onLogout }) {
             taskTitle={nextTask?.title}
             initialGoal={focusPrefill?.goal}
             initialMins={focusPrefill?.mins}
+            persisted={state.activeFocus}
             mini={lapRunning && !(view === "tools" && tool === "focus")}
             onExpand={() => { setView("tools"); setTool("focus"); }}
             onRunning={setLapRunning}
+            onFocusStart={(goal, mins, startedAt) => setState((st) => ({ ...st, activeFocus: { goal, mins, startedAt } }))}
             onPark={(text) => addTask({ title: text })}
             onDone={(goal, mins, est, actualMin) => {
               addWin(`Fokusvarv (${actualMin} min): ${goal || "utan titel"}`);
               if (est > 0)
                 setState((st) => ({ ...st, calibration: [...st.calibration, { est, actual: actualMin, ts: Date.now() }].slice(-40) }));
+              setState((st) => ({ ...st, activeFocus: null }));
               setLapRunning(false);
               setFocusPrefill(null);
               setTool(null);
@@ -2519,25 +2523,18 @@ function SleepPanel({ settings, onChange }) {
 /* ============================================================ */
 /* Focus lap — goal declaration + timer, body-doubling friendly  */
 /* ============================================================ */
-function FocusLap({ taskTitle, initialGoal, initialMins, onDone, onRunning, onPark, mini, onExpand }) {
-  const [goal, setGoal] = useState(initialGoal || taskTitle || "");
-  const [mins, setMins] = useState(initialMins || 25);
+function FocusLap({ taskTitle, initialGoal, initialMins, persisted, onDone, onRunning, onFocusStart, onPark, mini, onExpand }) {
+  const [goal, setGoal] = useState(persisted?.goal || initialGoal || taskTitle || "");
+  const [mins, setMins] = useState(persisted?.mins || initialMins || 25);
   const [est, setEst] = useState("");
   const [left, setLeft] = useState(null);
   const [park, setPark] = useState("");
   const [parked, setParked] = useState(0);
-  const startedAt = useRef(null);
+  const startedAt = useRef(persisted ? new Date(persisted.startedAt).getTime() : null);
   const timer = useRef(null);
   const s = styles;
 
-  useEffect(() => () => clearInterval(timer.current), []);
-
-  const elapsedMin = () => Math.max(1, Math.round((Date.now() - startedAt.current) / 60000));
-
-  const start = () => {
-    onRunning && onRunning(true);
-    startedAt.current = Date.now();
-    setLeft(mins * 60);
+  const runTicker = () => {
     clearInterval(timer.current);
     timer.current = setInterval(() => {
       setLeft((l) => {
@@ -2548,6 +2545,31 @@ function FocusLap({ taskTitle, initialGoal, initialMins, onDone, onRunning, onPa
         return l - 1;
       });
     }, 1000);
+  };
+
+  // Ett pågående varv överlever en omladdning — räkna ut hur mycket som återstår
+  // av det redan startade passet istället för att tyst börja om på 25:00.
+  useEffect(() => {
+    if (!persisted) return;
+    onRunning && onRunning(true);
+    const elapsedSec = Math.floor((Date.now() - startedAt.current) / 1000);
+    const remaining = Math.max(0, persisted.mins * 60 - elapsedSec);
+    setLeft(remaining);
+    if (remaining > 0) runTicker();
+    return () => clearInterval(timer.current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => () => clearInterval(timer.current), []);
+
+  const elapsedMin = () => Math.max(1, Math.round((Date.now() - startedAt.current) / 60000));
+
+  const start = () => {
+    onRunning && onRunning(true);
+    startedAt.current = Date.now();
+    onFocusStart && onFocusStart(goal, mins, new Date(startedAt.current).toISOString());
+    setLeft(mins * 60);
+    runTicker();
   };
 
   if (left !== null && mini)

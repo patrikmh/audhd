@@ -56,6 +56,7 @@ export const DEFAULT_STATE = {
   setupDone: false,
   lastCheckinDate: null,
   externalAiEnabled: false,
+  activeFocus: null, // { goal, mins, startedAt } — survives reload so a running lap can resume
 };
 
 export const DEFAULT_TASK = {

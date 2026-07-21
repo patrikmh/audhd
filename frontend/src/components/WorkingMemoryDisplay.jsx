@@ -28,9 +28,8 @@ export function WorkingMemoryDisplay({ state, settings, onWinddownClick }) {
   const totalDayMinutes = dayEndMinutes - dayStartMinutes;
   const dayProgress = Math.min(100, Math.max(0, ((currentMinutes - dayStartMinutes) / totalDayMinutes) * 100));
 
-  // Current focus
-  const activeTask = state.tasks.find(t => !t.done && (t.priority === 'A' || t.energy >= 4));
-  const focusTask = state.tasks.find(t => t.id === state._focusTask);
+  // Current focus — only a lap that's actually running, never a guessed-at task.
+  const activeFocus = state.activeFocus;
 
   return (
     <div style={{
@@ -78,7 +77,7 @@ export function WorkingMemoryDisplay({ state, settings, onWinddownClick }) {
           background: T.paper,
           padding: '12px',
           borderRadius: '6px',
-          border: focusTask ? `2px solid ${T.petrol}` : `1px solid ${T.line}`
+          border: activeFocus ? `2px solid ${T.petrol}` : `1px solid ${T.line}`
         }}>
           <div style={{
             fontSize: '0.75rem',
@@ -90,23 +89,14 @@ export function WorkingMemoryDisplay({ state, settings, onWinddownClick }) {
           }}>
             Fokus just nu
           </div>
-          {focusTask ? (
+          {activeFocus ? (
             <div style={{
               fontFamily: 'Atkinson Hyperlegible',
               fontSize: '1rem',
               color: T.ink,
               fontWeight: '500'
             }}>
-              {focusTask.title}
-            </div>
-          ) : activeTask ? (
-            <div style={{
-              fontFamily: 'Atkinson Hyperlegible',
-              fontSize: '0.9rem',
-              color: T.petrol,
-              fontStyle: 'italic'
-            }}>
-              {activeTask.title}
+              {activeFocus.goal || "fokuserar"}
             </div>
           ) : (
             <div style={{
