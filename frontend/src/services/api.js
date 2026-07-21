@@ -143,29 +143,6 @@ class APIClient {
     return this.post('/api/capture', { raw, source, override });
   }
 
-  async uploadVoice(blob, language = null) {
-    const auth = this.getAuth();
-    const formData = new FormData();
-    formData.append('file', blob, 'voice.webm');
-    if (language) {
-      formData.append('language', language);
-    }
-
-    const response = await fetch(`${this.apiBase}/api/capture/voice`, {
-      method: 'POST',
-      headers: {
-        ...(auth?.token ? { Authorization: `Bearer ${auth.token}` } : {})
-      },
-      body: formData
-    });
-
-    if (!response.ok) {
-      throw new Error(`Voice capture failed: ${response.status}`);
-    }
-
-    return response.json();
-  }
-
   // Agents
   async classify(raw) {
     return this.post('/api/agents/classify', { raw });

@@ -712,19 +712,22 @@ function VarvApp({ username, onLogout }) {
     }
   };
 
-  const onVoiceCapture = async (blob, voiceLang) => {
+  // Transkriberar bara — inget sparas eller klassificeras här. Talaren ser texten
+  // som ett redigerbart utkast och väljer själv Uppgift/Idé/Inköp, precis som text-fångst.
+  const transcribeVoice = async (blob, voiceLang) => {
     const form = new FormData();
     form.append("file", blob, "memo.webm");
     form.append("language", (voiceLang || "sv-SE").split("-")[0]);
     const auth = getAuth();
-    const response = await fetch(`${API_BASE}/api/capture/voice`, {
+    const response = await fetch(`${API_BASE}/api/transcribe`, {
       method: "POST",
       headers: auth?.token ? { Authorization: `Bearer ${auth.token}` } : {},
       body: form,
     });
-    if (!response.ok) throw new Error(`capture/voice → ${response.status}`);
-    const out = await response.json(); // CaptureOut: redan klassificerad av Sorteraren på servern
-    placeClassified(out.title, { type: out.routed_type, title: out.title, tags: out.tags });
+    if (response.status === 403) throw new Error("Externa AI-agenter är avstängda — slå på dem i Inställningar > Agenter.");
+    if (!response.ok) throw new Error(`transcribe → ${response.status}`);
+    const out = await response.json(); // TranscriptOut: { text, language, duration_s }
+    return out.text;
   };
 
   /* ---------- agent-tick: en gemensam bakgrundsloop ---------- */
@@ -1579,7 +1582,7 @@ function VarvApp({ username, onLogout }) {
           onLangChange={(lang) => setState((st) => ({ ...st, settings: { ...st.settings, voiceLang: lang } }))}
           onIdea={addIdea}
           onAuto={autoCapture}
-          onVoiceCapture={onVoiceCapture}
+          onTranscribe={transcribeVoice}
           onTask={(title) => {
             addTask({ title });
             setToast(`Fångad: ${title}`);
@@ -1756,7 +1759,7 @@ export default function Varv() {
 /* ============================================================ */
 /* Capture sheet — the 3-second window                           */
 /* ============================================================ */
-function CaptureSheet({ onClose, onTask, onListItem, onIdea, onAuto, onVoiceCapture, voiceLang, onLangChange }) {
+function CaptureSheet({ onClose, onTask, onListItem, onIdea, onAuto, onTranscribe, voiceLang, onLangChange }) {
   const [v, setV] = useState("");
   const [rec, setRec] = useState(false);
   const [vBusy, setVBusy] = useState(false);
@@ -1795,10 +1798,11 @@ function CaptureSheet({ onClose, onTask, onListItem, onIdea, onAuto, onVoiceCapt
         setVBusy(true);
         try {
           const blob = new Blob(chunks, { type: mr.mimeType || "audio/webm" });
-          await onVoiceCapture(blob, voiceLang);
-          onClose();
+          const text = await onTranscribe(blob, voiceLang);
+          // Utkast, inte fångst: talaren ser texten och väljer själv Uppgift/Idé/Inköp — sheeten stannar öppen.
+          setV((prev) => (prev.trim() ? `${prev.trim()} ${text}` : text));
         } catch (e) {
-          setVErr("Transkribering misslyckades — testa igen eller skriv istället.");
+          setVErr(e.message || "Transkribering misslyckades — testa igen eller skriv istället.");
         }
         setVBusy(false);
       };
