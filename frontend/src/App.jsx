@@ -266,6 +266,7 @@ function VarvApp({ username, onLogout }) {
 
   // Selected date for viewing tasks (default: today)
   const [selectedDate, setSelectedDate] = useState(todayKey());
+  const [weekOffset, setWeekOffset] = useState(0); // 0 = current week window, ±N shifts strip by 7 days
   const isToday = selectedDate === todayKey();
 
   const visibleTasks = useMemo(() => {
@@ -1190,38 +1191,89 @@ function VarvApp({ username, onLogout }) {
             </button>
           </div>
 
-          {/* Day selector */}
-          <div style={{ display: "flex", gap: 6, marginBottom: 12, overflowX: "auto", paddingBottom: 4 }}>
-            {[-2, -1, 0, 1, 2, 3].map((offset) => {
-              const d = new Date();
-              d.setDate(d.getDate() + offset);
-              const dateStr = d.toISOString().split('T')[0];
-              const isSelected = dateStr === selectedDate;
-              const isTodayDate = offset === 0;
-              const dayName = d.toLocaleDateString('sv-SE', { weekday: 'short' });
-              const dayNum = d.getDate();
-              return (
-                <button
-                  key={dateStr}
-                  onClick={() => setSelectedDate(dateStr)}
-                  style={{
-                    padding: '6px 10px',
-                    borderRadius: 8,
-                    border: `1px solid ${isSelected ? T.petrol : '#E8E7E2'}`,
-                    background: isSelected ? T.petrol : 'transparent',
-                    color: isSelected ? 'white' : T.ink,
-                    fontSize: 12,
-                    fontFamily: "'IBM Plex Mono', monospace",
-                    cursor: 'pointer',
-                    flexShrink: 0,
-                    fontWeight: isTodayDate ? 600 : 400,
-                  }}
-                >
-                  <div>{dayName}</div>
-                  <div style={{ fontSize: 14, fontWeight: 600 }}>{dayNum}</div>
-                </button>
-              );
-            })}
+          {/* Day selector — strip covers a 6-day window; arrows shift by week */}
+          <div style={{ display: "flex", gap: 6, marginBottom: 8, alignItems: "center" }}>
+            <button
+              onClick={() => setWeekOffset((w) => w - 1)}
+              style={{ ...s.linkBtn, padding: "4px 8px", fontSize: 14 }}
+              aria-label="Föregående vecka"
+            >‹</button>
+            <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4, flex: 1 }}>
+              {[-2, -1, 0, 1, 2, 3].map((offset) => {
+                const d = new Date();
+                d.setDate(d.getDate() + offset + weekOffset * 7);
+                const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                const isSelected = dateStr === selectedDate;
+                const isTodayDate = dateStr === todayKey();
+                const dayName = d.toLocaleDateString('sv-SE', { weekday: 'short' });
+                const dayNum = d.getDate();
+                return (
+                  <button
+                    key={dateStr}
+                    onClick={() => setSelectedDate(dateStr)}
+                    style={{
+                      padding: '6px 10px',
+                      borderRadius: 8,
+                      border: `1px solid ${isSelected ? T.petrol : '#E8E7E2'}`,
+                      background: isSelected ? T.petrol : 'transparent',
+                      color: isSelected ? 'white' : T.ink,
+                      fontSize: 12,
+                      fontFamily: "'IBM Plex Mono', monospace",
+                      cursor: 'pointer',
+                      flexShrink: 0,
+                      fontWeight: isTodayDate ? 600 : 400,
+                    }}
+                  >
+                    <div>{dayName}</div>
+                    <div style={{ fontSize: 14, fontWeight: 600 }}>{dayNum}</div>
+                  </button>
+                );
+              })}
+            </div>
+            <button
+              onClick={() => setWeekOffset((w) => w + 1)}
+              style={{ ...s.linkBtn, padding: "4px 8px", fontSize: 14 }}
+              aria-label="Nästa vecka"
+            >›</button>
+          </div>
+
+          {/* Jump to any date + back to today */}
+          <div style={{ display: "flex", gap: 8, marginBottom: 12, alignItems: "center" }}>
+            <input
+              type="date"
+              value={selectedDate}
+              onChange={(e) => {
+                if (!e.target.value) return;
+                const picked = e.target.value;
+                setSelectedDate(picked);
+                // Shift week window so the picked date is visible in the strip
+                const diffDays = Math.round((new Date(picked) - new Date(todayKey())) / 86400000);
+                if (diffDays < -2 || diffDays > 3) setWeekOffset(Math.floor((diffDays + 2) / 7));
+                else setWeekOffset(0);
+              }}
+              style={{
+                padding: "4px 8px",
+                borderRadius: 8,
+                border: "1px solid #E8E7E2",
+                fontSize: 12,
+                fontFamily: "'IBM Plex Mono', monospace",
+                color: T.ink,
+                background: "transparent",
+              }}
+            />
+            {!isToday && (
+              <button
+                style={s.linkBtn}
+                onClick={() => { setSelectedDate(todayKey()); setWeekOffset(0); }}
+              >
+                ← idag
+              </button>
+            )}
+            {selectedDate > todayKey() && (
+              <span style={{ fontSize: 12, color: T.petrol, fontFamily: "'IBM Plex Mono', monospace" }}>
+                {new Date(selectedDate + 'T12:00:00').toLocaleDateString('sv-SE', { weekday: 'long', day: 'numeric', month: 'short' })}
+              </span>
+            )}
           </div>
 
           {showAdd && (
