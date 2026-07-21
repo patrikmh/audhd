@@ -1467,7 +1467,7 @@ function VarvApp({ username, onLogout }) {
             )}
             {ideaMode === "map" && state.ideas.length > 0 && (
               <Suspense fallback={<p style={s.body}>Laddar grafen…</p>}>
-                <IdeaGraph ideas={state.ideas} onSelect={(id) => setState((st) => ({ ...st, _selIdea: id }))} selectedId={state._selIdea} />
+                <IdeaGraph ideas={state.ideas} tasks={state.tasks} onSelect={(id) => setState((st) => ({ ...st, _selIdea: id }))} selectedId={state._selIdea} />
               </Suspense>
             )}
             {ideaMode === "map" && state._selIdea && state.ideas.find((i) => i.id === state._selIdea) && (
