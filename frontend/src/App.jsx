@@ -320,6 +320,9 @@ function VarvApp({ username, onLogout }) {
     sync.trackChange('energy_event', id, 'upsert', energyEvent);
   };
 
+  const [undoTask, setUndoTask] = useState(null);
+  const undoTimer = useRef(null);
+
   const completeTask = (task) => {
     if (task.done) return;
     setState((s) => ({
@@ -328,6 +331,19 @@ function VarvApp({ username, onLogout }) {
     }));
     logEnergy(task.energy, task.title);
     addWin(`Klart: ${task.title}`);
+    // Show undo option for 8 seconds
+    setUndoTask(task);
+    clearTimeout(undoTimer.current);
+    undoTimer.current = setTimeout(() => setUndoTask(null), 8000);
+  };
+
+  const undoCompleteTask = (task) => {
+    setState((s) => ({
+      ...s,
+      tasks: s.tasks.map((t) => (t.id === task.id ? { ...t, done: false, doneAt: null } : t)),
+    }));
+    setUndoTask(null);
+    clearTimeout(undoTimer.current);
   };
 
   const updateTask = (id, p) => {
@@ -1452,6 +1468,17 @@ function VarvApp({ username, onLogout }) {
 
       {/* ============ toast ============ */}
       {toast && <div style={s.toast}>{toast}</div>}
+      {undoTask && (
+        <div style={{ ...s.toast, background: T.petrol, display: 'flex', gap: 10, alignItems: 'center' }}>
+          <span>✓ {undoTask.title}</span>
+          <button
+            onClick={() => undoCompleteTask(undoTask)}
+            style={{ background: 'white', color: T.petrol, border: 'none', borderRadius: 6, padding: '4px 12px', fontWeight: 700, cursor: 'pointer', fontSize: 13 }}
+          >
+            Ångra
+          </button>
+        </div>
+      )}
 
       {/* ============ bottom navigation ============ */}
       <nav style={s.nav}>
