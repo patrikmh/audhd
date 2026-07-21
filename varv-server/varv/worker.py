@@ -60,6 +60,7 @@ async def refine_sweep() -> None:
                 result = await forfinaren.run(idea.raw)
                 out = result.output
                 idea.title, idea.note, idea.status = out.title, out.note, IdeaStatus.klar
+                idea.tags = out.tags[:3]
                 idea.updated_at = utcnow()
                 link_tags(session, idea.user_id, out.tags, "idea", idea.id)
                 agent_note(session, idea.user_id, "forfinaren", f'städade "{out.title[:50]}"')

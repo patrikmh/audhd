@@ -9,6 +9,7 @@ os.environ.setdefault("OPENROUTER_API_KEY", "test")
 os.environ.setdefault("OPENAI_API_KEY", "test")
 
 import pytest
+from sqlalchemy import event
 from sqlalchemy.pool import StaticPool
 from sqlmodel import Session, SQLModel, create_engine
 
@@ -18,6 +19,11 @@ import varv.db.models  # noqa: F401
 @pytest.fixture
 def session():
     engine = create_engine("sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool)
+
+    @event.listens_for(engine, "connect")
+    def enable_foreign_keys(dbapi_connection, connection_record):
+        dbapi_connection.execute("PRAGMA foreign_keys=ON")
+
     SQLModel.metadata.create_all(engine)
     with Session(engine) as s:
         from varv.db.models import ShoppingList, User

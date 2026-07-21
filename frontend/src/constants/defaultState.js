@@ -33,7 +33,7 @@ export const DEFAULT_STATE = {
       connections: true
     }
   },
-  lists: [{ id: "shopping", name: "Inköp", items: [] }],
+  lists: [{ id: "shopping", name: "Inköp", slug: "shopping", items: [] }],
   ideas: [], // {id, raw, title, note, tags, ts, status: 'refining'|'klar'|'fail'}
   tagLog: [], // {day, tag} — för statistik och organisering
   agents: {

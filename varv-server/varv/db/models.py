@@ -13,7 +13,7 @@ Designprinciper:
 from datetime import date, datetime, timezone
 from enum import StrEnum
 
-from sqlalchemy import event, text
+from sqlalchemy import JSON, Column, event, text
 from sqlalchemy.orm import Session as SQLAlchemySession
 from sqlmodel import Field, SQLModel, UniqueConstraint
 
@@ -100,6 +100,8 @@ class Task(SQLModel, table=True):
     scheduled_date: str | None = None         # YYYY-MM-DD för framtida uppgifter
     note: str | None = None                   # fritextanteckning
     image: str | None = None                  # base64-data-uri för miniatyr
+    tags: list[str] = Field(default_factory=list, sa_column=Column(JSON, nullable=False))
+    repeat_days: list[str] = Field(default_factory=list, sa_column=Column(JSON, nullable=False))
     sync_version: int = Field(default=0, index=True)
 
 
@@ -129,7 +131,7 @@ class Idea(SQLModel, table=True):
     deleted_at: datetime | None = None
     day: str = Field(default_factory=today, index=True)
     image: str | None = None
-    tags: str | None = None
+    tags: list[str] = Field(default_factory=list, sa_column=Column(JSON, nullable=False))
     sync_version: int = Field(default=0, index=True)
 
 
@@ -139,6 +141,9 @@ class ShoppingList(SQLModel, table=True):
     user_id: str = Field(foreign_key="user.id", ondelete="CASCADE", index=True)
     name: str
     slug: str = Field(index=True)
+    updated_at: datetime = Field(default_factory=utcnow, index=True)
+    deleted_at: datetime | None = None
+    sync_version: int = Field(default=0, index=True)
 
 
 class ListItem(SQLModel, table=True):
@@ -234,7 +239,7 @@ class SyncTombstone(SQLModel, table=True):
     sync_version: int = Field(default=0, index=True)
 
 
-SYNC_VERSIONED_TYPES = (Task, TaskStep, Idea, ListItem, Win, EnergyEvent, SyncTombstone)
+SYNC_VERSIONED_TYPES = (Task, TaskStep, Idea, ShoppingList, ListItem, Win, EnergyEvent, SyncTombstone)
 
 
 @event.listens_for(SQLAlchemySession, "before_flush")

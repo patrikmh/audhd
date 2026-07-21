@@ -3,45 +3,6 @@
  * Implements change tracking and conflict resolution (LWW - last write wins)
  */
 
-const SYNCABLE = {
-  task: true,
-  task_step: true,
-  idea: true,
-  list_item: true,
-  win: true,
-  energy_event: true,
-};
-
-// Generate UUIDv7 for client-side IDs
-function uuidv7() {
-  const now = Date.now();
-  const sec = Math.floor(now / 1000);
-  const ms = now % 1000;
-  const rand = crypto.getRandomValues(new Uint16Array(5));
-
-  const timestamp = (sec & 0x0fffffff) * 1000 + ms;
-  const version = 0x7 << 12; // UUID version 7
-  const variant = 0x8 << 12; // UUID variant
-
-  const timeHi = (timestamp >> 16) & 0xffff;
-  const timeLo = timestamp & 0xffff;
-  const clkSeqHiAndRes = ((rand[0] & 0x3fff) | variant) >>> 8;
-  const clkSeqLo = (rand[0] & 0xff) | ((rand[1] & 0x3f) << 8);
-  const node0 = rand[2];
-  const node1 = rand[3];
-  const node2 = rand[4];
-
-  const hex = (n, w) => n.toString(16).padStart(w, '0');
-  const octets = [
-    hex(timeHi, 4),
-    hex(timeLo, 4),
-    hex(((rand[0] & 0x0f) << 12) | (clkSeqHiAndRes << 8) | clkSeqLo, 4),
-    hex(node0, 2), hex(node1, 2), hex(node2, 2)
-  ];
-
-  return octets.join('-').padEnd(36, '0').slice(0, 36);
-}
-
 /**
  * Track local changes for sync
  */
@@ -247,20 +208,4 @@ class SyncClient {
   }
 }
 
-/**
- * Helper to track state changes automatically
- */
-function trackStateChange(syncClient, kind, oldState, newState, idField = 'id') {
-  if (!oldState && newState) {
-    // Insert
-    syncClient.track(kind, newState[idField], 'upsert', newState);
-  } else if (oldState && !newState) {
-    // Delete
-    syncClient.track(kind, oldState[idField], 'delete', {});
-  } else if (oldState && newState && JSON.stringify(oldState) !== JSON.stringify(newState)) {
-    // Update
-    syncClient.track(kind, newState[idField], 'upsert', newState);
-  }
-}
-
-export { SyncClient, trackStateChange, uuidv7, SYNCABLE };
+export { SyncClient };

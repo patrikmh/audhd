@@ -1,7 +1,9 @@
 """Synkprotokollet: LWW, idempotens och delete."""
 from datetime import datetime, timedelta, timezone
 
-from varv.db.models import Task, User, Win
+from sqlmodel import select
+
+from varv.db.models import ShoppingList, Task, TaskStep, User, Win
 from varv.schemas import ChangeIn
 from varv.services.sync import apply_changes, pull_changes
 from varv.utils import hash_password, new_token, uuid7
@@ -167,8 +169,125 @@ def test_pull_uses_a_monotonic_paginated_cursor(session):
         limit=2,
     )
 
-    assert len(first_page["changes"]["task"]) == 2
+    assert sum(len(rows) for rows in first_page["changes"].values()) == 2
     assert first_page["has_more"] is True
-    assert len(second_page["changes"]["task"]) == 1
+    assert len(first_page["changes"]["task"]) + len(second_page["changes"]["task"]) == 3
     assert second_page["has_more"] is False
     assert second_page["next_cursor"] > first_page["next_cursor"]
+
+
+def test_rich_recurring_task_and_steps_round_trip(session):
+    task_id = uuid7()
+    step_id = uuid7()
+    now = datetime(2026, 7, 21, 21, 0, tzinfo=timezone.utc)
+    result = apply_changes(
+        session,
+        session.user_id,
+        [
+            ChangeIn(
+                kind="task",
+                id=task_id,
+                updated_at=now,
+                data={
+                    "title": "Ge Bubba medicin",
+                    "scheduled_date": "2026-07-24",
+                    "note": "Med mat",
+                    "tags": ["bubba", "medicin"],
+                    "repeat_days": ["mon", "fri"],
+                },
+            ),
+            ChangeIn(
+                kind="task_step",
+                id=step_id,
+                updated_at=now + timedelta(seconds=1),
+                data={
+                    "task_id": task_id,
+                    "title": "Hämta medicinen",
+                    "minutes": 2,
+                    "position": 0,
+                    "done": False,
+                },
+            ),
+        ],
+    )
+
+    assert [item["status"] for item in result["results"]] == ["created", "created"]
+    task = session.get(Task, task_id)
+    step = session.get(TaskStep, step_id)
+    assert task.repeat_days == ["mon", "fri"]
+    assert task.tags == ["bubba", "medicin"]
+    assert task.note == "Med mat"
+    assert step.task_id == task_id
+
+
+def test_sync_rejects_unknown_fields_and_cross_user_parents(session):
+    other_user = User(username="parent-owner", password_hash=hash_password("test"), token=new_token())
+    session.add(other_user)
+    session.flush()
+    other_task = Task(user_id=other_user.id, title="Annan användares uppgift")
+    session.add(other_task)
+    session.commit()
+    now = datetime(2026, 7, 21, 22, 0, tzinfo=timezone.utc)
+
+    unknown_field = apply_changes(
+        session,
+        session.user_id,
+        [
+            ChangeIn(
+                kind="task",
+                id=uuid7(),
+                updated_at=now,
+                data={"title": "Test", "user_id": other_user.id},
+            )
+        ],
+    )
+    cross_user_step = apply_changes(
+        session,
+        session.user_id,
+        [
+            ChangeIn(
+                kind="task_step",
+                id=uuid7(),
+                updated_at=now,
+                data={"task_id": other_task.id, "title": "Otillåtet steg"},
+            )
+        ],
+    )
+
+    assert unknown_field["results"][0]["status"] == "rejected"
+    assert cross_user_step["results"][0]["status"] == "rejected"
+    assert "not owned" in cross_user_step["results"][0]["reason"]
+
+
+def test_list_item_requires_an_owned_list(session):
+    shopping_list = session.exec(
+        select(ShoppingList).where(ShoppingList.user_id == session.user_id)
+    ).one()
+    now = datetime(2026, 7, 21, 23, 0, tzinfo=timezone.utc)
+    accepted = apply_changes(
+        session,
+        session.user_id,
+        [
+            ChangeIn(
+                kind="list_item",
+                id=uuid7(),
+                updated_at=now,
+                data={"list_id": shopping_list.id, "text": "Mjölk"},
+            )
+        ],
+    )
+    rejected = apply_changes(
+        session,
+        session.user_id,
+        [
+            ChangeIn(
+                kind="list_item",
+                id=uuid7(),
+                updated_at=now,
+                data={"list_id": "missing", "text": "Hemlig"},
+            )
+        ],
+    )
+
+    assert accepted["results"][0]["status"] == "created"
+    assert rejected["results"][0]["status"] == "rejected"

@@ -113,7 +113,7 @@ const DEFAULT_STATE = {
   morningLapDay: null,
   calibration: [], // {est, actual, ts} minutes
   settings: { wake: "07:00", winddown: "22:00", ouraToken: "", autoSync: true, voiceLang: "sv-SE" },
-  lists: [{ id: "shopping", name: "Inköp", items: [] }],
+  lists: [{ id: "shopping", name: "Inköp", slug: "shopping", items: [] }],
   ideas: [], // {id, raw, title, note, tags, ts, status: 'refining'|'klar'|'fail'}
   tagLog: [], // {day, tag} — för statistik och organisering
   agents: { classify: true, refine: true, sync: true, breakdown: true, observer: true },
@@ -209,7 +209,9 @@ function VarvApp({ username, onLogout }) {
               .filter((t) => (t.repeatDays || []).length > 0 || !t.done);
           }
           s.settings = { ...DEFAULT_STATE.settings, ...(s.settings || {}) };
-          s.lists = s.lists || DEFAULT_STATE.lists;
+          s.lists = (s.lists || DEFAULT_STATE.lists).map((list) =>
+            list.id === "shopping" && !list.slug ? { ...list, slug: "shopping" } : list
+          );
           const oldIdeas = s.lists.find((l) => l.id === "ideas");
           if (oldIdeas) {
             s.ideas = [
@@ -689,7 +691,7 @@ function VarvApp({ username, onLogout }) {
     logTags(tags);
     if (c.type === "shopping") {
       setState((st) => {
-        const target = st.lists.find((l) => l.id === "shopping") || st.lists[0];
+        const target = st.lists.find((list) => list.slug === "shopping" || list.id === "shopping") || st.lists[0];
         return {
           ...st,
           lists: st.lists.map((l) => (l.id === target.id ? { ...l, items: [...l.items, { id: uid(), text: c.title || raw, done: false }] } : l)),
@@ -1602,7 +1604,7 @@ function VarvApp({ username, onLogout }) {
           }}
           onListItem={(text) => {
             setState((st) => {
-              const target = st.lists.find((l) => l.id === "shopping") || st.lists[0];
+              const target = st.lists.find((list) => list.slug === "shopping" || list.id === "shopping") || st.lists[0];
               if (!target) return st;
               return {
                 ...st,
@@ -2984,7 +2986,7 @@ function Lists({ lists, onChange }) {
               </button>
             </div>
           )}
-          {l.id !== "shopping" && l.items.length === 0 && (
+          {l.slug !== "shopping" && l.id !== "shopping" && l.items.length === 0 && (
             <button style={{ ...s.linkBtn, color: T.soft, marginTop: 6 }} onClick={() => { onChange(lists.filter((x) => x.id !== l.id)); setOpenId(lists[0]?.id || null); }}>
               ta bort listan
             </button>

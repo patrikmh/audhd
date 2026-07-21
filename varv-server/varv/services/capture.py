@@ -96,6 +96,7 @@ def _route(session: Session, user_id: str, cls: ClassifiedCapture, raw: str) -> 
             icon=guess_icon(cls.title or raw),
             energy=cls.energy or 2,
             time=cls.time,
+            tags=cls.tags[:3],
         )
         session.add(task)
         session.flush()
@@ -108,6 +109,7 @@ def _route(session: Session, user_id: str, cls: ClassifiedCapture, raw: str) -> 
         title=cls.title or None,
         note=cls.note,
         status=IdeaStatus.klar if cls.title else IdeaStatus.raw,
+        tags=cls.tags[:3],
     )
     session.add(idea)
     session.flush()

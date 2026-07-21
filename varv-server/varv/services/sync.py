@@ -13,21 +13,46 @@ serverversion per användare, så sena offlineändringar inte missas av en klock
 """
 from datetime import datetime, timezone
 
+from pydantic import ValidationError
 from sqlmodel import Session, select
 
-from varv.db.models import EnergyEvent, Idea, ListItem, SyncTombstone, Task, TaskStep, Win
-from varv.schemas import ChangeIn
+from varv.db.models import (
+    EnergyEvent, Idea, ListItem, ShoppingList, SyncTombstone, Task, TaskStep, Win,
+)
+from varv.schemas import (
+    ChangeIn, SyncEnergyEventData, SyncIdeaData, SyncListItemData, SyncShoppingListData,
+    SyncTaskData, SyncTaskStepData, SyncWinData,
+)
 
 SYNCABLE = {
     "task": Task,
     "task_step": TaskStep,
     "idea": Idea,
+    "shopping_list": ShoppingList,
     "list_item": ListItem,
     "win": Win,
     "energy_event": EnergyEvent,
 }
 APPEND_ONLY = {"win", "energy_event"}         # saknar deleted_at — kan aldrig raderas
 SOFT_DELETABLE = set(SYNCABLE) - APPEND_ONLY
+DATA_SCHEMAS = {
+    "task": SyncTaskData,
+    "task_step": SyncTaskStepData,
+    "idea": SyncIdeaData,
+    "shopping_list": SyncShoppingListData,
+    "list_item": SyncListItemData,
+    "win": SyncWinData,
+    "energy_event": SyncEnergyEventData,
+}
+REQUIRED_ON_CREATE = {
+    "task": {"title"},
+    "task_step": {"task_id", "title"},
+    "idea": {"raw"},
+    "shopping_list": {"name", "slug"},
+    "list_item": {"list_id", "text"},
+    "win": {"text"},
+    "energy_event": {"delta", "label"},
+}
 
 
 # Kolumner klienten aldrig får sätta via synk: identitet, härkomst, serverägd bokföring
@@ -61,13 +86,49 @@ def _find_tombstone(session: Session, user_id: str, kind: str, entity_id: str) -
     ).first()
 
 
-def _result(ch: ChangeIn, status: str) -> dict:
+def _result(ch: ChangeIn, status: str, reason: str | None = None) -> dict:
     return {
         "kind": ch.kind,
         "id": ch.id,
         "updated_at": ch.updated_at,
         "status": status,
+        "reason": reason,
     }
+
+
+def _validated_data(ch: ChangeIn, is_create: bool) -> tuple[dict | None, str | None]:
+    try:
+        data = DATA_SCHEMAS[ch.kind].model_validate(ch.data).model_dump(exclude_unset=True)
+    except ValidationError as error:
+        return None, error.errors()[0]["msg"]
+    if is_create:
+        missing = sorted(REQUIRED_ON_CREATE[ch.kind] - data.keys())
+        if missing:
+            return None, f"Missing required fields: {', '.join(missing)}"
+    return data, None
+
+
+def _parent_error(session: Session, user_id: str, kind: str, row, data: dict) -> str | None:
+    if kind == "task_step":
+        task_id = data.get("task_id") or getattr(row, "task_id", None)
+        parent = session.get(Task, task_id) if task_id else None
+        if parent is None or parent.user_id != user_id or parent.deleted_at is not None:
+            return "Task step parent is not owned by this user"
+    if kind == "list_item":
+        list_id = data.get("list_id") or getattr(row, "list_id", None)
+        parent = session.get(ShoppingList, list_id) if list_id else None
+        if parent is None or parent.user_id != user_id or parent.deleted_at is not None:
+            return "List item parent is not owned by this user"
+    if kind == "shopping_list" and data.get("slug"):
+        existing = session.exec(
+            select(ShoppingList).where(
+                ShoppingList.user_id == user_id,
+                ShoppingList.slug == data["slug"],
+            )
+        ).first()
+        if existing is not None and existing.id != getattr(row, "id", None):
+            return "List slug already exists"
+    return None
 
 
 def apply_changes(session: Session, user_id: str, changes: list[ChangeIn]) -> dict:
@@ -128,6 +189,17 @@ def apply_changes(session: Session, user_id: str, changes: list[ChangeIn]) -> di
             results.append(_result(ch, "deleted"))
             continue
 
+        data, validation_error = _validated_data(ch, row is None)
+        if validation_error:
+            counts["skipped"] += 1
+            results.append(_result(ch, "rejected", validation_error))
+            continue
+        parent_error = _parent_error(session, user_id, ch.kind, row, data)
+        if parent_error:
+            counts["skipped"] += 1
+            results.append(_result(ch, "rejected", parent_error))
+            continue
+
         tombstone = _find_tombstone(session, user_id, ch.kind, ch.id)
         if tombstone is not None:
             if incoming <= _utc(tombstone.updated_at):
@@ -138,10 +210,11 @@ def apply_changes(session: Session, user_id: str, changes: list[ChangeIn]) -> di
 
         if row is None:
             row = model(id=ch.id, user_id=user_id)
-            _apply_fields(row, ch.data, model)
+            _apply_fields(row, data, model)
             if ch.kind not in APPEND_ONLY:
                 row.updated_at = incoming
             session.add(row)
+            session.flush()
             counts["created"] += 1
             results.append(_result(ch, "created"))
             continue
@@ -153,7 +226,7 @@ def apply_changes(session: Session, user_id: str, changes: list[ChangeIn]) -> di
 
         existing = _utc(row.updated_at)
         if incoming > existing:
-            _apply_fields(row, ch.data, model)
+            _apply_fields(row, data, model)
             row.updated_at = incoming
             row.deleted_at = None
             counts["updated"] += 1
