@@ -190,7 +190,7 @@ export function TaskInitiationSupport({ task, onStartStep, onSetTrigger }) {
             alignItems: 'flex-start',
             gap: '8px'
           }}>
-            <span style={{ fontSize: '1.2rem }}>⚠</span>
+            <span style={{ fontSize: '1.2rem }}>!</span>
             <div>
               <div style={{
                 fontFamily: 'Atkinson Hyperlegible',
