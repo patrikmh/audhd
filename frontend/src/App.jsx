@@ -252,10 +252,15 @@ function VarvApp({ username, onLogout }) {
     let open = state.tasks.filter((t) => {
       if (t.done) return false;
       // Filter by scheduled_date if set, otherwise show on creation day
-      const taskDay = t.scheduled_date || t.day;
-      if (taskDay !== selectedDate) return false;
-      // Also check repeatDays for recurring tasks
-      if ((t.repeatDays || []).length > 0 && !t.repeatDays.includes(today)) return false;
+      // Recurring tasks (repeatDays) with no day/scheduled_date show on matching weekdays
+      const hasRepeat = (t.repeatDays || []).length > 0;
+      if (hasRepeat) {
+        // Recurring task: show if today matches repeatDays
+        if (!t.repeatDays.includes(today)) return false;
+      } else {
+        const taskDay = t.scheduled_date || t.day;
+        if (taskDay !== selectedDate) return false;
+      }
       return true;
     });
     if (state.capacity === "recovery" && isToday) open = open.filter((t) => t.essential);
