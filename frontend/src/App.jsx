@@ -473,39 +473,48 @@ function VarvApp({ username, onLogout }) {
   const logTags = (tags) =>
     setState((st) => ({ ...st, tagLog: [...st.tagLog, ...(tags || []).map((tag) => ({ day: todayKey(), tag }))] }));
 
+  // Delad placeringslogik: tar ett redan klassificerat resultat ({type,title,tags,energy,time,note})
+  // och lägger det i rätt lokal hink. Används av både textfångst (klassificerar client-side via
+  // aiClassify) och röstfångst (redan klassificerad server-side av /api/capture/voice).
+  const placeClassified = (raw, c) => {
+    const tags = (c.tags || []).slice(0, 3);
+    logTags(tags);
+    if (c.type === "shopping") {
+      setState((st) => {
+        const target = st.lists.find((l) => l.id === "shopping") || st.lists[0];
+        return {
+          ...st,
+          lists: st.lists.map((l) => (l.id === target.id ? { ...l, items: [...l.items, { id: uid(), text: c.title || raw, done: false }] } : l)),
+        };
+      });
+      setToast(`→ Inköp: ${c.title || raw}`);
+      logAgent("Sorteraren", `→ Inköp: "${(c.title || raw).slice(0, 40)}"`);
+    } else if (c.type === "task") {
+      setState((st) => ({
+        ...st,
+        tasks: [...st.tasks, { id: uid(), title: c.title || raw, icon: guessIcon(c.title || raw), trigger: "", energy: c.energy || 2, time: c.time || "", essential: false, steps: [], done: false, minutes: 30, priority: null, inbox: true, tags }],
+      }));
+      setToast(`→ Uppgift: ${c.title || raw}${tags[0] ? ` · #${tags[0]}` : ""}`);
+      logAgent("Sorteraren", `→ Uppgift: "${(c.title || raw).slice(0, 40)}" [${tags.join(", ")}]`);
+    } else {
+      setState((st) => ({
+        ...st,
+        ideas: [{ id: uid(), raw, title: c.title || null, note: c.note || null, tags, ts: Date.now(), status: c.title ? "klar" : "raw" }, ...st.ideas].slice(0, 100),
+      }));
+      setToast(`→ Idé: ${c.title || raw.slice(0, 40)}`);
+      logAgent("Sorteraren", `→ Idé: "${(c.title || raw).slice(0, 40)}"`);
+    }
+    clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToast(null), 3000);
+  };
+
   const autoCapture = async (raw) => {
     if (!stateRef.current.agents.classify) { addIdea(raw); return; } // agent av → allt landar som idé
     setToast("🤖 sorterar…");
     clearTimeout(toastTimer.current);
     try {
       const c = await aiClassify(raw);
-      const tags = (c.tags || []).slice(0, 3);
-      logTags(tags);
-      if (c.type === "shopping") {
-        setState((st) => {
-          const target = st.lists.find((l) => l.id === "shopping") || st.lists[0];
-          return {
-            ...st,
-            lists: st.lists.map((l) => (l.id === target.id ? { ...l, items: [...l.items, { id: uid(), text: c.title || raw, done: false }] } : l)),
-          };
-        });
-        setToast(`→ Inköp: ${c.title || raw}`);
-        logAgent("Sorteraren", `→ Inköp: "${(c.title || raw).slice(0, 40)}"`);
-      } else if (c.type === "task") {
-        setState((st) => ({
-          ...st,
-          tasks: [...st.tasks, { id: uid(), title: c.title || raw, icon: guessIcon(c.title || raw), trigger: "", energy: c.energy || 2, time: c.time || "", essential: false, steps: [], done: false, minutes: 30, priority: null, inbox: true, tags }],
-        }));
-        setToast(`→ Uppgift: ${c.title || raw}${tags[0] ? ` · #${tags[0]}` : ""}`);
-        logAgent("Sorteraren", `→ Uppgift: "${(c.title || raw).slice(0, 40)}" [${tags.join(", ")}]`);
-      } else {
-        setState((st) => ({
-          ...st,
-          ideas: [{ id: uid(), raw, title: c.title || null, note: c.note || null, tags, ts: Date.now(), status: c.title ? "klar" : "raw" }, ...st.ideas].slice(0, 100),
-        }));
-        setToast(`→ Idé: ${c.title || raw.slice(0, 40)}`);
-        logAgent("Sorteraren", `→ Idé: "${(c.title || raw).slice(0, 40)}"`);
-      }
+      placeClassified(raw, c);
     } catch (e) {
       // felsäkert: ingenting får försvinna — landa som rå idé
       setState((st) => ({
@@ -513,8 +522,24 @@ function VarvApp({ username, onLogout }) {
         ideas: [{ id: uid(), raw, title: null, note: null, tags: [], ts: Date.now(), status: "raw" }, ...st.ideas].slice(0, 100),
       }));
       setToast("Sorteringen misslyckades — sparad som rå idé");
+      clearTimeout(toastTimer.current);
+      toastTimer.current = setTimeout(() => setToast(null), 3000);
     }
-    toastTimer.current = setTimeout(() => setToast(null), 3000);
+  };
+
+  const onVoiceCapture = async (blob, voiceLang) => {
+    const form = new FormData();
+    form.append("file", blob, "memo.webm");
+    form.append("language", (voiceLang || "sv-SE").split("-")[0]);
+    const auth = getAuth();
+    const response = await fetch(`${API_BASE}/api/capture/voice`, {
+      method: "POST",
+      headers: auth?.token ? { Authorization: `Bearer ${auth.token}` } : {},
+      body: form,
+    });
+    if (!response.ok) throw new Error(`capture/voice → ${response.status}`);
+    const out = await response.json(); // CaptureOut: redan klassificerad av Sorteraren på servern
+    placeClassified(out.title, { type: out.routed_type, title: out.title, tags: out.tags });
   };
 
   /* ---------- agent-tick: en gemensam bakgrundsloop ---------- */
@@ -1208,6 +1233,7 @@ function VarvApp({ username, onLogout }) {
           onLangChange={(lang) => setState((st) => ({ ...st, settings: { ...st.settings, voiceLang: lang } }))}
           onIdea={addIdea}
           onAuto={autoCapture}
+          onVoiceCapture={onVoiceCapture}
           onTask={(title) => {
             setState((st) => ({
               ...st,
@@ -1333,46 +1359,63 @@ export default function Varv() {
 /* ============================================================ */
 /* Capture sheet — the 3-second window                           */
 /* ============================================================ */
-function CaptureSheet({ onClose, onTask, onListItem, onIdea, onAuto, voiceLang, onLangChange }) {
+function CaptureSheet({ onClose, onTask, onListItem, onIdea, onAuto, onVoiceCapture, voiceLang, onLangChange }) {
   const [v, setV] = useState("");
   const [rec, setRec] = useState(false);
+  const [vBusy, setVBusy] = useState(false);
   const [vErr, setVErr] = useState("");
   const ref = useRef(null);
   const recRef = useRef(null);
+  const streamRef = useRef(null);
   const s = styles;
   useEffect(() => { ref.current && ref.current.focus(); }, []);
-  useEffect(() => () => { try { recRef.current && recRef.current.stop(); } catch (e) {} }, []);
+  useEffect(() => () => {
+    try { recRef.current && recRef.current.state !== "inactive" && recRef.current.stop(); } catch (e) {}
+    try { streamRef.current && streamRef.current.getTracks().forEach((t) => t.stop()); } catch (e) {}
+  }, []);
 
   const task = () => { if (v.trim()) { onTask(v.trim()); setV(""); ref.current && ref.current.focus(); } };
   const listItem = () => { if (v.trim()) { onListItem(v.trim()); setV(""); ref.current && ref.current.focus(); } };
   const idea = () => { if (v.trim()) { onIdea(v.trim()); setV(""); ref.current && ref.current.focus(); } };
   const auto = () => { if (v.trim()) { onAuto(v.trim()); setV(""); ref.current && ref.current.focus(); } };
 
-  const startVoice = () => {
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR) { setVErr("Röstigenkänning stöds inte i den här webbläsaren — skriv istället."); return; }
-    const r = new SR();
-    r.lang = voiceLang;
-    r.continuous = true;
-    r.interimResults = true;
-    r.onresult = (e) => {
-      let t = "";
-      for (let i = 0; i < e.results.length; i++) t += e.results[i][0].transcript;
-      setV(t.trim());
-    };
-    r.onerror = (e) => {
-      setVErr(e.error === "not-allowed"
-        ? "Mikrofonen blockeras i den här miljön — skriv istället, eller kör appen i webbläsaren."
-        : "Rösten föll bort — testa igen.");
-      setRec(false);
-    };
-    r.onend = () => setRec(false);
-    recRef.current = r;
+  // Riktig mikrofoninspelning → uppladdning till varv-server (KB-Whisper), inte
+  // webbläsarens inbyggda taligenkänning som skickar ljudet till Google.
+  const startVoice = async () => {
     setVErr("");
-    r.start();
-    setRec(true);
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setVErr("Mikrofonen stöds inte i den här webbläsaren — skriv istället.");
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+      const mr = new MediaRecorder(stream);
+      const chunks = [];
+      mr.ondataavailable = (e) => e.data.size > 0 && chunks.push(e.data);
+      mr.onstop = async () => {
+        stream.getTracks().forEach((t) => t.stop());
+        setVBusy(true);
+        try {
+          const blob = new Blob(chunks, { type: mr.mimeType || "audio/webm" });
+          await onVoiceCapture(blob, voiceLang);
+          onClose();
+        } catch (e) {
+          setVErr("Transkribering misslyckades — testa igen eller skriv istället.");
+        }
+        setVBusy(false);
+      };
+      recRef.current = mr;
+      mr.start();
+      setRec(true);
+    } catch (e) {
+      setVErr("Mikrofonen nekades eller kunde inte startas — skriv istället.");
+    }
   };
-  const stopVoice = () => { try { recRef.current && recRef.current.stop(); } catch (e) {} setRec(false); };
+  const stopVoice = () => {
+    try { recRef.current && recRef.current.stop(); } catch (e) {}
+    setRec(false);
+  };
 
   return (
     <div style={s.sheetBackdrop} onClick={onClose}>
@@ -1397,14 +1440,16 @@ function CaptureSheet({ onClose, onTask, onListItem, onIdea, onAuto, voiceLang, 
             onKeyDown={(e) => e.key === "Enter" && auto()}
           />
           <button
-            style={{ ...s.micBtn, background: rec ? T.warn : T.petrol }}
+            style={{ ...s.micBtn, background: rec ? T.warn : T.petrol, opacity: vBusy ? 0.5 : 1 }}
             onClick={rec ? stopVoice : startVoice}
-            aria-label={rec ? "Sluta lyssna" : "Tala in"}
+            disabled={vBusy}
+            aria-label={rec ? "Sluta spela in" : "Tala in"}
           >
-            {rec ? "■" : "🎙"}
+            {vBusy ? "…" : rec ? "■" : "🎙"}
           </button>
         </div>
-        {rec && <div style={{ fontSize: 12, color: T.warn, textAlign: "center", marginTop: 6 }}>● lyssnar — tala fritt, tryck ■ när du är klar</div>}
+        {rec && <div style={{ fontSize: 12, color: T.warn, textAlign: "center", marginTop: 6 }}>● spelar in — tala fritt, tryck ■ när du är klar</div>}
+        {vBusy && <div style={{ fontSize: 12, color: T.soft, textAlign: "center", marginTop: 6 }}>transkriberar…</div>}
         {vErr && <div style={{ fontSize: 12, color: T.warn, marginTop: 6 }}>{vErr}</div>}
         <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
           <button style={{ ...s.primaryBtn, flex: 1, opacity: v.trim() ? 1 : 0.5 }} disabled={!v.trim()} onClick={auto}>

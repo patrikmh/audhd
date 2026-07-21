@@ -25,12 +25,13 @@ def _model():
     return WhisperModel(s.whisper_model, device=s.whisper_device, compute_type=s.whisper_compute_type)
 
 
-def transcribe_bytes(audio: bytes, suffix: str = ".webm") -> TranscriptOut:
+def transcribe_bytes(audio: bytes, suffix: str = ".webm", language: str | None = None) -> TranscriptOut:
+    """language: ISO 639-1-kod (t.ex. "sv"/"en") som hint — annars auto-detekterar Whisper."""
     with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as f:
         f.write(audio)
         path = Path(f.name)
     try:
-        segments, info = _model().transcribe(str(path), beam_size=5, vad_filter=True)
+        segments, info = _model().transcribe(str(path), beam_size=5, vad_filter=True, language=language)
         text = " ".join(seg.text.strip() for seg in segments).strip()
         return TranscriptOut(text=text, language=info.language, duration_s=round(info.duration, 1))
     finally:

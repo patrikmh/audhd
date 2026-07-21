@@ -5,8 +5,9 @@ alla frågor till just den användaren — se varv/api/auth.py och User i db/mod
 """
 import asyncio
 from datetime import date, datetime
+from functools import partial
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from sqlmodel import Session, select
 
 from varv.agents.core import SortDeps, forfinaren, nedbrytaren, sorteraren
@@ -35,14 +36,14 @@ def login(payload: LoginIn, session: Session = Depends(get_session)) -> LoginOut
     return LoginOut(token=user.token, username=user.username)
 
 
-async def _transcribe_upload(file: UploadFile) -> TranscriptOut:
+async def _transcribe_upload(file: UploadFile, language: str | None) -> TranscriptOut:
     """KB-Whisper är CPU-tung och synkron → executor så API:et förblir responsivt."""
     from varv.services.transcribe import transcribe_bytes  # lazy: tung modul
     suffix = "." + (file.filename or "a.webm").rsplit(".", 1)[-1]
     data = await file.read()
     loop = asyncio.get_running_loop()
     try:
-        return await loop.run_in_executor(None, transcribe_bytes, data, suffix)
+        return await loop.run_in_executor(None, partial(transcribe_bytes, data, suffix, language=language))
     except RuntimeError as e:
         raise HTTPException(status_code=501, detail=str(e)) from e
 
@@ -57,16 +58,21 @@ async def capture(
 
 
 @router.post("/transcribe", response_model=TranscriptOut)
-async def transcribe(file: UploadFile = File(...), user: User = Depends(current_user)) -> TranscriptOut:
-    return await _transcribe_upload(file)
+async def transcribe(
+    file: UploadFile = File(...), language: str | None = Form(None), user: User = Depends(current_user)
+) -> TranscriptOut:
+    return await _transcribe_upload(file, language)
 
 
 @router.post("/capture/voice", response_model=CaptureOut)
 async def capture_voice(
-    file: UploadFile = File(...), user: User = Depends(current_user), session: Session = Depends(get_session)
+    file: UploadFile = File(...),
+    language: str | None = Form(None),
+    user: User = Depends(current_user),
+    session: Session = Depends(get_session),
 ) -> CaptureOut:
-    """Röst hela vägen: KB-Whisper → Sorteraren → rätt tabell. Ett anrop från PWA:n."""
-    transcript = await _transcribe_upload(file)
+    """Röst hela vägen: KB-Whisper → Sorteraren → rätt tabell. Ett anrop från appen."""
+    transcript = await _transcribe_upload(file, language)
     if not transcript.text:
         raise HTTPException(status_code=422, detail="Tomt transkript")
     return await process_capture(session, user.id, CaptureIn(raw=transcript.text, source="voice"))
