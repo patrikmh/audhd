@@ -8,6 +8,7 @@ skala) att det är snabbt nog varje gång, och det slipper en
 embeddings-tabell som annars kan hamna ur synk när idéer redigeras.
 """
 import logging
+from functools import lru_cache
 
 from sqlmodel import Session, select
 
@@ -18,6 +19,16 @@ log = logging.getLogger(__name__)
 
 MIN_SIMILARITY = 0.55
 MAX_CONNECTIONS_PER_IDEA = 4
+
+
+@lru_cache(maxsize=1)
+def _embedder():
+    """Loaded once per process, not per request — on a Pi, re-instantiating
+    SentenceTransformer every call re-checks the model against the HF Hub over
+    the network each time and can take seconds, easily outrunning the
+    frontend's silent fetch timeout."""
+    from sentence_transformers import SentenceTransformer
+    return SentenceTransformer(get_settings().embedding_model)
 
 
 def idea_connections(session: Session, user_id: str) -> list[dict]:
@@ -31,13 +42,13 @@ def idea_connections(session: Session, user_id: str) -> list[dict]:
         return []
 
     try:
-        from sentence_transformers import SentenceTransformer, util
+        from sentence_transformers import util
+        embedder = _embedder()
     except ImportError:
         log.info('idea_connections: sentence-transformers saknas — pip install "varv-server[topics]"')
         return []
 
     texts = [f"{idea.title or ''}\n{idea.note or idea.raw}".strip() for idea in ideas]
-    embedder = SentenceTransformer(get_settings().embedding_model)
     embeddings = embedder.encode(texts, show_progress_bar=False, convert_to_tensor=True)
     sims = util.cos_sim(embeddings, embeddings)
 

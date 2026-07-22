@@ -11,6 +11,7 @@ export function useSync(apiBase, getAuth, username, state, setState) {
   const syncClientRef = useRef(null);
   const apiClientRef = useRef(null);
   const syncInProgressRef = useRef(false);
+  const quickSyncTimer = useRef(null);
 
   // Initialize clients
   useEffect(() => {
@@ -21,6 +22,7 @@ export function useSync(apiBase, getAuth, username, state, setState) {
       syncClient.dispose();
       syncClientRef.current = null;
       apiClientRef.current = null;
+      clearTimeout(quickSyncTimer.current);
     };
   }, [apiBase, getAuth, username]);
 
@@ -103,7 +105,13 @@ export function useSync(apiBase, getAuth, username, state, setState) {
         syncClientRef.current.track(change.kind, change.id, change.op, change.data);
       }
     }
-  }, []);
+    // Push soon after a change instead of waiting for the periodic/focus sync —
+    // otherwise something you just typed (e.g. an idea) doesn't exist server-side
+    // yet if you immediately open a server-computed view like the idea mindmap.
+    // Debounced so a burst of edits coalesces into one push, not one per keystroke.
+    clearTimeout(quickSyncTimer.current);
+    quickSyncTimer.current = setTimeout(() => performSync(), 2500);
+  }, [performSync]);
 
   // Initial sync on mount
   useEffect(() => {
