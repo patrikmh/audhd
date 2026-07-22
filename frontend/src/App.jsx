@@ -868,13 +868,17 @@ function VarvApp({ username, onLogout }) {
     try {
       const syncResult = await sync.performSync();
       const ouraStatus = await syncOura();
+      // sync_in_progress isn't a failure — it means a different sync (e.g. the
+      // immediate push after a change) is already in flight and will land the
+      // same data. Only surface reasons that mean nothing actually got synced.
+      const benign = syncResult.reason === "sync_in_progress";
       setState((st) => ({
         ...st,
         sync: {
           ...st.sync,
           oura: ouraStatus,
           syncing: false,
-          err: syncResult.success ? null : (syncResult.reason || "Synk misslyckades"),
+          err: (syncResult.success || benign) ? null : (syncResult.reason || "Synk misslyckades"),
         },
       }));
 

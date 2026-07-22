@@ -8,7 +8,7 @@ skala) att det är snabbt nog varje gång, och det slipper en
 embeddings-tabell som annars kan hamna ur synk när idéer redigeras.
 """
 import logging
-from functools import lru_cache
+import threading
 
 from sqlmodel import Session, select
 
@@ -20,15 +20,28 @@ log = logging.getLogger(__name__)
 MIN_SIMILARITY = 0.55
 MAX_CONNECTIONS_PER_IDEA = 4
 
+_embedder_lock = threading.Lock()
+_embedder_instance = None
 
-@lru_cache(maxsize=1)
+
 def _embedder():
     """Loaded once per process, not per request — on a Pi, re-instantiating
     SentenceTransformer every call re-checks the model against the HF Hub over
     the network each time and can take seconds, easily outrunning the
-    frontend's silent fetch timeout."""
-    from sentence_transformers import SentenceTransformer
-    return SentenceTransformer(get_settings().embedding_model)
+    frontend's silent fetch timeout.
+
+    A plain @lru_cache isn't enough here: FastAPI runs sync routes in a
+    threadpool, so two requests arriving close together can both see the
+    cache empty and each start their own (redundant, several-second) model
+    load before either finishes. The lock makes the second caller wait for
+    the first's result instead of racing it."""
+    global _embedder_instance
+    if _embedder_instance is None:
+        with _embedder_lock:
+            if _embedder_instance is None:
+                from sentence_transformers import SentenceTransformer
+                _embedder_instance = SentenceTransformer(get_settings().embedding_model)
+    return _embedder_instance
 
 
 def idea_connections(session: Session, user_id: str) -> list[dict]:
