@@ -434,6 +434,58 @@ function VarvApp({ username, onLogout }) {
     sync.trackChange('energy_event', id, 'upsert', energyEvent);
   };
 
+  // Shopping lists — a single onChange(newLists) callback used to feed this
+  // straight into setState with no sync.trackChange anywhere, so nothing typed
+  // into a list ever reached the server. Granular handlers here instead,
+  // matching the pattern used for tasks/ideas elsewhere in this file.
+  const addShoppingList = (name) => {
+    const list = { id: uid(), name, slug: null, items: [] };
+    setState((st) => ({ ...st, lists: [...st.lists, list] }));
+    sync.trackChange('shopping_list', list.id, 'upsert', list);
+  };
+
+  const removeShoppingList = (id) => {
+    setState((st) => ({ ...st, lists: st.lists.filter((l) => l.id !== id) }));
+    sync.trackChange('shopping_list', id, 'delete', {});
+  };
+
+  const addListItem = (listId, text) => {
+    const item = { id: uid(), text, done: false };
+    setState((st) => ({
+      ...st,
+      lists: st.lists.map((l) => (l.id === listId ? { ...l, items: [...l.items, item] } : l)),
+    }));
+    sync.trackChange('list_item', item.id, 'upsert', { listId, text: item.text, done: item.done });
+  };
+
+  const toggleListItem = (listId, itemId) => {
+    const list = stateRef.current.lists.find((l) => l.id === listId);
+    const item = list?.items.find((i) => i.id === itemId);
+    if (!item) return;
+    const updated = { ...item, done: !item.done };
+    setState((st) => ({
+      ...st,
+      lists: st.lists.map((l) => (l.id === listId ? { ...l, items: l.items.map((i) => (i.id === itemId ? updated : i)) } : l)),
+    }));
+    sync.trackChange('list_item', itemId, 'upsert', { listId, text: updated.text, done: updated.done });
+  };
+
+  const resetListDone = (listId) => {
+    const list = stateRef.current.lists.find((l) => l.id === listId);
+    if (!list) return;
+    const resetItems = list.items.map((i) => ({ ...i, done: false }));
+    setState((st) => ({ ...st, lists: st.lists.map((l) => (l.id === listId ? { ...l, items: resetItems } : l)) }));
+    for (const item of resetItems) sync.trackChange('list_item', item.id, 'upsert', { listId, text: item.text, done: false });
+  };
+
+  const clearDoneListItems = (listId) => {
+    const list = stateRef.current.lists.find((l) => l.id === listId);
+    if (!list) return;
+    const doneItems = list.items.filter((i) => i.done);
+    setState((st) => ({ ...st, lists: st.lists.map((l) => (l.id === listId ? { ...l, items: l.items.filter((i) => !i.done) } : l)) }));
+    for (const item of doneItems) sync.trackChange('list_item', item.id, 'delete', {});
+  };
+
   const [undoTask, setUndoTask] = useState(null);
   const undoTimer = useRef(null);
   const [contextMenu, setContextMenu] = useState(null); // { x, y, items }
@@ -1568,7 +1620,12 @@ function VarvApp({ username, onLogout }) {
             </p>
             <Lists
               lists={state.lists}
-              onChange={(lists) => setState((st) => ({ ...st, lists }))}
+              onAddList={addShoppingList}
+              onRemoveList={removeShoppingList}
+              onAddItem={addListItem}
+              onToggleItem={toggleListItem}
+              onResetDone={resetListDone}
+              onClearDone={clearDoneListItems}
             />
           </section>
         )}
@@ -3173,7 +3230,7 @@ function EduCards() {
 /* ============================================================ */
 /* Lists — external memory: rapid add, check off, reuse          */
 /* ============================================================ */
-function Lists({ lists, onChange }) {
+function Lists({ lists, onAddList, onRemoveList, onAddItem, onToggleItem, onResetDone, onClearDone }) {
   const [openId, setOpenId] = useState(lists[0]?.id || null);
   const [entry, setEntry] = useState("");
   const [newList, setNewList] = useState("");
@@ -3181,11 +3238,9 @@ function Lists({ lists, onChange }) {
   const entryRef = useRef(null);
   const s = styles;
 
-  const patchList = (id, fn) => onChange(lists.map((l) => (l.id === id ? fn(l) : l)));
-
   const addItem = (listId) => {
     if (!entry.trim()) return;
-    patchList(listId, (l) => ({ ...l, items: [...l.items, { id: uid(), text: entry.trim(), done: false }] }));
+    onAddItem(listId, entry.trim());
     setEntry("");
     entryRef.current && entryRef.current.focus(); // stay in flow — add the next one immediately
   };
@@ -3218,7 +3273,7 @@ function Lists({ lists, onChange }) {
           <input style={{ ...s.captureInput }} placeholder="Listnamn, t.ex. Packning, Apotek, Fråga Josefin" value={newList} onChange={(e) => setNewList(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter" && newList.trim()) {
-                onChange([...lists, { id: uid(), name: newList.trim(), items: [] }]);
+                onAddList(newList.trim());
                 setNewList(""); setShowNew(false);
               }
             }} />
@@ -3243,7 +3298,7 @@ function Lists({ lists, onChange }) {
           {l.items.length === 0 && <p style={s.body}>Tom. Det du är rädd att glömma — lägg det här nu.</p>}
 
           {[...l.items].sort((a, b) => Number(a.done) - Number(b.done)).map((it) => (
-            <button key={it.id} style={s.stepRow} onClick={() => patchList(l.id, (x) => ({ ...x, items: x.items.map((i) => (i.id === it.id ? { ...i, done: !i.done } : i)) }))}>
+            <button key={it.id} style={s.stepRow} onClick={() => onToggleItem(l.id, it.id)}>
               <span style={{ ...s.stepBox, background: it.done ? T.moss : "transparent" }}>{it.done ? "✓" : ""}</span>
               <span style={{ textDecoration: it.done ? "line-through" : "none", color: it.done ? T.soft : T.ink, textAlign: "left", fontSize: 15 }}>{it.text}</span>
             </button>
@@ -3251,16 +3306,16 @@ function Lists({ lists, onChange }) {
 
           {l.items.some((i) => i.done) && (
             <div style={{ display: "flex", gap: 14, marginTop: 8 }}>
-              <button style={s.linkBtn} onClick={() => patchList(l.id, (x) => ({ ...x, items: x.items.map((i) => ({ ...i, done: false })) }))}>
+              <button style={s.linkBtn} onClick={() => onResetDone(l.id)}>
                 återställ alla (återanvänd listan)
               </button>
-              <button style={{ ...s.linkBtn, color: T.soft }} onClick={() => patchList(l.id, (x) => ({ ...x, items: x.items.filter((i) => !i.done) }))}>
+              <button style={{ ...s.linkBtn, color: T.soft }} onClick={() => onClearDone(l.id)}>
                 rensa avbockade
               </button>
             </div>
           )}
           {l.slug !== "shopping" && l.id !== "shopping" && l.items.length === 0 && (
-            <button style={{ ...s.linkBtn, color: T.soft, marginTop: 6 }} onClick={() => { onChange(lists.filter((x) => x.id !== l.id)); setOpenId(lists[0]?.id || null); }}>
+            <button style={{ ...s.linkBtn, color: T.soft, marginTop: 6 }} onClick={() => { onRemoveList(l.id); setOpenId(lists[0]?.id || null); }}>
               ta bort listan
             </button>
           )}
