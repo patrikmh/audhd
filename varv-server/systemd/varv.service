@@ -3,10 +3,10 @@ Description=Varv server (agenter + KB-Whisper + BERTopic)
 After=network-online.target
 
 [Service]
-User=pi
-WorkingDirectory=/home/pi/varv-server
-EnvironmentFile=/home/pi/varv-server/.env
-ExecStart=/home/pi/varv-server/.venv/bin/uvicorn varv.main:app --host 0.0.0.0 --port 8420
+User=patrik
+WorkingDirectory=/home/patrik/varv-server
+EnvironmentFile=/home/patrik/varv-server/.env
+ExecStart=/home/patrik/varv-server/.venv/bin/uvicorn varv.main:app --host 0.0.0.0 --port 8420
 Restart=on-failure
 RestartSec=5
 
