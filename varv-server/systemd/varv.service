@@ -6,7 +6,7 @@ After=network-online.target
 User=patrik
 WorkingDirectory=/home/patrik/varv-server
 EnvironmentFile=/home/patrik/varv-server/.env
-ExecStart=/home/patrik/varv-server/.venv/bin/uvicorn varv.main:app --host 0.0.0.0 --port 8420
+ExecStart=/home/patrik/varv-server/.venv/bin/uvicorn varv.main:app --host 0.0.0.0 --port 8420 --proxy-headers --forwarded-allow-ips=127.0.0.1
 Restart=on-failure
 RestartSec=5
 

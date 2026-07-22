@@ -14,9 +14,10 @@ from sqlmodel import func, select
 from varv.agents.core import forfinaren, nedbrytaren
 from varv.config import get_settings
 from varv.db.engine import session_scope
-from varv.db.models import AgentLog, Idea, IdeaStatus, KV, Task, TaskStep, User, utcnow
+from varv.db.models import AgentLog, GoogleAccount, Idea, IdeaStatus, KV, Task, TaskStep, User, utcnow
 from varv.services.capture import agent_note
 from varv.services.capture import link_tags
+from varv.services.google_sync import google_sync_sweep as run_google_sync
 from varv.services.topics import run_topics
 
 log = logging.getLogger(__name__)
@@ -147,6 +148,39 @@ async def topics_job() -> None:
         session.commit()
 
 
+def _google_sync_due() -> bool:
+    s = get_settings()
+    with session_scope() as session:
+        kv = session.get(KV, "google_sync_last_run")
+        return not kv or time.time() - float(kv.value) >= s.google_sync_interval_seconds
+
+
+async def google_sync_job() -> None:
+    s = get_settings()
+    if not (s.google_client_id and s.google_client_secret):
+        return
+    if not _google_sync_due():
+        return
+    with session_scope() as session:
+        accounts = session.exec(select(GoogleAccount)).all()
+        if not accounts:
+            # Inget kopplat konto att synka — spara ingen stämpel, annars låser en tom
+            # tick i onödan ute nästa timmes svep även om någon kopplar strax efter.
+            return
+        for account in accounts:
+            try:
+                await run_google_sync(session, account.user_id, account.refresh_token)
+            except Exception:
+                log.exception("google_sync fallerade för user_id=%s", account.user_id)
+        kv = session.get(KV, "google_sync_last_run")
+        stamp = str(time.time())
+        if kv:
+            kv.value = stamp
+        else:
+            session.add(KV(key="google_sync_last_run", value=stamp))
+        session.commit()
+
+
 async def agent_loop(stop: asyncio.Event) -> None:
     s = get_settings()
     log.info("Agentloop startad pid=%s (tick %ss)", _PID, s.agent_tick_seconds)
@@ -156,6 +190,7 @@ async def agent_loop(stop: asyncio.Event) -> None:
                 await refine_sweep()
                 await breakdown_sweep()
                 await topics_job()
+                await google_sync_job()
             else:
                 log.debug("lease hålls av annan process — hoppar tick")
         except Exception:

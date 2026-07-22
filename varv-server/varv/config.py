@@ -42,6 +42,16 @@ class Settings(BaseSettings):
     # Auth är nu per användare (User.token, se varv/api/auth.py) — inte längre en enda delad nyckel.
     cors_origins: list[str] = ["*"]          # snäva åt när PWA:ns origin är känd
 
+    # --- Google-koppling (kalender + gmail → fångst), en OAuth-app delad av alla användare;
+    # varje användare kopplar sitt EGET Google-konto via Inställningar → Kopplingar.
+    # redirect_uri räknas ut dynamiskt från requesten (varv/api/google_routes.py), inte här —
+    # men den exakta URI:n måste ändå vara registrerad som "Authorized redirect URI" i
+    # Google Cloud Console för varje sätt servern faktiskt nås på.
+    google_client_id: str | None = None
+    google_client_secret: str | None = None
+    google_sync_interval_seconds: int = 3600
+    google_gmail_query: str = "is:unread (is:important OR is:starred)"
+
 
 @lru_cache
 def get_settings() -> Settings:

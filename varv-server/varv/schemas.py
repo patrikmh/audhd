@@ -110,6 +110,11 @@ class LoginOut(BaseModel):
     username: str
 
 
+class GoogleStatusOut(BaseModel):
+    connected: bool
+    connected_at: str | None = None
+
+
 # ---------- agent-proxy (frontend anropar agenterna direkt, utan att spara) ----------
 
 class ClassifyIn(BaseModel):

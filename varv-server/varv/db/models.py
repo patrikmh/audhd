@@ -272,6 +272,40 @@ class KV(SQLModel, table=True):
     value: str
 
 
+class GoogleAccount(SQLModel, table=True):
+    """En användares egen Google-koppling (OAuth), skapad via Inställningar → Kopplingar.
+    Access-token cachas inte — refresh_token byts mot ett nytt vid varje svep (enkelt,
+    ett extra HTTP-anrop i timmen är obetydligt)."""
+    user_id: str = Field(foreign_key="user.id", ondelete="CASCADE", primary_key=True)
+    refresh_token: str
+    scope: str | None = None
+    connected_at: datetime = Field(default_factory=utcnow)
+
+
+class GoogleOAuthState(SQLModel, table=True):
+    """Kortlivad koppling mellan ett pågående OAuth-utbyte och vilken användare som startade
+    det — bäraren av Varv-token kan inte skickas med webbläsarens redirect till Google,
+    så state-parametern gör jobbet istället. Raden tas bort direkt när callbacken landar.
+
+    redirect_uri sparas också: den räknas ut dynamiskt från requesten i /connect (samma
+    host/port besökaren faktiskt använde, inte ett hårdkodat värde i .env) och måste
+    skickas EXAKT likadan igen vid tokenbytet i /callback, annars nekar Google."""
+    state: str = Field(primary_key=True)
+    user_id: str = Field(foreign_key="user.id", ondelete="CASCADE")
+    redirect_uri: str
+    created_at: datetime = Field(default_factory=utcnow)
+
+
+class GoogleSyncedItem(SQLModel, table=True):
+    """Dedup-kvitto per användare: vilka Kalender-/Gmail-poster som redan blivit en fångst."""
+    __table_args__ = (UniqueConstraint("user_id", "kind", "external_id", name="uq_google_synced_item"),)
+    id: str = Field(default_factory=uuid7, primary_key=True)
+    user_id: str = Field(foreign_key="user.id", ondelete="CASCADE", index=True)
+    kind: str                                     # "calendar" | "gmail"
+    external_id: str                              # event id / message id
+    captured_at: datetime = Field(default_factory=utcnow)
+
+
 class SyncTombstone(SQLModel, table=True):
     """Deletion marker for an entity that was not present on this server."""
     __table_args__ = (UniqueConstraint("user_id", "kind", "entity_id", name="uq_sync_tombstone"),)
