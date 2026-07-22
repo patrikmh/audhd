@@ -544,6 +544,7 @@ function VarvApp({ username, onLogout }) {
       capacity,
       tasks: [...s.tasks, ...newTasks],
     }));
+    for (const task of newTasks) sync.trackChange('task', task.id, 'upsert', task);
     setShowSetup(false);
     setShowCheckin(true);
     // Persist to server
@@ -786,13 +787,17 @@ function VarvApp({ username, onLogout }) {
     const tags = (c.tags || []).slice(0, 3);
     logTags(tags);
     if (c.type === "shopping") {
+      const itemId = uid();
+      let targetListId = null;
       setState((st) => {
         const target = st.lists.find((list) => list.slug === "shopping" || list.id === "shopping") || st.lists[0];
+        targetListId = target.id;
         return {
           ...st,
-          lists: st.lists.map((l) => (l.id === target.id ? { ...l, items: [...l.items, { id: uid(), text: c.title || raw, done: false }] } : l)),
+          lists: st.lists.map((l) => (l.id === target.id ? { ...l, items: [...l.items, { id: itemId, text: c.title || raw, done: false }] } : l)),
         };
       });
+      sync.trackChange('list_item', itemId, 'upsert', { listId: targetListId, text: c.title || raw, done: false });
       setToast(`→ Inköp: ${c.title || raw}`);
       logAgent("Sorteraren", `→ Inköp: "${(c.title || raw).slice(0, 40)}"`);
     } else if (c.type === "task") {
@@ -800,10 +805,9 @@ function VarvApp({ username, onLogout }) {
       setToast(`→ Uppgift: ${c.title || raw}${tags[0] ? ` · #${tags[0]}` : ""}`);
       logAgent("Sorteraren", `→ Uppgift: "${(c.title || raw).slice(0, 40)}" [${tags.join(", ")}]`);
     } else {
-      setState((st) => ({
-        ...st,
-        ideas: [{ id: uid(), raw, title: c.title || null, note: c.note || null, tags, ts: Date.now(), status: c.title ? "klar" : "raw" }, ...st.ideas].slice(0, 100),
-      }));
+      const idea = { id: uid(), raw, title: c.title || null, note: c.note || null, tags, ts: Date.now(), status: c.title ? "klar" : "raw" };
+      setState((st) => ({ ...st, ideas: [idea, ...st.ideas].slice(0, 100) }));
+      sync.trackChange('idea', idea.id, 'upsert', idea);
       setToast(`→ Idé: ${c.title || raw.slice(0, 40)}`);
       logAgent("Sorteraren", `→ Idé: "${(c.title || raw).slice(0, 40)}"`);
     }
@@ -819,10 +823,9 @@ function VarvApp({ username, onLogout }) {
       placeClassified(raw, c);
     } catch (e) {
       // felsäkert: ingenting får försvinna — landa som rå idé
-      setState((st) => ({
-        ...st,
-        ideas: [{ id: uid(), raw, title: null, note: null, tags: [], ts: Date.now(), status: "raw" }, ...st.ideas].slice(0, 100),
-      }));
+      const idea = { id: uid(), raw, title: null, note: null, tags: [], ts: Date.now(), status: "raw" };
+      setState((st) => ({ ...st, ideas: [idea, ...st.ideas].slice(0, 100) }));
+      sync.trackChange('idea', idea.id, 'upsert', idea);
       setToast("Sorteringen misslyckades — sparad som rå idé");
       clearTimeout(toastTimer.current);
       toastTimer.current = setTimeout(() => setToast(null), 3000);
@@ -912,11 +915,13 @@ function VarvApp({ username, onLogout }) {
     if (!candidate) return;
     try {
       const steps = await aiBreakdown(candidate.title);
+      const updatedTask = { ...candidate, steps };
       setState((st) => ({
         ...st,
-        tasks: st.tasks.map((t) => (t.id === candidate.id ? { ...t, steps } : t)),
+        tasks: st.tasks.map((t) => (t.id === candidate.id ? updatedTask : t)),
         breakdownBudget: { day: todayKey(), n: (st.breakdownBudget.day === todayKey() ? st.breakdownBudget.n : 0) + 1 },
       }));
+      sync.trackChange('task', candidate.id, 'upsert', updatedTask);
       logAgent("Nedbrytaren", `förberedde ${steps.length} steg för "${candidate.title.slice(0, 40)}"`);
     } catch (e) { /* tyst — försöker nästa tick */ }
   };
@@ -1762,14 +1767,18 @@ function VarvApp({ username, onLogout }) {
             toastTimer.current = setTimeout(() => setToast(null), 2200);
           }}
           onListItem={(text) => {
+            const itemId = uid();
+            let targetListId = null;
             setState((st) => {
               const target = st.lists.find((list) => list.slug === "shopping" || list.id === "shopping") || st.lists[0];
               if (!target) return st;
+              targetListId = target.id;
               return {
                 ...st,
-                lists: st.lists.map((l) => (l.id === target.id ? { ...l, items: [...l.items, { id: uid(), text, done: false }] } : l)),
+                lists: st.lists.map((l) => (l.id === target.id ? { ...l, items: [...l.items, { id: itemId, text, done: false }] } : l)),
               };
             });
+            if (targetListId) sync.trackChange('list_item', itemId, 'upsert', { listId: targetListId, text, done: false });
             setToast(`→ Inköp: ${text}`);
             clearTimeout(toastTimer.current);
             toastTimer.current = setTimeout(() => setToast(null), 2200);
