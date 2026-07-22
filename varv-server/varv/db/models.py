@@ -222,6 +222,28 @@ class EnergyEvent(SQLModel, table=True):
     sync_version: int = Field(default=0, index=True)
 
 
+class Checkin(SQLModel, table=True):
+    """Append-only. Kognitiv omtolkning: vad hände, hjärnans första tolkning, en snällare läsning."""
+    id: str = Field(default_factory=uuid7, primary_key=True)
+    user_id: str = Field(foreign_key="user.id", ondelete="CASCADE", index=True)
+    what: str
+    thought: str
+    kinder: str
+    created_at: datetime = Field(default_factory=utcnow)
+    sync_version: int = Field(default=0, index=True)
+
+
+class Calibration(SQLModel, table=True):
+    """Append-only. Tidsuppskattning vs. faktiskt utfall för ett fokusvarv —
+    underlag för att bättre kalibrera "hur lång tid tar det här egentligen"."""
+    id: str = Field(default_factory=uuid7, primary_key=True)
+    user_id: str = Field(foreign_key="user.id", ondelete="CASCADE", index=True)
+    est: int
+    actual: int
+    created_at: datetime = Field(default_factory=utcnow)
+    sync_version: int = Field(default=0, index=True)
+
+
 class AgentLog(SQLModel, table=True):
     id: str = Field(default_factory=uuid7, primary_key=True)
     user_id: str = Field(foreign_key="user.id", ondelete="CASCADE", index=True)
@@ -261,7 +283,10 @@ class SyncTombstone(SQLModel, table=True):
     sync_version: int = Field(default=0, index=True)
 
 
-SYNC_VERSIONED_TYPES = (Task, TaskStep, TaskOccurrence, Idea, ShoppingList, ListItem, Win, EnergyEvent, SyncTombstone)
+SYNC_VERSIONED_TYPES = (
+    Task, TaskStep, TaskOccurrence, Idea, ShoppingList, ListItem, Win, EnergyEvent,
+    Checkin, Calibration, SyncTombstone,
+)
 
 
 @event.listens_for(SQLAlchemySession, "before_flush")

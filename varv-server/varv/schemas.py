@@ -206,8 +206,22 @@ class SyncEnergyEventData(StrictSyncData):
     label: str | None = Field(default=None, min_length=1, max_length=500)
     day: str | None = Field(default=None, pattern=r"^\d{4}-\d{2}-\d{2}$")
 
+
+class SyncCheckinData(StrictSyncData):
+    what: str | None = Field(default=None, min_length=1, max_length=500)
+    thought: str | None = Field(default=None, min_length=1, max_length=500)
+    kinder: str | None = Field(default=None, min_length=1, max_length=500)
+
+
+class SyncCalibrationData(StrictSyncData):
+    est: int | None = Field(default=None, ge=0, le=1440)
+    actual: int | None = Field(default=None, ge=0, le=1440)
+
 class ChangeIn(BaseModel):
-    kind: Literal["task", "task_step", "task_occurrence", "idea", "shopping_list", "list_item", "win", "energy_event"]
+    kind: Literal[
+        "task", "task_step", "task_occurrence", "idea", "shopping_list", "list_item", "win", "energy_event",
+        "checkin", "calibration",
+    ]
     id: str                                   # klientgenererad UUIDv7
     op: Literal["upsert", "delete"] = "upsert"
     updated_at: datetime = Field(description="Klientens tidsstämpel — LWW-jämförelse")

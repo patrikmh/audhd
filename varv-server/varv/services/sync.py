@@ -17,11 +17,12 @@ from pydantic import ValidationError
 from sqlmodel import Session, select
 
 from varv.db.models import (
-    EnergyEvent, Idea, ListItem, ShoppingList, SyncTombstone, Task, TaskOccurrence, TaskStep, Win,
+    Calibration, Checkin, EnergyEvent, Idea, ListItem, ShoppingList, SyncTombstone, Task, TaskOccurrence,
+    TaskStep, Win,
 )
 from varv.schemas import (
-    ChangeIn, SyncEnergyEventData, SyncIdeaData, SyncListItemData, SyncShoppingListData,
-    SyncTaskData, SyncTaskOccurrenceData, SyncTaskStepData, SyncWinData,
+    ChangeIn, SyncCalibrationData, SyncCheckinData, SyncEnergyEventData, SyncIdeaData, SyncListItemData,
+    SyncShoppingListData, SyncTaskData, SyncTaskOccurrenceData, SyncTaskStepData, SyncWinData,
 )
 from varv.services.capture import redact_idea
 
@@ -34,8 +35,10 @@ SYNCABLE = {
     "list_item": ListItem,
     "win": Win,
     "energy_event": EnergyEvent,
+    "checkin": Checkin,
+    "calibration": Calibration,
 }
-APPEND_ONLY = {"win", "energy_event"}         # saknar deleted_at — kan aldrig raderas
+APPEND_ONLY = {"win", "energy_event", "checkin", "calibration"}  # saknar deleted_at — kan aldrig raderas
 SOFT_DELETABLE = set(SYNCABLE) - APPEND_ONLY
 DATA_SCHEMAS = {
     "task": SyncTaskData,
@@ -46,6 +49,8 @@ DATA_SCHEMAS = {
     "list_item": SyncListItemData,
     "win": SyncWinData,
     "energy_event": SyncEnergyEventData,
+    "checkin": SyncCheckinData,
+    "calibration": SyncCalibrationData,
 }
 REQUIRED_ON_CREATE = {
     "task": {"title"},
@@ -56,6 +61,8 @@ REQUIRED_ON_CREATE = {
     "list_item": {"list_id", "text"},
     "win": {"text"},
     "energy_event": {"delta", "label"},
+    "checkin": {"what", "thought", "kinder"},
+    "calibration": {"est", "actual"},
 }
 
 

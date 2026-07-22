@@ -1773,6 +1773,7 @@ function VarvApp({ username, onLogout }) {
               past={state.checkins}
               onSave={(c) => {
                 setState((st) => ({ ...st, checkins: [c, ...st.checkins].slice(0, 40) }));
+                sync.trackChange('checkin', c.id, 'upsert', c);
                 addWin("Gjorde en tankekoll");
                 setTool(null);
               }}
@@ -1797,8 +1798,11 @@ function VarvApp({ username, onLogout }) {
             onPark={(text) => addTask({ title: text })}
             onDone={(goal, mins, est, actualMin) => {
               addWin(`Fokusvarv (${actualMin} min): ${goal || "utan titel"}`);
-              if (est > 0)
-                setState((st) => ({ ...st, calibration: [...st.calibration, { est, actual: actualMin, ts: Date.now() }].slice(-40) }));
+              if (est > 0) {
+                const cal = { id: uid(), est, actual: actualMin, ts: Date.now() };
+                setState((st) => ({ ...st, calibration: [...st.calibration, cal].slice(-40) }));
+                sync.trackChange('calibration', cal.id, 'upsert', cal);
+              }
               setState((st) => ({ ...st, activeFocus: null }));
               setLapRunning(false);
               setFocusPrefill(null);

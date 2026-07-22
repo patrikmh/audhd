@@ -91,6 +91,8 @@ export function toWireChanges(kind, id, op, data = {}) {
     }),
     win: (win) => compact({ text: win.text, day: win.day }),
     energy_event: (event) => compact({ delta: event.delta, label: event.label, day: event.day }),
+    checkin: (c) => compact({ what: c.what, thought: c.thought, kinder: c.kinder }),
+    calibration: (c) => compact({ est: c.est, actual: c.actual }),
   };
   return [{ kind, id, op, data: adapters[kind](data) }];
 }
@@ -249,5 +251,20 @@ export function mergeServerChanges(previous, changes) {
     });
   }
   next.energyLog = energyLog.sort((a, b) => String(b.ts || '').localeCompare(String(a.ts || '')));
+
+  let checkins = [...(previous.checkins || [])];
+  for (const row of changes.checkin || []) {
+    checkins = upsertById(checkins, {
+      id: row.id, what: row.what, thought: row.thought, kinder: row.kinder, ts: row.created_at,
+    });
+  }
+  next.checkins = checkins.sort((a, b) => String(b.ts || '').localeCompare(String(a.ts || ''))).slice(0, 40);
+
+  let calibration = [...(previous.calibration || [])];
+  for (const row of changes.calibration || []) {
+    calibration = upsertById(calibration, { id: row.id, est: row.est, actual: row.actual, ts: row.created_at });
+  }
+  next.calibration = calibration.sort((a, b) => String(b.ts || '').localeCompare(String(a.ts || ''))).slice(0, 40);
+
   return next;
 }
