@@ -853,7 +853,7 @@ function VarvApp({ username, onLogout }) {
       setToast(`→ Inköp: ${c.title || raw}`);
       logAgent("Sorteraren", `→ Inköp: "${(c.title || raw).slice(0, 40)}"`);
     } else if (c.type === "task") {
-      addTask({ title: c.title || raw, energy: c.energy || 2, time: c.time || "", tags });
+      addTask({ title: c.title || raw, energy: c.energy || 2, time: c.time || "", scheduled_date: c.scheduled_date || null, tags });
       setToast(`→ Uppgift: ${c.title || raw}${tags[0] ? ` · #${tags[0]}` : ""}`);
       logAgent("Sorteraren", `→ Uppgift: "${(c.title || raw).slice(0, 40)}" [${tags.join(", ")}]`);
     } else {

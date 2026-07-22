@@ -127,6 +127,7 @@ def _route(session: Session, user_id: str, cls: ClassifiedCapture, raw: str) -> 
             icon=guess_icon(cls.title or raw),
             energy=cls.energy or 2,
             time=cls.time,
+            scheduled_date=cls.scheduled_date,
             tags=cls.tags[:3],
         )
         session.add(task)

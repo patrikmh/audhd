@@ -21,6 +21,10 @@ class ClassifiedCapture(BaseModel):
     tags: list[str] = Field(default_factory=list, max_length=3, description="1–3 korta taggar, svenska, gemener")
     energy: int | None = Field(default=None, ge=1, le=5, description="Energikostnad om task")
     time: str | None = Field(default=None, pattern=r"^\d{2}:\d{2}$", description="HH:MM endast om uttryckligen nämnt")
+    scheduled_date: str | None = Field(
+        default=None, pattern=r"^\d{4}-\d{2}-\d{2}$",
+        description="YYYY-MM-DD om task nämner en dag (imorgon, på fredag, ett datum) — räknat från dagens datum. Annars null.",
+    )
 
 
 class RefinedIdea(BaseModel):
