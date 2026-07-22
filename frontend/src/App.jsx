@@ -825,7 +825,7 @@ function VarvApp({ username, onLogout }) {
   };
 
   /* ---------- agent-tick: en gemensam bakgrundsloop ---------- */
-  const SYNC_INTERVAL = 3 * 3600 * 1000;
+  const SYNC_INTERVAL = 10 * 60 * 1000;
   const stateRef = useRef(state);
   useEffect(() => { stateRef.current = state; }, [state]);
   const syncingRef = useRef(false);
@@ -909,6 +909,23 @@ function VarvApp({ username, onLogout }) {
     const startT = setTimeout(agentTick, 1500);
     const guard = setInterval(agentTick, 5 * 60 * 1000); // vakt: agenterna tittar var 5:e minut
     return () => { clearTimeout(startT); clearInterval(guard); };
+  }, [loaded]);
+
+  // Synka direkt när man byter tillbaka till fliken/appen — annars kan telefon och
+  // dator visa olika data i flera minuter efter en ändring på den andra enheten.
+  useEffect(() => {
+    if (!loaded) return;
+    const onFocusLike = () => {
+      if (document.visibilityState === "hidden") return;
+      const s = stateRef.current;
+      if (s.agents.sync && s.settings.autoSync && Date.now() - (s.sync.last || 0) > 60 * 1000) runSync();
+    };
+    document.addEventListener("visibilitychange", onFocusLike);
+    window.addEventListener("focus", onFocusLike);
+    return () => {
+      document.removeEventListener("visibilitychange", onFocusLike);
+      window.removeEventListener("focus", onFocusLike);
+    };
   }, [loaded]);
 
   if (!loaded)

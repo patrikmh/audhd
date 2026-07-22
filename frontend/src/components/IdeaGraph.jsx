@@ -9,7 +9,7 @@
  * to hex in JS the way a canvas-based renderer would require.
  */
 import { useEffect, useMemo, useRef, useState } from "react";
-import { forceSimulation, forceManyBody, forceCollide, forceX, forceY } from "d3-force";
+import { forceSimulation, forceManyBody, forceCollide, forceX, forceY, forceLink, forceCenter } from "d3-force";
 import { scaleTime } from "d3-scale";
 import { select } from "d3-selection";
 import { drag } from "d3-drag";
@@ -102,57 +102,70 @@ export function IdeaGraph({ ideas, tasks = [], onSelect, selectedId }) {
     return list;
   }, [ideas, tasks, mode]);
 
+  const isMindmap = mode === "ideer";
+
   useEffect(() => {
     if (!svgRef.current || nodes.length === 0) return;
     const svg = select(svgRef.current);
     svg.selectAll("*").remove();
 
-    const dates = nodes.map((n) => n.date);
-    const xScale = scaleTime()
-      .domain([new Date(Math.min(...dates)), new Date(Math.max(Date.now(), ...dates))])
-      .range([MARGIN.left, WIDTH - MARGIN.right])
-      .nice();
-
     const root = svg.append("g");
-
-    // Time axis: a baseline plus a handful of hand-rolled ticks (skips pulling in
-    // d3-axis for something this small).
-    const axisY = HEIGHT - MARGIN.bottom;
-    root.append("line")
-      .attr("x1", MARGIN.left).attr("x2", WIDTH - MARGIN.right)
-      .attr("y1", axisY).attr("y2", axisY)
-      .attr("stroke", "var(--line)").attr("stroke-width", 1);
-    for (const tick of xScale.ticks(5)) {
-      const x = xScale(tick);
-      root.append("line")
-        .attr("x1", x).attr("x2", x).attr("y1", axisY).attr("y2", axisY + 5)
-        .attr("stroke", "var(--soft)").attr("stroke-width", 1);
-      root.append("text")
-        .attr("x", x).attr("y", axisY + 17).attr("text-anchor", "middle")
-        .attr("font-size", 10).attr("font-family", "IBM Plex Mono, monospace").attr("fill", "var(--soft)")
-        .text(new Intl.DateTimeFormat("sv-SE", { day: "numeric", month: "short" }).format(tick));
-    }
-    // "nu" marker
-    const nowX = xScale(new Date());
-    root.append("line")
-      .attr("x1", nowX).attr("x2", nowX).attr("y1", MARGIN.top).attr("y2", axisY)
-      .attr("stroke", "var(--warn)").attr("stroke-width", 1).attr("stroke-dasharray", "3,3").attr("opacity", 0.6);
-
     const linkLayer = root.append("g");
     const nodeLayer = root.append("g");
 
     const nodeById = new Map(nodes.map((n) => [n.id, n]));
-    const links = mode === "ideer"
+    const rawLinks = isMindmap
       ? connections
           .filter((c) => nodeById.has(c.a) && nodeById.has(c.b))
-          .map((c) => ({ source: nodeById.get(c.a), target: nodeById.get(c.b), score: c.score }))
+          .map((c) => ({ source: c.a, target: c.b, score: c.score }))
       : [];
-    const linkSel = linkLayer.selectAll("line")
-      .data(links)
-      .join("line")
-      .attr("stroke", "var(--petrol)")
-      .attr("stroke-width", (d) => 0.5 + d.score * 2)
-      .attr("opacity", (d) => 0.15 + d.score * 0.35);
+
+    let xScale, axisY;
+    if (!isMindmap) {
+      const dates = nodes.map((n) => n.date);
+      xScale = scaleTime()
+        .domain([new Date(Math.min(...dates)), new Date(Math.max(Date.now(), ...dates))])
+        .range([MARGIN.left, WIDTH - MARGIN.right])
+        .nice();
+
+      // Time axis: a baseline plus a handful of hand-rolled ticks (skips pulling in
+      // d3-axis for something this small).
+      axisY = HEIGHT - MARGIN.bottom;
+      root.append("line")
+        .attr("x1", MARGIN.left).attr("x2", WIDTH - MARGIN.right)
+        .attr("y1", axisY).attr("y2", axisY)
+        .attr("stroke", "var(--line)").attr("stroke-width", 1);
+      for (const tick of xScale.ticks(5)) {
+        const x = xScale(tick);
+        root.append("line")
+          .attr("x1", x).attr("x2", x).attr("y1", axisY).attr("y2", axisY + 5)
+          .attr("stroke", "var(--soft)").attr("stroke-width", 1);
+        root.append("text")
+          .attr("x", x).attr("y", axisY + 17).attr("text-anchor", "middle")
+          .attr("font-size", 10).attr("font-family", "IBM Plex Mono, monospace").attr("fill", "var(--soft)")
+          .text(new Intl.DateTimeFormat("sv-SE", { day: "numeric", month: "short" }).format(tick));
+      }
+      // "nu" marker
+      const nowX = xScale(new Date());
+      root.append("line")
+        .attr("x1", nowX).attr("x2", nowX).attr("y1", MARGIN.top).attr("y2", axisY)
+        .attr("stroke", "var(--warn)").attr("stroke-width", 1).attr("stroke-dasharray", "3,3").attr("opacity", 0.6);
+    }
+
+    const linkSel = isMindmap
+      ? linkLayer.selectAll("path")
+          .data(rawLinks)
+          .join("path")
+          .attr("fill", "none")
+          .attr("stroke", "var(--petrol)")
+          .attr("stroke-width", (d) => 0.75 + d.score * 2.5)
+          .attr("opacity", (d) => 0.2 + d.score * 0.45)
+      : linkLayer.selectAll("line")
+          .data(rawLinks)
+          .join("line")
+          .attr("stroke", "var(--petrol)")
+          .attr("stroke-width", (d) => 0.5 + d.score * 2)
+          .attr("opacity", (d) => 0.15 + d.score * 0.35);
 
     const nodeSel = nodeLayer.selectAll("g")
       .data(nodes, (d) => d.id)
@@ -160,9 +173,15 @@ export function IdeaGraph({ ideas, tasks = [], onSelect, selectedId }) {
       .style("cursor", (d) => (d.kind === "idea" ? "pointer" : "default"))
       .call(
         drag()
-          .on("start", (event, d) => { if (!event.active) sim.alphaTarget(0.15).restart(); d.fy = d.y; })
-          .on("drag", (event, d) => { d.fy = event.y; })
-          .on("end", (event, d) => { if (!event.active) sim.alphaTarget(0); d.fy = null; })
+          .on("start", (event, d) => {
+            if (!event.active) sim.alphaTarget(0.15).restart();
+            d.fy = d.y; if (isMindmap) d.fx = d.x;
+          })
+          .on("drag", (event, d) => { d.fy = event.y; if (isMindmap) d.fx = event.x; })
+          .on("end", (event, d) => {
+            if (!event.active) sim.alphaTarget(0);
+            d.fy = null; if (isMindmap) d.fx = null;
+          })
       )
       .on("click", (event, d) => { if (d.kind === "idea") onSelect(d.id); });
 
@@ -187,18 +206,52 @@ export function IdeaGraph({ ideas, tasks = [], onSelect, selectedId }) {
       .attr("fill", "var(--ink)")
       .style("pointer-events", "none");
 
-    const sim = forceSimulation(nodes)
-      .force("x", forceX((d) => xScale(d.date)).strength(0.9))
-      .force("y", forceY(HEIGHT / 2 - 10).strength(0.06))
-      .force("charge", forceManyBody().strength(-18))
-      .force("collide", forceCollide((d) => d.r + 14))
-      .on("tick", () => {
-        const clampY = (d) => Math.min(axisY - 20, Math.max(MARGIN.top + 10, d.y));
-        nodeSel.attr("transform", (d) => `translate(${d.x},${clampY(d)})`);
+    const sim = isMindmap
+      ? forceSimulation(nodes)
+          .force("link", forceLink(rawLinks).id((d) => d.id).distance(70).strength(0.35))
+          .force("charge", forceManyBody().strength(-140))
+          .force("center", forceCenter(WIDTH / 2, HEIGHT / 2))
+          // Weak individual pull toward the middle — forceCenter only recenters the
+          // simulation's centroid, so a node with no connections (nothing to pull it
+          // back) would otherwise drift off the visible canvas under pure repulsion.
+          .force("x", forceX(WIDTH / 2).strength(0.03))
+          .force("y", forceY(HEIGHT / 2).strength(0.03))
+          .force("collide", forceCollide((d) => d.r + 18))
+      : forceSimulation(nodes)
+          .force("x", forceX((d) => xScale(d.date)).strength(0.9))
+          .force("y", forceY(HEIGHT / 2 - 10).strength(0.06))
+          .force("charge", forceManyBody().strength(-18))
+          .force("collide", forceCollide((d) => d.r + 14));
+
+    // Safety net so a node can never render outside the visible canvas — under pure
+    // repulsion an isolated (unconnected) idea has nothing pulling it back in.
+    const clampX = (d) => (isMindmap ? Math.min(WIDTH - MARGIN.right - 10, Math.max(MARGIN.left + 10, d.x)) : d.x);
+    const clampY = (d) => (isMindmap
+      ? Math.min(HEIGHT - MARGIN.bottom - 10, Math.max(MARGIN.top + 10, d.y))
+      : Math.min(axisY - 20, Math.max(MARGIN.top + 10, d.y)));
+
+    // Organic branch curve: bow the line out from its own midpoint, alternating
+    // direction so a dense cluster reads as branches rather than a mesh of straight spokes.
+    const linkPath = (d) => {
+      const sx = clampX(d.source), sy = clampY(d.source), tx = clampX(d.target), ty = clampY(d.target);
+      const mx = (sx + tx) / 2, my = (sy + ty) / 2;
+      const dx = tx - sx, dy = ty - sy;
+      const bow = (isMindmap ? 0.18 : 0) * Math.hypot(dx, dy) * (d.source.index % 2 === 0 ? 1 : -1);
+      const cx = mx - dy * (bow / (Math.hypot(dx, dy) || 1));
+      const cy = my + dx * (bow / (Math.hypot(dx, dy) || 1));
+      return `M${sx},${sy} Q${cx},${cy} ${tx},${ty}`;
+    };
+
+    sim.on("tick", () => {
+      nodeSel.attr("transform", (d) => `translate(${clampX(d)},${clampY(d)})`);
+      if (isMindmap) {
+        linkSel.attr("d", linkPath);
+      } else {
         linkSel
           .attr("x1", (d) => d.source.x).attr("y1", (d) => clampY(d.source))
           .attr("x2", (d) => d.target.x).attr("y2", (d) => clampY(d.target));
-      });
+      }
+    });
     simRef.current = sim;
 
     svg.call(
@@ -208,7 +261,7 @@ export function IdeaGraph({ ideas, tasks = [], onSelect, selectedId }) {
     );
 
     return () => sim.stop();
-  }, [nodes, selectedId, onSelect, connections, mode]);
+  }, [nodes, selectedId, onSelect, connections, mode, isMindmap]);
 
   return (
     <div>
@@ -234,11 +287,16 @@ export function IdeaGraph({ ideas, tasks = [], onSelect, selectedId }) {
         width="100%"
         style={{ display: "block", borderRadius: 12, border: "1px solid var(--line)", background: "var(--card)" }}
         role="img"
-        aria-label={`Tidslinjegraf: ${nodes.length} noder från äldst till nu. Använd listvyn för ett tillgängligare alternativ.`}
+        aria-label={
+          isMindmap
+            ? `Mindmap: ${nodes.length} idéer, grenar visar vilka agenten tycker hänger ihop. Använd listvyn för ett tillgängligare alternativ.`
+            : `Tidslinjegraf: ${nodes.length} noder från äldst till nu. Använd listvyn för ett tillgängligare alternativ.`
+        }
       />
       <div style={{ fontSize: 11, color: "var(--soft)", textAlign: "center", paddingTop: 6 }}>
-        vänster→höger = tid, streckad linje = nu · storlek/färg = taggkategori och nyhet
-        {mode === "ideer" && " · linjer = idéer agenten tycker hänger ihop"} · dra för att flytta, tryck en idé för att öppna den
+        {isMindmap
+          ? "grenar = idéer agenten tycker hänger ihop · storlek/färg = taggkategori och nyhet · dra för att flytta, tryck en idé för att öppna den"
+          : "vänster→höger = tid, streckad linje = nu · storlek/färg = taggkategori och nyhet · dra för att flytta, tryck en idé för att öppna den"}
       </div>
     </div>
   );
