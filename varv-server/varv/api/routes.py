@@ -115,7 +115,10 @@ async def agents_refine(payload: RefineIn, user: User = Depends(current_user)) -
 @router.post("/agents/breakdown", response_model=Breakdown)
 async def agents_breakdown(payload: BreakdownIn, user: User = Depends(current_user)) -> Breakdown:
     _require_ai_consent(user)
-    result = await nedbrytaren.run(payload.title)
+    prompt = payload.title
+    if payload.instructions:
+        prompt = f"{payload.title}\n\nFokusera särskilt på: {payload.instructions}"
+    result = await nedbrytaren.run(prompt)
     return result.output
 
 

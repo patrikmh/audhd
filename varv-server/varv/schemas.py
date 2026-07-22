@@ -127,6 +127,9 @@ class TagIn(BaseModel):
 
 class BreakdownIn(BaseModel):
     title: str = Field(min_length=1, max_length=200)
+    instructions: str | None = Field(
+        default=None, max_length=200, description="Valfritt fokus, t.ex. 'fokusera på researchdelen'"
+    )
 
 
 class CompleteIn(BaseModel):

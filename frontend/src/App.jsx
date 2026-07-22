@@ -79,8 +79,8 @@ async function apiGet(path) {
 // Agenterna (Nedbrytaren/Förfinaren/Sorteraren) körs server-side mot
 // OpenRouter — frontend anropar bara varv-server, aldrig LLM-API:et direkt.
 // Legacy non-streaming fallbacks (kept for sync/sweep flows):
-async function aiBreakdown(title) {
-  const data = await apiPost("/api/agents/breakdown", { title });
+async function aiBreakdown(title, instructions) {
+  const data = await apiPost("/api/agents/breakdown", { title, instructions: instructions || null });
   return data.steps.map((st) => ({ id: uid(), title: st.title, minutes: st.minutes, done: false }));
 }
 
@@ -2527,6 +2527,8 @@ function TaskCard({ task, onDone, onUpdate, onRemove, onWin, agentBusy, aiEnable
   const [editNote, setEditNote] = useState(task.note || "");
   const [imgBusy, setImgBusy] = useState(false);
   const [editingSteps, setEditingSteps] = useState(false);
+  const [showFocusHint, setShowFocusHint] = useState(false);
+  const [focusHint, setFocusHint] = useState("");
   const s = styles;
 
   // Compress an image File to a base64 data-URI thumbnail (max 800px, JPEG 0.7).
@@ -2559,7 +2561,7 @@ function TaskCard({ task, onDone, onUpdate, onRemove, onWin, agentBusy, aiEnable
     setBusy(true);
     setErr("");
     try {
-      const steps = await aiBreakdown(task.title);
+      const steps = await aiBreakdown(task.title, focusHint.trim());
       onUpdate({ steps });
     } catch (e) {
       setErr("Nedbrytningen misslyckades — försök igen eller lägg till steg för hand.");
@@ -2779,15 +2781,27 @@ function TaskCard({ task, onDone, onUpdate, onRemove, onWin, agentBusy, aiEnable
             })}
           </div>
 
-          <div style={{ display: "flex", gap: 12, marginTop: 10, flexWrap: "wrap" }}>
+          <div style={{ display: "flex", gap: 12, marginTop: 10, flexWrap: "wrap", alignItems: "center" }}>
             <button style={s.linkBtn} onClick={breakDown} disabled={busy}>
               {busy ? "bryter ner…" : task.steps.length ? "bryt ner igen (AI)" : "bryt ner (AI)"}
+            </button>
+            <button style={{ ...s.linkBtn, fontSize: 12 }} onClick={() => setShowFocusHint((v) => !v)}>
+              {showFocusHint ? "dölj fokus" : focusHint ? "✓ fokus satt" : "+ fokusera på något?"}
             </button>
             <button style={s.linkBtn} onClick={() => setEditingSteps((v) => !v)}>
               {editingSteps ? "klar med steg" : "redigera steg"}
             </button>
             <button style={{ ...s.linkBtn, color: T.soft }} onClick={onRemove}>ta bort</button>
           </div>
+          {showFocusHint && (
+            <input
+              style={{ ...s.captureInput, marginTop: 8, padding: "6px 10px", fontSize: 13 }}
+              placeholder="t.ex. fokusera på researchdelen, eller jag fastnar på steg 2"
+              value={focusHint}
+              onChange={(e) => setFocusHint(e.target.value)}
+              autoFocus
+            />
+          )}
           {err && <div style={{ color: T.warn, fontSize: 13, marginTop: 6 }}>{err}</div>}
 
           {editingSteps ? (

@@ -83,7 +83,10 @@ nedbrytaren: Agent[None, Breakdown] = Agent(
     system_prompt=(
         "Du är Nedbrytaren: bryt ner uppgiften i 3–6 pyttesmå konkreta steg i jag-form på svenska, "
         "för någon med ADHD/autism som fryser vid vaga uppgifter. Varje steg under 10 minuter. "
-        "Första steget är den allra första FYSISKA handlingen (hämta telefonen, öppna fliken, ta fram lådan)."
+        "Första steget är den allra första FYSISKA handlingen (hämta telefonen, öppna fliken, ta fram lådan). "
+        "Om uppgiften har en rad \"Fokusera särskilt på: ...\" — lägg tyngden av stegen där, inte en jämn "
+        "genomgång av hela uppgiften. Personen ber om en ny nedbrytning specifikt för att första försöket "
+        "inte träffade rätt, inte för att höra samma sak igen."
     ),
 )
 
