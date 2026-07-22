@@ -14,6 +14,8 @@ import { scaleTime } from "d3-scale";
 import { select } from "d3-selection";
 import { drag } from "d3-drag";
 import { zoom } from "d3-zoom";
+import { API_BASE } from "../constants/tokens";
+import { getAuth } from "../utils/auth";
 
 const WIDTH = 640;
 const HEIGHT = 340;
@@ -39,6 +41,30 @@ export function IdeaGraph({ ideas, tasks = [], onSelect, selectedId }) {
   const svgRef = useRef(null);
   const simRef = useRef(null);
   const [mode, setMode] = useState("ideer"); // 'ideer' | 'uppgifter' | 'allt'
+  const [connections, setConnections] = useState([]); // idea-to-idea only — see services/connections.py
+
+  // Local embedding similarity, not an LLM call — no consent gate on the server
+  // side, so nothing here needs to check it either. Ideas-only per the ask;
+  // tasks don't get agent-drawn connections (their relationships are already
+  // explicit: dates, tags, steps).
+  useEffect(() => {
+    if (ideas.length < 2) { setConnections([]); return; }
+    const controller = new AbortController();
+    (async () => {
+      try {
+        const auth = getAuth();
+        const res = await fetch(`${API_BASE}/api/ideas/connections`, {
+          headers: auth?.token ? { Authorization: `Bearer ${auth.token}` } : {},
+          signal: controller.signal,
+        });
+        if (!res.ok) return;
+        setConnections(await res.json());
+      } catch (e) {
+        /* silent — connections are an enhancement, never block the graph */
+      }
+    })();
+    return () => controller.abort();
+  }, [ideas]);
 
   const nodes = useMemo(() => {
     const now = Date.now();
@@ -115,6 +141,19 @@ export function IdeaGraph({ ideas, tasks = [], onSelect, selectedId }) {
     const linkLayer = root.append("g");
     const nodeLayer = root.append("g");
 
+    const nodeById = new Map(nodes.map((n) => [n.id, n]));
+    const links = mode === "ideer"
+      ? connections
+          .filter((c) => nodeById.has(c.a) && nodeById.has(c.b))
+          .map((c) => ({ source: nodeById.get(c.a), target: nodeById.get(c.b), score: c.score }))
+      : [];
+    const linkSel = linkLayer.selectAll("line")
+      .data(links)
+      .join("line")
+      .attr("stroke", "var(--petrol)")
+      .attr("stroke-width", (d) => 0.5 + d.score * 2)
+      .attr("opacity", (d) => 0.15 + d.score * 0.35);
+
     const nodeSel = nodeLayer.selectAll("g")
       .data(nodes, (d) => d.id)
       .join("g")
@@ -154,7 +193,11 @@ export function IdeaGraph({ ideas, tasks = [], onSelect, selectedId }) {
       .force("charge", forceManyBody().strength(-18))
       .force("collide", forceCollide((d) => d.r + 14))
       .on("tick", () => {
-        nodeSel.attr("transform", (d) => `translate(${d.x},${Math.min(axisY - 20, Math.max(MARGIN.top + 10, d.y))})`);
+        const clampY = (d) => Math.min(axisY - 20, Math.max(MARGIN.top + 10, d.y));
+        nodeSel.attr("transform", (d) => `translate(${d.x},${clampY(d)})`);
+        linkSel
+          .attr("x1", (d) => d.source.x).attr("y1", (d) => clampY(d.source))
+          .attr("x2", (d) => d.target.x).attr("y2", (d) => clampY(d.target));
       });
     simRef.current = sim;
 
@@ -165,7 +208,7 @@ export function IdeaGraph({ ideas, tasks = [], onSelect, selectedId }) {
     );
 
     return () => sim.stop();
-  }, [nodes, selectedId, onSelect]);
+  }, [nodes, selectedId, onSelect, connections, mode]);
 
   return (
     <div>
@@ -194,7 +237,8 @@ export function IdeaGraph({ ideas, tasks = [], onSelect, selectedId }) {
         aria-label={`Tidslinjegraf: ${nodes.length} noder från äldst till nu. Använd listvyn för ett tillgängligare alternativ.`}
       />
       <div style={{ fontSize: 11, color: "var(--soft)", textAlign: "center", paddingTop: 6 }}>
-        vänster→höger = tid, streckad linje = nu · storlek/färg = taggkategori och nyhet · dra för att flytta, tryck en idé för att öppna den
+        vänster→höger = tid, streckad linje = nu · storlek/färg = taggkategori och nyhet
+        {mode === "ideer" && " · linjer = idéer agenten tycker hänger ihop"} · dra för att flytta, tryck en idé för att öppna den
       </div>
     </div>
   );

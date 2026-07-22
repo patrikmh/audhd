@@ -23,6 +23,7 @@ from varv.schemas import (
 )
 from varv.services import stats, sync
 from varv.services.capture import known_tag_vocabulary, process_capture, redact_idea
+from varv.services.connections import idea_connections
 from varv.utils import verify_password
 
 auth_router = APIRouter()
@@ -232,6 +233,13 @@ def list_ideas(user: User = Depends(current_user), session: Session = Depends(ge
         .order_by(Idea.created_at.desc())
         .limit(100)
     ).all()
+
+
+@router.get("/ideas/connections")
+def ideas_connections(user: User = Depends(current_user), session: Session = Depends(get_session)):
+    """Idé-till-idé-likhet via lokal embedding-modell — inte ett LLM-anrop, ingen
+    consent-gate, samma kategori som BERTopic-klustringen."""
+    return idea_connections(session, user.id)
 
 
 @router.patch("/ideas/{idea_id}")
