@@ -76,6 +76,23 @@ async function apiGet(path) {
   return response.json();
 }
 
+async function apiDelete(path) {
+  const auth = getAuth();
+  const response = await fetch(`${API_BASE}${path}`, {
+    method: "DELETE",
+    headers: { ...(auth?.token ? { Authorization: `Bearer ${auth.token}` } : {}) },
+  });
+  if (!response.ok) throw new Error(`varv-server ${path} error ${response.status}`);
+  return response.json();
+}
+
+// OAuth-redirecten till Google kan inte bära en Authorization-header, så token
+// åker med som query-param — se varv/api/google_routes.py :connect.
+function googleConnectUrl() {
+  const auth = getAuth();
+  return `${API_BASE}/api/integrations/google/connect?token=${encodeURIComponent(auth?.token || "")}`;
+}
+
 // Agenterna (Nedbrytaren/Förfinaren/Sorteraren) körs server-side mot
 // OpenRouter — frontend anropar bara varv-server, aldrig LLM-API:et direkt.
 // Legacy non-streaming fallbacks (kept for sync/sweep flows):
@@ -155,6 +172,29 @@ function VarvApp({ username, onLogout }) {
   const [focusPrefill, setFocusPrefill] = useState(null);
   const [, setTick] = useState(0); // minute tick so time-based UI stays current
   const saveTimer = useRef(null);
+  const [googleConnected, setGoogleConnected] = useState(null); // null = okänt än, annars bool
+  const [googleBusy, setGoogleBusy] = useState(false);
+
+  const refreshGoogleStatus = () => {
+    apiGet("/api/integrations/google/status")
+      .then((r) => setGoogleConnected(!!r.connected))
+      .catch(() => setGoogleConnected(false));
+  };
+
+  // Landar man här efter en Google-koppling (se google_routes.py :callback) städas
+  // frågeparametern bort direkt så en omladdning inte visar samma resultat igen.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const result = params.get("google");
+    if (result) {
+      window.history.replaceState({}, "", window.location.pathname);
+      const text = result === "connected" ? "Google kopplat ✓" : "Google-kopplingen misslyckades — försök igen";
+      setToast(text);
+      clearTimeout(toastTimer.current);
+      toastTimer.current = setTimeout(() => setToast(null), 2600);
+    }
+    refreshGoogleStatus();
+  }, []);
 
   // Sync integration
   const sync = useSync(
@@ -1725,9 +1765,44 @@ function VarvApp({ username, onLogout }) {
                 ))}
               </div>
 
+              <div style={{ ...s.eyebrow, marginTop: 14 }}>Google (Kalender + Gmail)</div>
+              <p style={{ ...s.body, color: T.soft, marginTop: 2 }}>
+                Nya kalenderhändelser (nästa 24h) och prioriterad e-post blir fångster automatiskt, en gång i timmen.
+              </p>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8 }}>
+                <span style={{ fontSize: 13, color: T.soft }}>
+                  {googleConnected === null ? "kollar…" : googleConnected ? "kopplat ✓" : "inte kopplat"}
+                </span>
+                {googleConnected ? (
+                  <button
+                    style={{ ...s.medBtn, fontSize: 13 }}
+                    disabled={googleBusy}
+                    onClick={async () => {
+                      setGoogleBusy(true);
+                      try {
+                        await apiDelete("/api/integrations/google");
+                        setGoogleConnected(false);
+                      } catch {
+                        setToast("Kunde inte koppla från Google");
+                        clearTimeout(toastTimer.current);
+                        toastTimer.current = setTimeout(() => setToast(null), 2600);
+                      } finally {
+                        setGoogleBusy(false);
+                      }
+                    }}
+                  >
+                    Koppla från
+                  </button>
+                ) : (
+                  <a href={googleConnectUrl()} style={{ ...s.medBtn, fontSize: 13, textDecoration: "none", display: "inline-block" }}>
+                    Koppla Google
+                  </a>
+                )}
+              </div>
+
               <div style={{ ...s.eyebrow, marginTop: 14 }}>Övriga kopplingar</div>
               {Object.entries(INTEGRATIONS)
-                .filter(([key]) => key !== "oura")
+                .filter(([key]) => !["oura", "calendar", "gmail"].includes(key))
                 .map(([key, info]) => (
                   <div key={key} style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", fontSize: 13, color: T.soft }}>
                     <span>{info.label}</span>

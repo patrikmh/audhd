@@ -175,6 +175,20 @@ class APIClient {
   async patchMe(data) {
     return this.patch('/api/me', data);
   }
+
+  // Google (kalender + gmail) koppling
+  async getGoogleStatus() {
+    return this.get('/api/integrations/google/status');
+  }
+
+  async disconnectGoogle() {
+    return this.delete('/api/integrations/google');
+  }
+
+  connectGoogleUrl() {
+    const auth = this.getAuth();
+    return `${this.apiBase}/api/integrations/google/connect?token=${encodeURIComponent(auth?.token || '')}`;
+  }
 }
 
 export { APIClient };

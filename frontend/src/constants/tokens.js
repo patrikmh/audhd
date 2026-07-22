@@ -79,5 +79,5 @@ export const ICON_KEYWORDS = [
 
 export const PRIORITY_ORDER = { A: 0, B: 1, C: 2 };
 
-export const API_BASE = import.meta.env.VITE_API_BASE_URL || "https://TUNNEL_ADDRESS";
+export const API_BASE = import.meta.env.VITE_API_BASE_URL || "https://varvet.tunn.dev";
 export const AUTH_KEY = "varv-auth";
