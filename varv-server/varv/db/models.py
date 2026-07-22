@@ -63,6 +63,7 @@ class User(SQLModel, table=True):
     setup_done: bool = False                           # wizard genomförd
     last_checkin_date: str | None = None               # senaste morgoncheckin (YYYY-MM-DD)
     external_ai_enabled: bool = False                   # samtycke krävs innan LLM-agenter körs för kontot
+    settings_json: str | None = None                    # visningsnamn, avatar, väckningstid m.m. — se schemas.Settings
     created_at: datetime = Field(default_factory=utcnow)
 
 

@@ -130,7 +130,7 @@ const DEFAULT_STATE = {
   gcal: { day: null, events: [] }, // {title, start "HH:MM", end "HH:MM"}
   mailSug: { day: null, items: [], dismissed: [] }, // dismissed: "from|subject"-nycklar för dagen
   oura: { day: null, sleepScore: null, readiness: null, manual: null },
-  sync: { day: null, last: null, cal: null, mail: null, oura: null, notion: null }, // last = epoch ms
+  sync: { day: null, last: null, cal: null, mail: null, oura: null, notion: null, syncing: false, err: null }, // last = epoch ms
   capacityBy: { day: null, by: null }, // 'auto' | 'user'
   notionArchivedDay: null,
   day: todayKey(),
@@ -154,7 +154,6 @@ function VarvApp({ username, onLogout }) {
   const [unstickBusy, setUnstickBusy] = useState(false);
   const [focusPrefill, setFocusPrefill] = useState(null);
   const [, setTick] = useState(0); // minute tick so time-based UI stays current
-  const [syncErr, setSyncErr] = useState("");
   const saveTimer = useRef(null);
 
   // Sync integration
@@ -243,6 +242,12 @@ function VarvApp({ username, onLogout }) {
           setupDone: me.setup_done || s.setupDone,
           lastCheckinDate: me.last_checkin_date || s.lastCheckinDate,
           externalAiEnabled: !!me.external_ai_enabled,
+          // Server wins when it has settings at all — same "db always takes
+          // precedence" rule as everything else. A brand-new account (me.settings
+          // still null) instead seeds the server from whatever's local so far.
+          // agents rides along inside the same blob (see the push effect below).
+          settings: me.settings ? { ...s.settings, ...me.settings, agents: undefined } : s.settings,
+          agents: me.settings?.agents ? { ...s.agents, ...me.settings.agents } : s.agents,
         }));
       } catch (_) { /* offline or first run */ }
     })();
@@ -260,6 +265,24 @@ function VarvApp({ username, onLogout }) {
       }
     }, 400);
   }, [state, loaded]);
+
+  // Settings (display name, avatar, wake time, ...) and agent toggles had no
+  // server home at all before — 100% localStorage, which is exactly why
+  // phone/laptop could show different settings indefinitely. Push on every
+  // change, debounced so typing in e.g. the display name field doesn't fire
+  // one request per keystroke. agents rides along in the same blob rather
+  // than adding a second server round-trip and a second DB column for it.
+  const settingsSyncTimer = useRef(null);
+  useEffect(() => {
+    if (!loaded) return;
+    clearTimeout(settingsSyncTimer.current);
+    settingsSyncTimer.current = setTimeout(() => {
+      apiPatch("/api/me", { settings: { ...state.settings, agents: state.agents } }).catch(() => {
+        setState((s) => ({ ...s, sync: { ...s.sync, err: "Inställningar kunde inte sparas" } }));
+      });
+    }, 800);
+    return () => clearTimeout(settingsSyncTimer.current);
+  }, [state.settings, state.agents, loaded]);
 
   /* ---------- derived ---------- */
   const mode = MODES[state.capacity];
@@ -825,7 +848,9 @@ function VarvApp({ username, onLogout }) {
   };
 
   /* ---------- agent-tick: en gemensam bakgrundsloop ---------- */
-  const SYNC_INTERVAL = 10 * 60 * 1000;
+  // Aggressiv med flit: en tyst, långsam synk är precis vad som gjorde att
+  // telefon och dator kunde visa olika data i timmar utan att någon märkte det.
+  const SYNC_INTERVAL = 60 * 1000;
   const stateRef = useRef(state);
   useEffect(() => { stateRef.current = state; }, [state]);
   const syncingRef = useRef(false);
@@ -834,19 +859,21 @@ function VarvApp({ username, onLogout }) {
   const runSync = async () => {
     if (syncingRef.current) return;
     syncingRef.current = true;
-    setState((st) => ({ ...st, sync: { ...st.sync, day: todayKey(), last: Date.now() } })); // lås direkt mot dubbelkörning
+    // syncing: true görs synligt direkt i SystemStatus — inget tyst arbete i bakgrunden
+    setState((st) => ({ ...st, sync: { ...st.sync, day: todayKey(), last: Date.now(), syncing: true, err: null } }));
 
     try {
-      // Main data sync
       const syncResult = await sync.performSync();
-      if (!syncResult.success) {
-        setSyncErr(syncResult.reason || "Sync failed");
-      } else {
-        setSyncErr("");
-      }
-
       const ouraStatus = await syncOura();
-      setState((st) => ({ ...st, sync: { ...st.sync, oura: ouraStatus } }));
+      setState((st) => ({
+        ...st,
+        sync: {
+          ...st.sync,
+          oura: ouraStatus,
+          syncing: false,
+          err: syncResult.success ? null : (syncResult.reason || "Synk misslyckades"),
+        },
+      }));
 
       const syncStats = syncResult.success ?
         `data ${syncResult.push.created + syncResult.push.updated + syncResult.push.deleted} changes` :
@@ -854,7 +881,7 @@ function VarvApp({ username, onLogout }) {
 
       logAgent("Synkaren", `körning klar: ${syncStats}, oura ${ouraStatus}`);
     } catch (error) {
-      setSyncErr(error.message);
+      setState((st) => ({ ...st, sync: { ...st.sync, syncing: false, err: error.message } }));
       logAgent("Synkaren", `körning misslyckades: ${error.message}`);
     } finally {
       syncingRef.current = false;
@@ -1469,7 +1496,7 @@ function VarvApp({ username, onLogout }) {
                 {[["list", "lista"], ["map", "karta"]].map(([m, l]) => (
                   <button
                     key={m}
-                    onClick={() => setIdeaMode(m)}
+                    onClick={() => { setIdeaMode(m); if (m === "map") runSync(); }}
                     style={{ ...s.medBtn, background: ideaMode === m ? "#E5EBE9" : "transparent", fontWeight: ideaMode === m ? 700 : 400 }}
                   >
                     {l}

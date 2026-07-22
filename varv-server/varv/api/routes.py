@@ -4,6 +4,7 @@ Auth: varje route (utom /auth/login) kräver en giltig User-token och skalar
 alla frågor till just den användaren — se varv/api/auth.py och User i db/models.py.
 """
 import asyncio
+import json
 from datetime import date
 from functools import partial
 
@@ -331,6 +332,7 @@ def get_me(user: User = Depends(current_user)):
         "setup_done": user.setup_done,
         "last_checkin_date": user.last_checkin_date,
         "external_ai_enabled": user.external_ai_enabled,
+        "settings": json.loads(user.settings_json) if user.settings_json else None,
     }
 
 
@@ -342,6 +344,8 @@ def patch_me(payload: dict, user: User = Depends(current_user), session: Session
         user.last_checkin_date = payload["last_checkin_date"]
     if "external_ai_enabled" in payload:
         user.external_ai_enabled = bool(payload["external_ai_enabled"])
+    if "settings" in payload and isinstance(payload["settings"], dict):
+        user.settings_json = json.dumps(payload["settings"])
     if "capacity" in payload and payload["capacity"] in ("steady", "low", "recovery"):
         stats.set_capacity(session, user.id, payload["capacity"], "user")
     session.add(user)
@@ -352,6 +356,7 @@ def patch_me(payload: dict, user: User = Depends(current_user), session: Session
         "capacity": user.capacity,
         "setup_done": user.setup_done,
         "last_checkin_date": user.last_checkin_date,
+        "settings": json.loads(user.settings_json) if user.settings_json else None,
         "external_ai_enabled": user.external_ai_enabled,
     }
 

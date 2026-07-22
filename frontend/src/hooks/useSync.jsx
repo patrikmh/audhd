@@ -105,12 +105,13 @@ export function useSync(apiBase, getAuth, username, state, setState) {
         syncClientRef.current.track(change.kind, change.id, change.op, change.data);
       }
     }
-    // Push soon after a change instead of waiting for the periodic/focus sync —
-    // otherwise something you just typed (e.g. an idea) doesn't exist server-side
-    // yet if you immediately open a server-computed view like the idea mindmap.
-    // Debounced so a burst of edits coalesces into one push, not one per keystroke.
+    // Push right away — a change must actually reach the server, not just sit
+    // queued in localStorage until some later timer fires. performSync() itself
+    // no-ops if a push is already in flight, so a trailing retry catches
+    // anything a fast burst of changes skipped that way.
+    performSync();
     clearTimeout(quickSyncTimer.current);
-    quickSyncTimer.current = setTimeout(() => performSync(), 2500);
+    quickSyncTimer.current = setTimeout(() => performSync(), 1200);
   }, [performSync]);
 
   // Initial sync on mount

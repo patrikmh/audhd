@@ -10,19 +10,28 @@ import { T } from "../constants/tokens";
 export function SystemStatus({ sync, agents, lastSync, onSyncClick }) {
   const [expanded, setExpanded] = useState(true);
 
-  // Auto-collapse after 10 seconds
+  // Auto-collapse after 10 seconds — but never while a sync error is active,
+  // since that's exactly the kind of silent failure that caused devices to
+  // drift out of sync unnoticed for hours.
   useEffect(() => {
-    if (!expanded) return;
+    if (!expanded || sync.err) return;
     const t = setTimeout(() => setExpanded(false), 10000);
     return () => clearTimeout(t);
-  }, [expanded]);
+  }, [expanded, sync.err]);
 
-  const syncStatus = lastSync
-    ? { text: `Synkade ${getTimeAgo(lastSync)}`, status: "success", showAction: false }
+  useEffect(() => {
+    if (sync.err) setExpanded(true);
+  }, [sync.err]);
+
+  // Ordning spelar roll: `last` sätts redan när en synk PÅBÖRJAS, så den är
+  // sann även när den misslyckas — status måste alltså kollas i den ordning
+  // den faktiskt kan vara sann i: pågår nu > senast misslyckades > senast lyckades > aldrig.
+  const syncStatus = sync.syncing
+    ? { text: "Synkroniserar...", status: "working", showAction: false }
     : sync.err
     ? { text: `Synk fel: ${sync.err}`, status: "error", showAction: true }
-    : sync.syncing
-    ? { text: "Synkroniserar...", status: "working", showAction: false }
+    : lastSync
+    ? { text: `Synkade ${getTimeAgo(lastSync)}`, status: "success", showAction: false }
     : { text: "Synk redo", status: "idle", showAction: true };
 
   const agentStatus = Object.entries(agents).filter(
