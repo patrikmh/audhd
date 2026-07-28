@@ -143,7 +143,7 @@ export default function DailyCheckin({ state, onSetEnergy, onDismiss, onAddTask 
 
         {todayTasks.length > 0 ? (
           <>
-            <div style={s.eyebrow}>På today's lista ({todayTasks.length})</div>
+            <div style={s.eyebrow}>På dagens lista ({todayTasks.length})</div>
             {todayTasks.slice(0, 6).map((t) => (
               <div key={t.id} style={s.listItem}>
                 <span style={{ marginRight: 8 }}>{t.icon || "📌"}</span>
@@ -211,16 +211,16 @@ export default function DailyCheckin({ state, onSetEnergy, onDismiss, onAddTask 
         {/* Step dots */}
         <div style={{ display: "flex", gap: 6, justifyContent: "center", marginBottom: 20 }}>
           {[0, 1, 2].map((i) => (
-            <div
+            <button
               key={i}
-              style={{
-                width: 8, height: 8, borderRadius: "50%",
-                background: i === step ? T.petrol : T.track,
-                cursor: "pointer",
-                transition: "background 0.2s",
-              }}
+              type="button"
+              aria-label={`Gå till steg ${i + 1}`}
+              aria-current={i === step ? "step" : undefined}
+              style={{ width: 24, height: 24, padding: 0, border: 0, borderRadius: "50%", background: "transparent", cursor: "pointer" }}
               onClick={() => setStep(i)}
-            />
+            >
+              <span aria-hidden="true" style={{ display: "block", width: 8, height: 8, margin: 8, borderRadius: "50%", background: i === step ? T.petrol : T.track }} />
+            </button>
           ))}
         </div>
         {steps[step]()}

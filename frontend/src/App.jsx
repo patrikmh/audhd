@@ -11,7 +11,6 @@ import { SettingsView } from "./components/SettingsView";
 import { T, MODES, ENERGY_LABELS, MOVEMENT_IDEAS, REST_MENU, EDU_CARDS, ICON_CHOICES, WEEKDAYS, ICON_KEYWORDS, PRIORITY_ORDER, API_BASE, AUTH_KEY } from "./constants/tokens";
 import { uid, todayKey, todayWeekday, guessIcon, energyColor, nowHM, hmToMin } from "./utils/helpers";
 import { getAuth, setAuth, clearAuth, login } from "./utils/auth";
-import { INTEGRATIONS } from "./constants/integrations";
 import { useModalDialog } from "./hooks/useModalDialog";
 import { useTheme } from "./hooks/useTheme";
 import { GhostTextarea } from "./components/GhostTextarea";
@@ -176,11 +175,34 @@ function VarvApp({ username, onLogout }) {
   const [googleBusy, setGoogleBusy] = useState(false);
   const [accountMenu, setAccountMenu] = useState(false); // inställningar/agenter/kopplingar bor här, inte i verktygslådan
   const [showAllTools, setShowAllTools] = useState(false);
+  const [settingsSaveStatus, setSettingsSaveStatus] = useState("idle");
+  const accountButtonRef = useRef(null);
+  const captureButtonRef = useRef(null);
+  const settingsStatusTimer = useRef(null);
+
+  const closeCapture = () => {
+    setCaptureOpen(false);
+    requestAnimationFrame(() => captureButtonRef.current?.focus());
+  };
 
   const refreshGoogleStatus = () => {
     apiGet("/api/integrations/google/status")
       .then((r) => setGoogleConnected(!!r.connected))
       .catch(() => setGoogleConnected(false));
+  };
+
+  const disconnectGoogle = async () => {
+    setGoogleBusy(true);
+    try {
+      await apiDelete("/api/integrations/google");
+      setGoogleConnected(false);
+    } catch {
+      setToast("Kunde inte koppla från Google");
+      clearTimeout(toastTimer.current);
+      toastTimer.current = setTimeout(() => setToast(null), 2600);
+    } finally {
+      setGoogleBusy(false);
+    }
   };
 
   // Landar man här efter en Google-koppling (se google_routes.py :callback) städas
@@ -318,10 +340,18 @@ function VarvApp({ username, onLogout }) {
   useEffect(() => {
     if (!loaded) return;
     clearTimeout(settingsSyncTimer.current);
+    clearTimeout(settingsStatusTimer.current);
+    setSettingsSaveStatus("saving");
     settingsSyncTimer.current = setTimeout(() => {
-      apiPatch("/api/me", { settings: { ...state.settings, agents: state.agents } }).catch(() => {
-        setState((s) => ({ ...s, sync: { ...s.sync, err: "Inställningar kunde inte sparas" } }));
-      });
+      apiPatch("/api/me", { settings: { ...state.settings, agents: state.agents } })
+        .then(() => {
+          setSettingsSaveStatus("saved");
+          settingsStatusTimer.current = setTimeout(() => setSettingsSaveStatus("idle"), 2200);
+        })
+        .catch(() => {
+          setSettingsSaveStatus("error");
+          setState((s) => ({ ...s, sync: { ...s.sync, err: "Inställningar kunde inte sparas" } }));
+        });
     }, 800);
     return () => clearTimeout(settingsSyncTimer.current);
   }, [state.settings, state.agents, loaded]);
@@ -338,6 +368,7 @@ function VarvApp({ username, onLogout }) {
 
   // Selected date for viewing tasks (default: today)
   const [selectedDate, setSelectedDate] = useState(todayKey());
+  const winsForSelectedDate = state.wins.filter((w) => todayKey(new Date(w.ts)) === selectedDate);
   const [weekOffset, setWeekOffset] = useState(0); // 0 = current week window, ±N shifts strip by 7 days
   const isToday = selectedDate === todayKey();
 
@@ -462,14 +493,17 @@ function VarvApp({ username, onLogout }) {
   /* ---------- actions ---------- */
   const patch = (p) => setState((s) => ({ ...s, ...p }));
 
-  const addWin = (text) => {
+  const addWin = (text, { notify = true } = {}) => {
     const id = uid();
     const win = { id, text, ts: Date.now(), day: todayKey() };
     setState((s) => ({ ...s, wins: [win, ...s.wins].slice(0, 200) }));
     sync.trackChange('win', id, 'upsert', win);
-    setToast(text);
-    clearTimeout(toastTimer.current);
-    toastTimer.current = setTimeout(() => setToast(null), 2600);
+    if (notify) {
+      setToast(text);
+      clearTimeout(toastTimer.current);
+      toastTimer.current = setTimeout(() => setToast(null), 2600);
+    }
+    return id;
   };
 
   const logEnergy = (delta, label) => {
@@ -477,6 +511,7 @@ function VarvApp({ username, onLogout }) {
     const energyEvent = { id, delta, label, day: todayKey(), ts: Date.now() };
     setState((s) => ({ ...s, energyLog: [...s.energyLog, energyEvent] }));
     sync.trackChange('energy_event', id, 'upsert', energyEvent);
+    return id;
   };
 
   // Shopping lists — a single onChange(newLists) callback used to feed this
@@ -540,6 +575,7 @@ function VarvApp({ username, onLogout }) {
     if (!state.setupDone) return false;
     return state.lastCheckinDate !== todayKey();
   });
+  const blockingOverlayOpen = showSetup || showSettings || showCheckin || captureOpen;
 
   // Update overlay flags when server data arrives (async load)
   useEffect(() => {
@@ -566,8 +602,8 @@ function VarvApp({ username, onLogout }) {
       }));
       sync.trackChange('task_occurrence', occId, 'upsert', { taskId: task.id, date, done: true, doneAt, stepsSnapshot });
       logEnergy(task.energy, task.title);
-      addWin(`Klart: ${task.title}`);
-      setUndoTask({ ...task, _occurrenceDate: date });
+      addWin(`Klart: ${task.title}`, { notify: false });
+      setUndoTask({ ...task, _occurrenceDate: date, _occurrenceId: occId });
     } else {
       if (task.done) return;
       const doneAt = Date.now();
@@ -581,9 +617,12 @@ function VarvApp({ username, onLogout }) {
       }));
       sync.trackChange('task', task.id, 'upsert', { ...task, done: true, doneAt, ...autoTime });
       logEnergy(task.energy, task.title);
-      addWin(`Klart: ${task.title}`);
-      setUndoTask(task);
+      addWin(`Klart: ${task.title}`, { notify: false });
+      setUndoTask({ ...task, _autoTimeAdded: !task.time });
     }
+    // Completion uses the single undo confirmation below, never a second toast.
+    setToast(null);
+    clearTimeout(toastTimer.current);
     // Show undo option for 8 seconds
     clearTimeout(undoTimer.current);
     undoTimer.current = setTimeout(() => setUndoTask(null), 8000);
@@ -591,23 +630,22 @@ function VarvApp({ username, onLogout }) {
 
   const undoCompleteTask = (task) => {
     const date = task._occurrenceDate;
-    if (date) {
-      const occId = task.occurrences?.[date]?.id;
-      setState((s) => ({
-        ...s,
-        tasks: s.tasks.map((t) => {
-          if (t.id !== task.id) return t;
-          const { [date]: _removed, ...rest } = t.occurrences || {};
-          return { ...t, occurrences: rest };
-        }),
-      }));
-      if (occId) sync.trackChange('task_occurrence', occId, 'delete', {});
-    } else {
-      setState((s) => ({
-        ...s,
-        tasks: s.tasks.map((t) => (t.id === task.id ? { ...t, done: false, doneAt: null } : t)),
-      }));
-      sync.trackChange('task', task.id, 'upsert', { ...task, done: false, doneAt: null });
+    const occurrenceId = task._occurrenceId;
+    setState((s) => ({
+      ...s,
+      tasks: s.tasks.map((current) => {
+        if (current.id !== task.id) return current;
+        if (date) {
+          const { [date]: _removed, ...rest } = current.occurrences || {};
+          return { ...current, occurrences: rest };
+        }
+        return { ...current, done: false, doneAt: null, ...(task._autoTimeAdded ? { time: null } : {}) };
+      }),
+    }));
+    if (date && occurrenceId) sync.trackChange('task_occurrence', occurrenceId, 'delete', {});
+    if (!date) {
+      const { _autoTimeAdded, ...originalTask } = task;
+      sync.trackChange('task', task.id, 'upsert', { ...originalTask, done: false, doneAt: null, ...(task._autoTimeAdded ? { time: null } : {}) });
     }
     setUndoTask(null);
     clearTimeout(undoTimer.current);
@@ -637,15 +675,18 @@ function VarvApp({ username, onLogout }) {
     setState((s) => ({
       ...s,
       setupDone: true,
+      lastCheckinDate: todayKey(),
       settings: { ...s.settings, ...settings },
       capacity,
       tasks: [...s.tasks, ...newTasks],
     }));
     for (const task of newTasks) sync.trackChange('task', task.id, 'upsert', task);
+    // Setup already asked for today's energy. Mark today as checked in so the
+    // user lands in the product instead of immediately answering it again.
     setShowSetup(false);
-    setShowCheckin(true);
+    setShowCheckin(false);
     // Persist to server
-    apiPatch("/api/me", { setup_done: true, capacity }).catch(() => {});
+    apiPatch("/api/me", { setup_done: true, capacity, last_checkin_date: todayKey() }).catch(() => {});
   };
 
   const handleToggleExternalAi = () => {
@@ -729,14 +770,10 @@ function VarvApp({ username, onLogout }) {
   };
 
   const startTaskStep = (task, step = null) => {
-    if (step) {
-      // Mark the specific step as done
-      const updatedSteps = task.steps.map((s, i) =>
-        (i === 0 ? { ...s, done: true } : s)
-      );
-      updateTask(task.id, { steps: updatedSteps });
-    }
-    // Could add timer start here
+    const goal = step?.title || task.title;
+    const mins = step?.minutes || task.minutes || state.settings.defaultFocusMinutes;
+    setFocusPrefill({ taskId: task.id, taskTitle: task.title, goal, mins });
+    setView("tools");
     setTool("focus");
     deselectTask();
   };
@@ -815,16 +852,17 @@ function VarvApp({ username, onLogout }) {
 
   const addIdea = (raw) => {
     const id = uid();
-    const newIdea = { id, raw, title: null, note: null, tags: [], ts: Date.now(), status: "refining", updatedAt: new Date().toISOString() };
+    const canRefine = stateRef.current.externalAiEnabled && stateRef.current.agents.refine;
+    const newIdea = { id, raw, title: null, note: null, tags: [], ts: Date.now(), status: canRefine ? "refining" : "raw", updatedAt: new Date().toISOString() };
     setState((st) => ({
       ...st,
       ideas: [newIdea, ...st.ideas].slice(0, 100),
     }));
     sync.trackChange('idea', id, 'upsert', newIdea);
-    setToast(`💡 Sparad — förfinas i bakgrunden`);
+    setToast(canRefine ? "💡 Sparad — förfinas i bakgrunden" : "💡 Sparad som idé");
     clearTimeout(toastTimer.current);
     toastTimer.current = setTimeout(() => setToast(null), 2200);
-    refineIdea(id, raw, newIdea); // fire-and-forget: fångsten väntar aldrig på AI — skicka idéobjektet direkt eftersom stateRef ännu inte uppdaterats
+    if (canRefine) refineIdea(id, raw, newIdea); // fire-and-forget: fångsten väntar aldrig på AI
   };
 
   const ideaToTask = (idea) => {
@@ -913,7 +951,7 @@ function VarvApp({ username, onLogout }) {
   };
 
   const autoCapture = async (raw) => {
-    if (!stateRef.current.agents.classify) { addIdea(raw); return; } // agent av → allt landar som idé
+    if (!stateRef.current.externalAiEnabled || !stateRef.current.agents.classify) { addIdea(raw); return; }
     try {
       const c = await streamAgent.run("classify", raw);
       if (!c) throw new Error("Klassificering misslyckades");
@@ -1089,6 +1127,8 @@ function VarvApp({ username, onLogout }) {
           .card-hoverable:hover { box-shadow: 0 2px 10px rgba(51,57,59,0.08); transform: translateY(-1px); }
         }
         .card-hoverable { transition: box-shadow 0.18s ease, transform 0.18s ease; }
+        .visually-hidden { position: absolute !important; width: 1px !important; height: 1px !important; padding: 0 !important; margin: -1px !important; overflow: hidden !important; clip: rect(0, 0, 0, 0) !important; white-space: nowrap !important; border: 0 !important; }
+        :focus-visible { outline: 3px solid ${T.petrol}; outline-offset: 3px; }
 
         @keyframes checkPop { 0% { transform: scale(1); } 45% { transform: scale(1.18); } 100% { transform: scale(1); } }
         .check-pop { animation: checkPop 0.28s ease; }
@@ -1125,6 +1165,7 @@ function VarvApp({ username, onLogout }) {
               here so the verktygslådan only holds things you actually *do*. */}
           <div style={{ marginLeft: "auto", position: "relative" }}>
             <button
+              ref={accountButtonRef}
               style={{ ...s.linkBtn, fontSize: 12, color: T.soft }}
               onClick={() => setAccountMenu((v) => !v)}
               aria-expanded={accountMenu}
@@ -1150,8 +1191,6 @@ function VarvApp({ username, onLogout }) {
               >
                 {[
                   ["Inställningar", () => setShowSettings(true)],
-                  ["Agenter", () => { setView("tools"); setTool("agents"); }],
-                  ["Kopplingar", () => { setView("tools"); setTool("connect"); }],
                   ["Logga ut", onLogout],
                 ].map(([label, action]) => (
                   <button
@@ -1194,7 +1233,8 @@ function VarvApp({ username, onLogout }) {
         )}
 
         {view === "today" && (
-          <div className="today-grid">
+          <main className="today-grid" aria-labelledby="today-heading">
+            <h1 id="today-heading" className="visually-hidden">Idag</h1>
             <div className="today-col">
         {/* ============ observatören: kontextuellt verktygsförslag ============ */}
         {observerSuggestion && (
@@ -1222,7 +1262,7 @@ function VarvApp({ username, onLogout }) {
           <WorkingMemoryDisplay
             state={state}
             settings={state.settings}
-            onWinddownClick={() => setTool("sleep")}
+            onWinddownClick={() => { setView("tools"); setTool("sleep"); }}
           />
 
           {/* Compact status row: energy mode + medication, less prominent */}
@@ -1349,8 +1389,8 @@ function VarvApp({ username, onLogout }) {
         )}
 
         {/* ============ now / next ============ */}
-        <section style={{ ...s.card, borderLeft: `4px solid ${T.petrol}` }}>
-          <div style={s.eyebrow}>{nextTask ? "En tydlig nästa sak" : "Inget i kön"}</div>
+        <section aria-labelledby="next-task-heading" style={{ ...s.card, borderLeft: `4px solid ${T.petrol}` }}>
+          <h2 id="next-task-heading" style={{ ...s.eyebrow, margin: 0 }}>{nextTask ? "En tydlig nästa sak" : "Inget i kön"}</h2>
           {nextTask ? (
             <>
               <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginTop: 8 }}>
@@ -1369,7 +1409,7 @@ function VarvApp({ username, onLogout }) {
                 </div>
               )}
               <div style={{ display: "flex", gap: 8, marginTop: 12, flexWrap: "wrap" }}>
-                <button style={s.primaryBtn} onClick={() => { setView("tools"); setTool("focus"); }}>
+                <button style={s.primaryBtn} onClick={() => startTaskStep(nextTask)}>
                   Starta ett fokusvarv
                 </button>
                 <button style={{ ...s.ghostBtn, borderColor: T.warn, color: T.warn }} onClick={() => setUnstick((v) => !v)}>
@@ -1475,9 +1515,11 @@ function VarvApp({ username, onLogout }) {
 
             <div className="today-col">
         {/* ============ tasks ============ */}
-        <section style={s.section}>
+        <section aria-labelledby="task-list-heading" style={s.section}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-            <div style={s.eyebrow}>Uppgifter</div>
+            <h2 id="task-list-heading" style={{ ...s.eyebrow, margin: 0 }}>
+              {isToday ? "Dagens uppgifter" : `Uppgifter · ${new Date(selectedDate + "T12:00:00").toLocaleDateString("sv-SE", { weekday: "long", day: "numeric", month: "short" })}`}
+            </h2>
             <button style={s.linkBtn} onClick={() => setShowAdd((v) => !v)}>
               {showAdd ? "stäng" : "+ lägg till"}
             </button>
@@ -1544,8 +1586,8 @@ function VarvApp({ username, onLogout }) {
               <span><b style={{ color: T.ink }}>{doneForSelectedDate.length}</b> klara</span>
             )}
             <span><b style={{ color: T.ink }}>{visibleTasks.length}</b> kvar</span>
-            {winsToday.length > 0 && (
-              <span><b style={{ color: T.ink }}>{winsToday.length}</b> vinster</span>
+            {winsForSelectedDate.length > 0 && (
+              <span><b style={{ color: T.ink }}>{winsForSelectedDate.length}</b> vinster</span>
             )}
           </div>
 
@@ -1588,7 +1630,6 @@ function VarvApp({ username, onLogout }) {
           {visibleTasks.map((t) => (
             <div
               key={t.id}
-              onClick={() => selectTask(t)}
               onContextMenu={(e) => {
                 e.preventDefault();
                 setContextMenu({
@@ -1612,19 +1653,20 @@ function VarvApp({ username, onLogout }) {
                 onWin={addWin}
                 aiEnabled={state.externalAiEnabled}
                 agentBusy={streamAgent.isRunning && streamAgent.activeInput === t.title}
+                initiationOpen={selectedTask?.id === t.id}
+                onStartSupport={() => selectTask(t)}
               />
+              {selectedTask?.id === t.id && (
+                <TaskInitiationSupport
+                  task={t}
+                  onStartStep={(task, step) => startTaskStep(task, step)}
+                  onSetTrigger={(task) => setTaskTrigger(task)}
+                  onClose={deselectTask}
+                />
+              )}
             </div>
           ))}
         </section>
-
-        {/* ============ task initiation support (ADHD) ============ */}
-        {selectedTask && (
-          <TaskInitiationSupport
-            task={selectedTask}
-            onStartStep={(task, step) => startTaskStep(task, step)}
-            onSetTrigger={(task) => setTaskTrigger(task)}
-          />
-        )}
 
         {/* ============ klart ============ */}
         {doneForSelectedDate.length > 0 && (
@@ -1656,20 +1698,24 @@ function VarvApp({ username, onLogout }) {
           </section>
         )}
             </div>
-          </div>
+          </main>
         )}
 
         {/* ============ idéer view ============ */}
         {view === "ideas" && (
-          <section style={{ marginTop: 4 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <main aria-labelledby="ideas-heading" style={{ marginTop: 4 }}>
+            <h1 id="ideas-heading" className="visually-hidden">Idéer</h1>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
               <p style={{ ...s.body, marginTop: 4 }}>
-                Tala eller skriv in rått — sparas direkt, städas av AI efteråt.
+                {state.externalAiEnabled && state.agents.refine
+                  ? "Tala eller skriv in rått — sparas direkt, städas av AI efteråt."
+                  : "Skriv in rått — idéerna sparas direkt och väntar tryggt här."}
               </p>
               <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
                 {[["list", "lista"], ["map", "karta"]].map(([m, l]) => (
                   <button
                     key={m}
+                    aria-pressed={ideaMode === m}
                     onClick={() => { setIdeaMode(m); if (m === "map") runSync(); }}
                     style={{ ...s.medBtn, background: ideaMode === m ? "#E5EBE9" : "transparent", fontWeight: ideaMode === m ? 700 : 400 }}
                   >
@@ -1684,9 +1730,12 @@ function VarvApp({ username, onLogout }) {
               </p>
             )}
             {ideaMode === "map" && state.ideas.length > 0 && (
-              <Suspense fallback={<p style={s.body}>Laddar grafen…</p>}>
-                <IdeaGraph ideas={state.ideas} tasks={state.tasks} onSelect={(id) => setState((st) => ({ ...st, _selIdea: id }))} selectedId={state._selIdea} />
-              </Suspense>
+              <>
+                <Suspense fallback={<p role="status" style={s.body}>Laddar grafen…</p>}>
+                  <IdeaGraph ideas={state.ideas} tasks={state.tasks} onSelect={(id) => setState((st) => ({ ...st, _selIdea: id }))} selectedId={state._selIdea} />
+                </Suspense>
+                <button style={{ ...s.linkBtn, marginTop: 10 }} onClick={() => setIdeaMode("list")}>Visa den fullständiga listan</button>
+              </>
             )}
             {ideaMode === "map" && state._selIdea && state.ideas.find((i) => i.id === state._selIdea) && (
               <IdeaCard
@@ -1722,12 +1771,13 @@ function VarvApp({ username, onLogout }) {
                 }}
               />
             ))}
-          </section>
+          </main>
         )}
 
         {/* ============ lists view ============ */}
         {view === "lists" && (
-          <section style={{ marginTop: 4 }}>
+          <main aria-labelledby="lists-heading" style={{ marginTop: 4 }}>
+            <h1 id="lists-heading" className="visually-hidden">Listor</h1>
             <p style={{ ...s.body, marginTop: 4 }}>
               Om det är viktigt bor det på en lista — aldrig i huvudet.
             </p>
@@ -1740,12 +1790,13 @@ function VarvApp({ username, onLogout }) {
               onResetDone={resetListDone}
               onClearDone={clearDoneListItems}
             />
-          </section>
+          </main>
         )}
 
         {/* ============ tools view ============ */}
         {view === "tools" && (
-          <section style={{ marginTop: 4 }}>
+          <main aria-labelledby="tools-heading" style={{ marginTop: 4 }}>
+          <h1 id="tools-heading" className="visually-hidden">Verktyg</h1>
           {/* Verktygslådan leder med det som är relevant just nu och lägger resten
               bakom ett klick. Utan förslag (observatören av, eller inget som
               matchar) visas hela lådan direkt — en tom verktygsvy vore en
@@ -1763,7 +1814,7 @@ function VarvApp({ username, onLogout }) {
               { id: "morning", label: "Morgoncheck", sub: "översikt + energi", active: false, onClick: () => setShowCheckin(true) },
             ].filter(Boolean);
 
-            const whyFor = (id) => observerCandidates.find((c) => c.tool === id)?.why;
+            const whyFor = (id) => observerCandidates.find((candidate) => !dismissedToday(candidate.key) && candidate.tool === id)?.why;
             const suggested = allTools.filter((t) => whyFor(t.id));
             const rest = allTools.filter((t) => !whyFor(t.id));
 
@@ -1797,133 +1848,10 @@ function VarvApp({ username, onLogout }) {
             );
           })()}
 
-          {tool === "agents" && (
-            <div style={{ ...s.card, marginTop: 10 }}>
-              {[
-                ["classify", "Sorteraren", "Klassar varje fångst som uppgift, idé eller inköp och sätter taggar. Av = allt landar som rå idé."],
-                ["refine", "Förfinaren", "Städar råa idéer i bakgrunden till titel + anteckning. Plockar upp misslyckade, max 3 försök."],
-                ["sync", "Synkaren", "Hämtar Oura var 3:e timme. Kalender, Gmail och Notion är inte kopplade till servern än."],
-                ["breakdown", "Nedbrytaren", "Förbereder första steg för A-prioriterade och tunga uppgifter innan du fastnar. Max 3 per dag."],
-                ["observer", "Observatören", "Håller koll på energi, tid och läge — föreslår rätt verktyg från verktygslådan som en avfärdbar banner, öppnar aldrig något åt dig."],
-              ].map(([key, name, desc]) => (
-                <div key={key} style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "10px 0", borderBottom: `1px solid ${T.line}` }}>
-                  <input
-                    type="checkbox"
-                    checked={state.agents[key]}
-                    onChange={(e) => setState((st) => ({ ...st, agents: { ...st.agents, [key]: e.target.checked } }))}
-                    style={{ marginTop: 3, width: 18, height: 18 }}
-                  />
-                  <div>
-                    <div style={{ fontWeight: 700, fontSize: 14 }}>{name}</div>
-                    <div style={{ fontSize: 12, color: T.soft, lineHeight: 1.5 }}>{desc}</div>
-                  </div>
-                </div>
-              ))}
-              <div style={{ ...s.eyebrow, marginTop: 12 }}>Senaste aktivitet</div>
-              {state.agentLog.length === 0 ? (
-                <p style={s.body}>Inget ännu — agenterna loggar här när de jobbar.</p>
-              ) : (
-                state.agentLog.slice(0, 8).map((l, i) => (
-                  <div key={i} style={{ fontSize: 12, color: T.soft, padding: "5px 0", fontFamily: "'IBM Plex Mono', monospace" }}>
-                    {new Date(l.ts).toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" })} <span style={{ color: T.spruce, fontWeight: 700 }}>{l.agent}</span> {l.text}
-                  </div>
-                ))
-              )}
-            </div>
-          )}
-          {tool === "connect" && (
-            <div style={{ ...s.card, marginTop: 10 }}>
-              <label style={{ ...s.smallLabel, flexDirection: "row", alignItems: "center", gap: 8, marginTop: 0 }}>
-                <input
-                  type="checkbox"
-                  checked={state.settings.autoSync}
-                  onChange={(e) => setState((st) => ({ ...st, settings: { ...st.settings, autoSync: e.target.checked } }))}
-                />
-                auto-synk var 3:e timme medan appen är öppen
-              </label>
-
-              <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
-                <button style={{ ...s.ghostBtn, fontSize: 13 }} onClick={runSync}>Synka allt nu</button>
-              </div>
-
-              <div style={{ ...s.eyebrow, marginTop: 14 }}>Oura</div>
-              <label style={s.smallLabel}>
-                personlig access-token (skapas på cloud.ouraring.com)
-                <input
-                  type="password"
-                  style={{ ...s.input, marginTop: 4 }}
-                  value={state.settings.ouraToken}
-                  onChange={(e) => setState((st) => ({ ...st, settings: { ...st.settings, ouraToken: e.target.value } }))}
-                  placeholder="OURA_..."
-                />
-              </label>
-              {state.sync.oura === "fail" && (
-                <p style={{ ...s.body, color: T.warn }}>
-                  Oura gick inte att nå härifrån — artefaktmiljön kan blockera externa API:er. Ange nattens sömn manuellt så driver den samma automatik:
-                </p>
-              )}
-              <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
-                {[["<6", "Sov <6h"], ["6-7", "6–7h"], [">7", ">7h"]].map(([v, l]) => (
-                  <button
-                    key={v}
-                    style={{ ...s.medBtn, background: state.oura.day === todayKey() && state.oura.manual === v ? "#E5EBE9" : "transparent" }}
-                    onClick={() => setManualSleep(v)}
-                  >
-                    {l}
-                  </button>
-                ))}
-              </div>
-
-              <div style={{ ...s.eyebrow, marginTop: 14 }}>Google (Kalender + Gmail)</div>
-              <p style={{ ...s.body, color: T.soft, marginTop: 2 }}>
-                Nya kalenderhändelser (nästa 24h) och prioriterad e-post blir fångster automatiskt, en gång i timmen.
-              </p>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8 }}>
-                <span style={{ fontSize: 13, color: T.soft }}>
-                  {googleConnected === null ? "kollar…" : googleConnected ? "kopplat ✓" : "inte kopplat"}
-                </span>
-                {googleConnected ? (
-                  <button
-                    style={{ ...s.medBtn, fontSize: 13 }}
-                    disabled={googleBusy}
-                    onClick={async () => {
-                      setGoogleBusy(true);
-                      try {
-                        await apiDelete("/api/integrations/google");
-                        setGoogleConnected(false);
-                      } catch {
-                        setToast("Kunde inte koppla från Google");
-                        clearTimeout(toastTimer.current);
-                        toastTimer.current = setTimeout(() => setToast(null), 2600);
-                      } finally {
-                        setGoogleBusy(false);
-                      }
-                    }}
-                  >
-                    Koppla från
-                  </button>
-                ) : (
-                  <a href={googleConnectUrl()} style={{ ...s.medBtn, fontSize: 13, textDecoration: "none", display: "inline-block" }}>
-                    Koppla Google
-                  </a>
-                )}
-              </div>
-
-              <div style={{ ...s.eyebrow, marginTop: 14 }}>Övriga kopplingar</div>
-              {Object.entries(INTEGRATIONS)
-                .filter(([key]) => !["oura", "calendar", "gmail"].includes(key))
-                .map(([key, info]) => (
-                  <div key={key} style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", fontSize: 13, color: T.soft }}>
-                    <span>{info.label}</span>
-                    <span>{info.available ? "aktiv" : "inte kopplad än"}</span>
-                  </div>
-                ))}
-
-              <div style={{ ...s.eyebrow, marginTop: 16 }}>Kör om nu</div>
-              <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
-                <button style={s.medBtn} onClick={async () => { const r = await syncOura(); setState((st) => ({ ...st, sync: { ...st.sync, day: todayKey(), oura: r } })); }}>Oura</button>
-              </div>
-            </div>
+          {tool && (
+            <h2 style={{ ...s.eyebrow, marginTop: 22, marginBottom: 0 }}>
+              {{ focus: "Fokusvarv", ground: "Andningsankare", week: "Veckoöversikt", edu: "Varför det funkar", sleep: "Sömnankare", move: "Rörelsepaus", checkin: "Tankekoll", wins: "Vinster" }[tool] || "Verktyg"}
+            </h2>
           )}
 
           {tool === "ground" && (
@@ -1964,14 +1892,14 @@ function VarvApp({ username, onLogout }) {
             />
           )}
           {tool === "wins" && <WinsList wins={state.wins} calibration={state.calibration} />}
-          </section>
+          </main>
         )}
 
         {/* ============ focus lap — mounted globally so a running timer survives navigation ============ */}
         {((view === "tools" && tool === "focus") || lapRunning) && (
           <FocusLap
             key={focusPrefill ? focusPrefill.goal : "default"}
-            taskTitle={nextTask?.title}
+            taskTitle={focusPrefill?.taskTitle || nextTask?.title}
             initialGoal={focusPrefill?.goal}
             initialMins={focusPrefill?.mins || state.settings.defaultFocusMinutes}
             persisted={state.activeFocus}
@@ -2003,7 +1931,9 @@ function VarvApp({ username, onLogout }) {
       {/* ============ capture sheet ============ */}
       {captureOpen && (
         <CaptureSheet
-          onClose={() => setCaptureOpen(false)}
+          onClose={closeCapture}
+          aiSortingEnabled={state.externalAiEnabled && state.agents.classify}
+          voiceEnabled={state.externalAiEnabled}
           voiceLang={state.settings.voiceLang}
           onLangChange={(lang) => setState((st) => ({ ...st, settings: { ...st.settings, voiceLang: lang } }))}
           onIdea={addIdea}
@@ -2036,10 +1966,10 @@ function VarvApp({ username, onLogout }) {
       )}
 
       {/* ============ toast ============ */}
-      {toast && <div style={s.toast}>{toast}</div>}
-      <AgentProgress step={streamAgent.step} text={streamAgent.text} isRunning={streamAgent.isRunning} />
-      {undoTask && (
-        <div style={{ ...s.toast, background: T.petrol, display: 'flex', gap: 10, alignItems: 'center' }}>
+      {!blockingOverlayOpen && toast && <div role="status" aria-live="polite" style={s.toast}>{toast}</div>}
+      {!blockingOverlayOpen && <AgentProgress step={streamAgent.step} text={streamAgent.text} isRunning={streamAgent.isRunning} />}
+      {!blockingOverlayOpen && undoTask && (
+        <div role="status" aria-live="polite" style={{ ...s.toast, background: T.petrol, display: 'flex', gap: 10, alignItems: 'center' }}>
           <span>✓ {undoTask.title}</span>
           <button
             onClick={() => undoCompleteTask(undoTask)}
@@ -2059,8 +1989,22 @@ function VarvApp({ username, onLogout }) {
           state={{ ...state, username }}
           onPatch={(patch) => setState((st) => ({ ...st, ...patch }))}
           onToggleExternalAi={handleToggleExternalAi}
+          saveStatus={settingsSaveStatus}
+          googleConnected={googleConnected}
+          googleBusy={googleBusy}
+          googleConnectHref={googleConnectUrl()}
+          onDisconnectGoogle={disconnectGoogle}
+          onSyncNow={runSync}
+          onSyncOura={async () => {
+            const result = await syncOura();
+            setState((current) => ({ ...current, sync: { ...current.sync, day: todayKey(), oura: result } }));
+          }}
+          onSetManualSleep={setManualSleep}
           onLogout={() => { setShowSettings(false); onLogout(); }}
-          onClose={() => setShowSettings(false)}
+          onClose={() => {
+            setShowSettings(false);
+            requestAnimationFrame(() => accountButtonRef.current?.focus());
+          }}
         />
       )}
 
@@ -2077,18 +2021,19 @@ function VarvApp({ username, onLogout }) {
       {/* ============ bottom navigation ============ */}
       {/* Modalerna täcker hela skärmen — då ska navigeringen inte ligga kvar och
           se klickbar ut (eller nås med tab) bakom dem. */}
-      {!showSettings && !showSetup && !showCheckin && (
-      <nav style={s.nav}>
+      {!blockingOverlayOpen && (
+      <nav aria-label="Huvudnavigation" style={s.nav}>
         <div className="nav-inner">
         {[["today", "Idag"], ["ideas", "Idéer"], ["capture", "+"], ["lists", "Listor"], ["tools", "Verktyg"]].map(([k, label]) =>
           k === "capture" ? (
-            <button key={k} style={s.navPlus} onClick={() => setCaptureOpen(true)} aria-label="Fånga en tanke">
+            <button ref={captureButtonRef} key={k} style={s.navPlus} onClick={() => setCaptureOpen(true)} aria-label="Fånga en tanke">
               +
             </button>
           ) : (
             <button
               key={k}
               onClick={() => setView(k)}
+              aria-current={view === k ? "page" : undefined}
               style={{ ...s.navBtn, color: view === k ? T.petrolDark : T.soft, fontWeight: view === k ? 700 : 400 }}
             >
               <span style={{ ...s.navDash, opacity: view === k ? 1 : 0 }} />
@@ -2102,12 +2047,14 @@ function VarvApp({ username, onLogout }) {
       )}
 
       {/* ============ System Status (ADHD anxiety reduction) ============ */}
-      <SystemStatus
-        sync={state.sync}
-        agents={state.agents}
-        lastSync={state.sync.last}
-        onSyncClick={() => runSync()}
-      />
+      {!blockingOverlayOpen && (
+        <SystemStatus
+          sync={state.sync}
+          agents={state.agents}
+          lastSync={state.sync.last}
+          onSyncClick={() => runSync()}
+        />
+      )}
 
       {/* ============ context menu ============ */}
       {contextMenu && (
@@ -2163,7 +2110,7 @@ function Login({ onLoggedIn }) {
           onChange={(e) => setPassword(e.target.value)}
           style={{ padding: "10px 12px", borderRadius: 10, border: `1.5px solid ${T.line}`, fontSize: 15 }}
         />
-        {err && <div style={{ color: T.warn, fontSize: 13 }}>{err}</div>}
+        {err && <div role="alert" style={{ color: T.warn, fontSize: 13 }}>{err}</div>}
         <button
           type="submit"
           disabled={busy || !username || !password}
@@ -2195,7 +2142,7 @@ export default function Varv() {
 /* ============================================================ */
 /* Capture sheet — the 3-second window                           */
 /* ============================================================ */
-function CaptureSheet({ onClose, onTask, onListItem, onIdea, onAuto, onTranscribe, voiceLang, onLangChange }) {
+function CaptureSheet({ onClose, onTask, onListItem, onIdea, onAuto, onTranscribe, aiSortingEnabled, voiceEnabled, voiceLang, onLangChange }) {
   const [v, setV] = useState("");
   const [rec, setRec] = useState(false);
   const [vBusy, setVBusy] = useState(false);
@@ -2215,11 +2162,16 @@ function CaptureSheet({ onClose, onTask, onListItem, onIdea, onAuto, onTranscrib
   const listItem = () => { if (v.trim()) { onListItem(v.trim()); onClose(); } };
   const idea = () => { if (v.trim()) { onIdea(v.trim()); onClose(); } };
   const auto = () => { if (v.trim()) { onAuto(v.trim()); onClose(); } };
+  const primary = aiSortingEnabled ? auto : idea;
 
   // Riktig mikrofoninspelning → uppladdning till varv-server (KB-Whisper), inte
   // webbläsarens inbyggda taligenkänning som skickar ljudet till Google.
   const startVoice = async () => {
     setVErr("");
+    if (!voiceEnabled) {
+      setVErr("Rösttranskribering kräver externa AI-tjänster. Du kan alltid skriva och spara direkt.");
+      return;
+    }
     if (!navigator.mediaDevices?.getUserMedia) {
       setVErr("Mikrofonen stöds inte i den här webbläsaren — skriv istället.");
       return;
@@ -2275,23 +2227,23 @@ function CaptureSheet({ onClose, onTask, onListItem, onIdea, onAuto, onTranscrib
             placeholder={rec ? "lyssnar…" : "Fånga den innan den försvinner…"}
             value={v}
             onChange={(e) => setV(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && auto()}
+            onKeyDown={(e) => e.key === "Enter" && primary()}
           />
           <button
             style={{ ...s.micBtn, background: rec ? T.warn : T.petrol, opacity: vBusy ? 0.5 : 1 }}
             onClick={rec ? stopVoice : startVoice}
-            disabled={vBusy}
-            aria-label={rec ? "Sluta spela in" : "Tala in"}
+            disabled={vBusy || !voiceEnabled}
+            aria-label={rec ? "Sluta spela in" : voiceEnabled ? "Tala in" : "Rösttranskribering är avstängd"}
           >
             {vBusy ? "…" : rec ? "■" : "🎙"}
           </button>
         </div>
         {rec && <div style={{ fontSize: 12, color: T.warn, textAlign: "center", marginTop: 6 }}>● spelar in — tala fritt, tryck ■ när du är klar</div>}
         {vBusy && <div style={{ fontSize: 12, color: T.soft, textAlign: "center", marginTop: 6 }}>transkriberar…</div>}
-        {vErr && <div style={{ fontSize: 12, color: T.warn, marginTop: 6 }}>{vErr}</div>}
+        {vErr && <div role="alert" style={{ fontSize: 12, color: T.warn, marginTop: 6 }}>{vErr}</div>}
         <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
-          <button style={{ ...s.primaryBtn, flex: 1, opacity: v.trim() ? 1 : 0.5 }} disabled={!v.trim()} onClick={auto}>
-            Fånga — agenten sorterar
+          <button style={{ ...s.primaryBtn, flex: 1, opacity: v.trim() ? 1 : 0.5 }} disabled={!v.trim()} onClick={primary}>
+            {aiSortingEnabled ? "Fånga — agenten sorterar" : "Spara som idé"}
           </button>
         </div>
         <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
@@ -2306,7 +2258,7 @@ function CaptureSheet({ onClose, onTask, onListItem, onIdea, onAuto, onTranscrib
           </button>
         </div>
         <div style={{ fontSize: 12, color: T.soft, textAlign: "center", marginTop: 10 }}>
-          Enter = agenten sorterar åt dig. Knapparna styr själv.
+          {aiSortingEnabled ? "Enter = agenten sorterar åt dig. Knapparna styr själv." : "Enter = spara som idé. Uppgift och Inköp väljer du direkt."}
         </div>
       </div>
     </div>
@@ -2708,7 +2660,7 @@ function AddTask({ onAdd, defaultDate }) {
 /* ============================================================ */
 /* Task card with AI breakdown                                   */
 /* ============================================================ */
-function TaskCard({ task, onDone, onUpdate, onRemove, onWin, agentBusy, aiEnabled }) {
+function TaskCard({ task, onDone, onUpdate, onRemove, onWin, agentBusy, aiEnabled, initiationOpen, onStartSupport }) {
   const [expanded, setExpanded] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
@@ -2972,6 +2924,13 @@ function TaskCard({ task, onDone, onUpdate, onRemove, onWin, agentBusy, aiEnable
           </div>
 
           <div style={{ display: "flex", gap: 12, marginTop: 10, flexWrap: "wrap", alignItems: "center" }}>
+            <button
+              style={{ ...s.linkBtn, minHeight: 44 }}
+              onClick={onStartSupport}
+              aria-expanded={initiationOpen}
+            >
+              {initiationOpen ? "dölj starthjälp" : "hjälp mig börja"}
+            </button>
             <button style={s.linkBtn} onClick={breakDown} disabled={busy}>
               {busy ? "bryter ner…" : task.steps.length ? "bryt ner igen (AI)" : "bryt ner (AI)"}
             </button>
@@ -2992,7 +2951,7 @@ function TaskCard({ task, onDone, onUpdate, onRemove, onWin, agentBusy, aiEnable
               autoFocus
             />
           )}
-          {err && <div style={{ color: T.warn, fontSize: 13, marginTop: 6 }}>{err}</div>}
+          {err && <div role="alert" style={{ color: T.warn, fontSize: 13, marginTop: 6 }}>{err}</div>}
 
           {editingSteps ? (
             <div style={{ marginTop: 8 }}>
@@ -3709,6 +3668,7 @@ function ToolBtn({ label, sub, onClick, active }) {
   return (
     <button
       onClick={onClick}
+      aria-pressed={active || false}
       style={{
         ...styles.toolBtn,
         background: active ? T.spruce : T.card,
@@ -3782,7 +3742,7 @@ const styles = {
   coin: { width: 32, height: 32, borderRadius: 10, background: "#EBEEE7", border: `1px solid ${T.line}`, display: "grid", placeItems: "center", fontSize: 16, flexShrink: 0 },
   coinLg: { width: 42, height: 42, borderRadius: 13, background: "#EBEEE7", border: `1px solid ${T.line}`, display: "grid", placeItems: "center", fontSize: 21, flexShrink: 0 },
   nav: { position: "fixed", bottom: 0, left: 0, right: 0, height: 66, background: T.card, borderTop: `1px solid ${T.line}`, display: "flex", justifyContent: "space-around", alignItems: "center", maxWidth: "100%", zIndex: 40, paddingBottom: "env(safe-area-inset-bottom)" },
-  navBtn: { position: "relative", background: "none", border: "none", fontSize: 13, fontFamily: "inherit", cursor: "pointer", padding: "10px 10px", display: "flex", flexDirection: "column", alignItems: "center", gap: 3 },
+  navBtn: { position: "relative", minWidth: 52, minHeight: 48, background: "none", border: "none", fontSize: 13, fontFamily: "inherit", cursor: "pointer", padding: "10px 10px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3 },
   navDash: { width: 20, height: 3, borderRadius: 2, background: T.petrol, display: "block" },
   navDot: { position: "absolute", top: 8, right: 8, width: 8, height: 8, borderRadius: 4, background: T.warn },
   navPlus: { width: 48, height: 48, borderRadius: 24, background: T.petrol, color: T.card, border: "none", fontSize: 26, fontWeight: 400, cursor: "pointer", lineHeight: 1, boxShadow: "0 2px 8px rgba(60,89,96,0.35)" },

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { T } from "../constants/tokens";
 import { todayKey } from "../utils/helpers";
+import { INTEGRATIONS } from "../constants/integrations";
 import { useModalDialog } from "../hooks/useModalDialog";
 
 /**
@@ -22,8 +23,6 @@ const TOOL_LABELS = {
   breathing: "Andningsankare",
   week: "Veckoöversikt",
   why: "Varför det funkar",
-  agents: "Agenter",
-  connections: "Kopplingar",
 };
 
 const CAPACITY_OPTIONS = [
@@ -40,7 +39,21 @@ const THEME_OPTIONS = [
 
 const AVATAR_CHOICES = ["🌀", "🌿", "🌊", "🔥", "⭐", "🦉", "🐈", "🌙"];
 
-export function SettingsView({ state, onPatch, onToggleExternalAi, onLogout, onClose }) {
+export function SettingsView({
+  state,
+  onPatch,
+  onToggleExternalAi,
+  onLogout,
+  onClose,
+  saveStatus = "idle",
+  googleConnected = null,
+  googleBusy = false,
+  googleConnectHref,
+  onDisconnectGoogle,
+  onSyncNow,
+  onSyncOura,
+  onSetManualSleep,
+}) {
   const s = state.settings || {};
   const [tab, setTab] = useState("dag");
   const dialogRef = useModalDialog(onClose);
@@ -60,6 +73,7 @@ export function SettingsView({ state, onPatch, onToggleExternalAi, onLogout, onC
     { key: "dag", label: "Dag" },
     { key: "verktyg", label: "Verktyg" },
     { key: "agenter", label: "Agenter" },
+    { key: "kopplingar", label: "Kopplingar" },
     { key: "data", label: "Data" },
   ];
 
@@ -80,6 +94,7 @@ export function SettingsView({ state, onPatch, onToggleExternalAi, onLogout, onC
     background: T.card,
     fontFamily: "inherit",
     width: "100%",
+    boxSizing: "border-box",
   };
 
   const toggle = (active, label, desc, onClick) => (
@@ -165,8 +180,13 @@ export function SettingsView({ state, onPatch, onToggleExternalAi, onLogout, onC
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-          <h2 style={{ fontFamily: "'Fraunces', serif", fontSize: 22, margin: 0, color: T.ink }}>Inställningar</h2>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, gap: 12 }}>
+          <div>
+            <h2 style={{ fontFamily: "'Fraunces', serif", fontSize: 22, margin: 0, color: T.ink }}>Inställningar</h2>
+            <div role={saveStatus === "error" ? "alert" : "status"} aria-live="polite" style={{ minHeight: 18, marginTop: 2, fontSize: 12, color: saveStatus === "error" ? T.warn : T.soft }}>
+              {saveStatus === "saving" ? "Sparar…" : saveStatus === "saved" ? "Sparat" : saveStatus === "error" ? "Kunde inte spara — ditt val finns kvar på enheten" : ""}
+            </div>
+          </div>
           <button
             onClick={onClose}
             aria-label="Stäng inställningar"
@@ -197,9 +217,9 @@ export function SettingsView({ state, onPatch, onToggleExternalAi, onLogout, onC
             marginBottom: 16,
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <div style={{ display: "flex", gap: 4 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0, flex: 1 }}>
+              <div aria-label="Välj avatar" style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
                 {AVATAR_CHOICES.map((emoji) => (
                   <button
                     key={emoji}
@@ -248,16 +268,34 @@ export function SettingsView({ state, onPatch, onToggleExternalAi, onLogout, onC
         </div>
 
         {/* Tabs */}
-        <div style={{ display: "flex", gap: 4, marginBottom: 16, borderBottom: `1px solid ${T.line}` }}>
+        <div role="tablist" aria-label="Inställningsområden" style={{ display: "flex", gap: 4, marginBottom: 16, borderBottom: `1px solid ${T.line}`, overflowX: "auto" }}>
           {tabs.map((t) => (
             <button
               key={t.key}
+              id={`settings-tab-${t.key}`}
+              role="tab"
+              aria-selected={tab === t.key}
+              aria-controls={`settings-panel-${t.key}`}
+              tabIndex={tab === t.key ? 0 : -1}
               onClick={() => setTab(t.key)}
+              onKeyDown={(event) => {
+                if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+                event.preventDefault();
+                const currentIndex = tabs.findIndex((item) => item.key === t.key);
+                const nextIndex = event.key === "Home" ? 0
+                  : event.key === "End" ? tabs.length - 1
+                  : (currentIndex + (event.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length;
+                const nextKey = tabs[nextIndex].key;
+                setTab(nextKey);
+                requestAnimationFrame(() => document.getElementById(`settings-tab-${nextKey}`)?.focus());
+              }}
               style={{
                 background: "none",
                 border: "none",
                 borderBottom: tab === t.key ? `2px solid ${T.petrol}` : "2px solid transparent",
                 padding: "8px 12px",
+                minHeight: 44,
+                whiteSpace: "nowrap",
                 fontSize: 13,
                 color: tab === t.key ? T.ink : T.soft,
                 fontWeight: tab === t.key ? 600 : 400,
@@ -272,9 +310,9 @@ export function SettingsView({ state, onPatch, onToggleExternalAi, onLogout, onC
 
         {/* Day tab */}
         {tab === "dag" && (
-          <div>
+          <div role="tabpanel" id="settings-panel-dag" aria-labelledby="settings-tab-dag">
             <label style={labelStyle}>utseende</label>
-            <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
+            <div style={{ display: "flex", gap: 8, marginTop: 4, flexWrap: "wrap" }}>
               {THEME_OPTIONS.map((t) => (
                 <button
                   key={t.key}
@@ -312,13 +350,13 @@ export function SettingsView({ state, onPatch, onToggleExternalAi, onLogout, onC
             />
 
             <label style={{ ...labelStyle, marginTop: 18 }}>standardenergi för ny dag</label>
-            <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
+            <div style={{ display: "flex", gap: 8, marginTop: 4, flexWrap: "wrap" }}>
               {CAPACITY_OPTIONS.map((c) => (
                 <button
                   key={c.key}
                   onClick={() => patchSettings({ defaultCapacity: c.key })}
                   style={{
-                    flex: 1,
+                    flex: "1 1 130px",
                     padding: "10px 8px",
                     borderRadius: 8,
                     border:
@@ -390,20 +428,12 @@ export function SettingsView({ state, onPatch, onToggleExternalAi, onLogout, onC
               ))}
             </div>
 
-            <div style={{ marginTop: 18 }}>
-              {toggle(
-                s.autoSync,
-                "Automatisk synk",
-                "hämta kalender, mejl och Oura var 3:e timme",
-                () => patchSettings({ autoSync: !s.autoSync })
-              )}
-            </div>
           </div>
         )}
 
         {/* Tools tab */}
         {tab === "verktyg" && (
-          <div>
+          <div role="tabpanel" id="settings-panel-verktyg" aria-labelledby="settings-tab-verktyg">
             {/* Samma flagga som observatören under Agenter, men här — det är här
                 man letar när förslagen känns för många. Av = verktygslådan visar
                 alltid hela listan i stället för att leda med det relevanta. */}
@@ -429,7 +459,7 @@ export function SettingsView({ state, onPatch, onToggleExternalAi, onLogout, onC
 
         {/* Agents tab */}
         {tab === "agenter" && (
-          <div>
+          <div role="tabpanel" id="settings-panel-agenter" aria-labelledby="settings-tab-agenter">
             <p style={{ fontSize: 13, color: T.soft, marginTop: 0 }}>
               Externa AI-agenter är avstängda som standard. Slå på dem här för att låta Varv
               skicka dina tankar och uppgifter till en språkmodell för sortering, städning och nedbrytning.
@@ -449,7 +479,6 @@ export function SettingsView({ state, onPatch, onToggleExternalAi, onLogout, onC
                 ["refine", "Förfinaren", "städar råa idéer"],
                 ["breakdown", "Nedbrytaren", "bryter ner tunga uppgifter"],
                 ["sync", "Synkaren", "hämtar kalender/mejl/Oura"],
-                ["observer", "Observatören", "foreslår verktyg under dagen"],
               ].map(([key, label, desc]) =>
                 toggle(
                   state.agents?.[key] !== false,
@@ -459,12 +488,73 @@ export function SettingsView({ state, onPatch, onToggleExternalAi, onLogout, onC
                 )
               )}
             </div>
+            <h3 style={{ fontFamily: "'Fraunces', serif", fontWeight: 400, color: T.ink, margin: "22px 0 6px" }}>Senaste aktivitet</h3>
+            {(state.agentLog || []).length === 0 ? (
+              <p style={{ fontSize: 13, color: T.soft }}>Ingen agentaktivitet ännu.</p>
+            ) : (
+              state.agentLog.slice(0, 8).map((entry, index) => (
+                <div key={`${entry.ts}-${index}`} style={{ fontSize: 12, color: T.soft, padding: "5px 0", fontFamily: "'IBM Plex Mono', monospace" }}>
+                  {new Date(entry.ts).toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" })} <b style={{ color: T.ink }}>{entry.agent}</b> {entry.text}
+                </div>
+              ))
+            )}
+          </div>
+        )}
+
+        {/* Connections tab */}
+        {tab === "kopplingar" && (
+          <div role="tabpanel" id="settings-panel-kopplingar" aria-labelledby="settings-tab-kopplingar">
+            {toggle(
+              !!s.autoSync,
+              "Automatisk synk",
+              "hämta anslutna tjänster var 3:e timme medan appen är öppen",
+              () => patchSettings({ autoSync: !s.autoSync })
+            )}
+            <button onClick={onSyncNow} style={{ ...inputStyle, marginTop: 14, minHeight: 44, cursor: "pointer", color: T.petrol, fontWeight: 700 }}>
+              Synka allt nu
+            </button>
+
+            <h3 style={{ fontFamily: "'Fraunces', serif", fontWeight: 400, color: T.ink, margin: "22px 0 6px" }}>Google</h3>
+            <p style={{ fontSize: 13, color: T.soft, margin: "0 0 10px" }}>Kalenderhändelser och prioriterad e-post kan bli fångster automatiskt.</p>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+              <span role="status" style={{ fontSize: 13, color: T.soft }}>
+                {googleConnected === null ? "Kontrollerar anslutning…" : googleConnected ? "Google är kopplat ✓" : "Google är inte kopplat"}
+              </span>
+              {googleConnected ? (
+                <button disabled={googleBusy} onClick={onDisconnectGoogle} style={{ padding: "8px 12px", borderRadius: 8, border: `1px solid ${T.line}`, background: T.card, color: T.warn, cursor: "pointer" }}>
+                  {googleBusy ? "Kopplar från…" : "Koppla från"}
+                </button>
+              ) : (
+                <a href={googleConnectHref} style={{ padding: "8px 12px", borderRadius: 8, border: `1px solid ${T.petrol}`, color: T.petrol, textDecoration: "none", fontWeight: 700 }}>Koppla Google</a>
+              )}
+            </div>
+
+            <h3 style={{ fontFamily: "'Fraunces', serif", fontWeight: 400, color: T.ink, margin: "22px 0 6px" }}>Oura</h3>
+            <label style={labelStyle}>
+              personlig access-token
+              <input type="password" style={{ ...inputStyle, marginTop: 4 }} value={s.ouraToken || ""} onChange={(e) => patchSettings({ ouraToken: e.target.value })} placeholder="OURA_..." />
+            </label>
+            <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
+              {[["<6", "Sov <6h"], ["6-7", "6–7h"], [">7", ">7h"]].map(([value, label]) => (
+                <button key={value} aria-pressed={state.oura?.day === todayKey() && state.oura?.manual === value} onClick={() => onSetManualSleep?.(value)} style={{ padding: "8px 10px", borderRadius: 8, border: `1px solid ${T.line}`, background: state.oura?.day === todayKey() && state.oura?.manual === value ? T.petrol : T.card, color: state.oura?.day === todayKey() && state.oura?.manual === value ? "white" : T.ink, cursor: "pointer" }}>
+                  {label}
+                </button>
+              ))}
+              <button onClick={onSyncOura} style={{ padding: "8px 10px", borderRadius: 8, border: `1px solid ${T.line}`, background: T.card, color: T.petrol, cursor: "pointer" }}>Synka Oura nu</button>
+            </div>
+
+            <h3 style={{ fontFamily: "'Fraunces', serif", fontWeight: 400, color: T.ink, margin: "22px 0 6px" }}>Övriga kopplingar</h3>
+            {Object.entries(INTEGRATIONS).filter(([key]) => !["oura", "calendar", "gmail"].includes(key)).map(([key, info]) => (
+              <div key={key} style={{ display: "flex", justifyContent: "space-between", gap: 12, padding: "6px 0", fontSize: 13, color: T.soft }}>
+                <span>{info.label}</span><span>{info.available ? "aktiv" : "inte kopplad än"}</span>
+              </div>
+            ))}
           </div>
         )}
 
         {/* Data tab */}
         {tab === "data" && (
-          <div>
+          <div role="tabpanel" id="settings-panel-data" aria-labelledby="settings-tab-data">
             <p style={{ fontSize: 13, color: T.soft, marginTop: 0 }}>
               Din data sparas lokalt på enheten och synkas till servern. Exportera för att byta enhet.
             </p>

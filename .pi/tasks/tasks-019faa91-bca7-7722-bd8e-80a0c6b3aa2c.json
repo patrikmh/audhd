@@ -1,0 +1,41 @@
+{
+  "nextId": 4,
+  "tasks": [
+    {
+      "id": "1",
+      "subject": "Map current frontend journeys and information architecture",
+      "description": "Inspect App.jsx, key view components, settings, hooks, and styles to document current navigation, journeys, states, and responsive behavior with code evidence.",
+      "status": "completed",
+      "activeForm": "Mapping frontend journeys and information architecture",
+      "metadata": {},
+      "blocks": [],
+      "blockedBy": [],
+      "createdAt": 1785273109722,
+      "updatedAt": 1785273241756
+    },
+    {
+      "id": "2",
+      "subject": "Identify prioritized UX and accessibility issues",
+      "description": "Analyze current implementation for cognitive load, discoverability, consistency, hierarchy, responsiveness, accessibility, feedback/error states, settings complexity, and ADHD-specific concerns; separate observations from validation hypotheses.",
+      "status": "pending",
+      "activeForm": "Identifying UX and accessibility issues",
+      "metadata": {},
+      "blocks": [],
+      "blockedBy": [],
+      "createdAt": 1785273112522,
+      "updatedAt": 1785273112522
+    },
+    {
+      "id": "3",
+      "subject": "Design target UX and phased implementation plan",
+      "description": "Produce a coherent target experience and implementation-ready phased roadmap with problem, behavior, files, dependencies, acceptance criteria, and test/validation for each item, plus metrics, usability script, risks, invariants, and top next steps.",
+      "status": "pending",
+      "activeForm": "Designing target UX and phased plan",
+      "metadata": {},
+      "blocks": [],
+      "blockedBy": [],
+      "createdAt": 1785273115349,
+      "updatedAt": 1785273115349
+    }
+  ]
+}

@@ -19,6 +19,7 @@ export default function SetupWizard({ onComplete }) {
     { title: "", trigger: "", energy: 2, minutes: 30, essential: false, days: [] },
   ]);
   const [tourIdx, setTourIdx] = useState(0);
+  const [showTaskDetails, setShowTaskDetails] = useState(false);
 
   const s = styles;
 
@@ -98,26 +99,26 @@ export default function SetupWizard({ onComplete }) {
         <h3 style={s.stepTitle}>Din dygnsrytm</h3>
         <p style={s.body}>När vaknar du och när börjar du ladda ner?</p>
 
-        <div style={{ display: "flex", gap: 16, marginTop: 20, justifyContent: "center" }}>
-          <div style={{ textAlign: "center" }}>
-            <div style={{ fontSize: 12, color: T.soft, marginBottom: 4 }}>Vaknar</div>
+        <div style={{ display: "flex", gap: 16, marginTop: 20, justifyContent: "center", flexWrap: "wrap" }}>
+          <label style={{ textAlign: "center" }}>
+            <span style={{ display: "block", fontSize: 12, color: T.soft, marginBottom: 4 }}>Vaknar</span>
             <input
               type="time"
               value={wake}
               onChange={(e) => setWake(e.target.value)}
               style={s.timeInput}
             />
-          </div>
-          <div style={{ fontSize: 24, color: T.track, alignSelf: "center" }}>→</div>
-          <div style={{ textAlign: "center" }}>
-            <div style={{ fontSize: 12, color: T.soft, marginBottom: 4 }}>Laddar ner</div>
+          </label>
+          <div aria-hidden="true" style={{ fontSize: 24, color: T.track, alignSelf: "center" }}>→</div>
+          <label style={{ textAlign: "center" }}>
+            <span style={{ display: "block", fontSize: 12, color: T.soft, marginBottom: 4 }}>Laddar ner</span>
             <input
               type="time"
               value={winddown}
               onChange={(e) => setWinddown(e.target.value)}
               style={s.timeInput}
             />
-          </div>
+          </label>
         </div>
 
         <div style={{ display: "flex", gap: 10, marginTop: 28, justifyContent: "center" }}>
@@ -167,8 +168,8 @@ export default function SetupWizard({ onComplete }) {
     () => (
       <div>
         <div style={s.stepEyebrow}>Steg 3 av 4</div>
-        <h3 style={s.stepTitle}>Dina första uppgifter</h3>
-        <p style={s.body}>Lägg till återkommande saker. Tomma fält hoppas över.</p>
+        <h3 style={s.stepTitle}>Dina första uppgifter <span style={{ fontSize: 14, color: T.soft }}>(valfritt)</span></h3>
+        <p style={s.body}>Skriv bara en titel nu. Du kan lägga till detaljer senare — eller hoppa över helt.</p>
 
         {tasks.map((t, i) => (
           <div key={i} style={{ ...s.card, marginTop: 10, position: "relative" }}>
@@ -186,68 +187,87 @@ export default function SetupWizard({ onComplete }) {
               value={t.title}
               onChange={(e) => updateTask(i, "title", e.target.value)}
             />
-            <input
-              style={{ ...s.input, marginTop: 6, fontSize: 13 }}
-              placeholder="Triggertext (t.ex. 'När jag vaknar…')"
-              value={t.trigger}
-              onChange={(e) => updateTask(i, "trigger", e.target.value)}
-            />
-            <div style={{ display: "flex", gap: 8, marginTop: 8, alignItems: "center" }}>
-              <span style={{ fontSize: 12, color: T.soft }}>Energi:</span>
-              {[1, 2, 3, 4, 5].map((n) => (
-                <button
-                  key={n}
-                  onClick={() => updateTask(i, "energy", n)}
-                  style={{
-                    width: 28, height: 28, borderRadius: 6, border: `1.5px solid ${t.energy === n ? T.petrol : T.line}`,
-                    background: t.energy === n ? T.petrol : "transparent",
-                    color: t.energy === n ? "white" : T.soft,
-                    fontSize: 12, fontWeight: 700, cursor: "pointer",
-                  }}
-                >
-                  {n}
-                </button>
-              ))}
-              <span style={{ fontSize: 12, color: T.soft, marginLeft: 8 }}>Minuter:</span>
-              <input
-                type="number"
-                min={5}
-                max={240}
-                step={5}
-                value={t.minutes}
-                onChange={(e) => updateTask(i, "minutes", Number(e.target.value))}
-                style={{ ...s.input, width: 56, padding: "4px 6px", fontSize: 13, textAlign: "center" }}
-              />
-            </div>
-            <div style={{ display: "flex", gap: 4, marginTop: 8, flexWrap: "wrap" }}>
-              {WEEKDAYS.map((d) => (
-                <button
-                  key={d.key}
-                  onClick={() => toggleDay(i, d.key)}
-                  style={{
-                    padding: "4px 8px", borderRadius: 6, fontSize: 11, cursor: "pointer",
-                    border: `1px solid ${t.days.includes(d.key) ? T.spruce : T.line}`,
-                    background: t.days.includes(d.key) ? T.spruce : "transparent",
-                    color: t.days.includes(d.key) ? "white" : T.soft,
-                  }}
-                >
-                  {d.label}
-                </button>
-              ))}
-            </div>
+            {showTaskDetails && (
+              <div style={{ marginTop: 8 }}>
+                <label style={s.fieldLabel}>
+                  När vill du börja?
+                  <input
+                    style={{ ...s.input, marginTop: 4, fontSize: 13 }}
+                    placeholder="t.ex. när jag vaknar"
+                    value={t.trigger}
+                    onChange={(e) => updateTask(i, "trigger", e.target.value)}
+                  />
+                </label>
+                <div style={{ display: "flex", gap: 8, marginTop: 10, alignItems: "center", flexWrap: "wrap" }}>
+                  <span style={{ fontSize: 12, color: T.soft }}>Energi</span>
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <button
+                      key={n}
+                      aria-pressed={t.energy === n}
+                      aria-label={`${n} energipoäng`}
+                      onClick={() => updateTask(i, "energy", n)}
+                      style={{
+                        width: 32, height: 32, borderRadius: 6, border: `1.5px solid ${t.energy === n ? T.petrol : T.line}`,
+                        background: t.energy === n ? T.petrol : "transparent",
+                        color: t.energy === n ? "white" : T.soft,
+                        fontSize: 12, fontWeight: 700, cursor: "pointer",
+                      }}
+                    >
+                      {n}
+                    </button>
+                  ))}
+                  <label style={{ ...s.fieldLabel, marginLeft: 4 }}>
+                    Minuter
+                    <input
+                      type="number"
+                      min={5}
+                      max={240}
+                      step={5}
+                      value={t.minutes}
+                      onChange={(e) => updateTask(i, "minutes", Number(e.target.value))}
+                      style={{ ...s.input, display: "block", width: 68, marginTop: 4, padding: "6px", fontSize: 13, textAlign: "center" }}
+                    />
+                  </label>
+                </div>
+                <fieldset style={{ border: 0, padding: 0, margin: "10px 0 0" }}>
+                  <legend style={{ fontSize: 12, color: T.soft, padding: 0 }}>Dagar (ingen vald = varje dag)</legend>
+                  <div style={{ display: "flex", gap: 4, marginTop: 6, flexWrap: "wrap" }}>
+                    {WEEKDAYS.map((d) => (
+                      <button
+                        key={d.key}
+                        aria-pressed={t.days.includes(d.key)}
+                        onClick={() => toggleDay(i, d.key)}
+                        style={{
+                          minWidth: 36, minHeight: 36, padding: "4px 8px", borderRadius: 6, fontSize: 11, cursor: "pointer",
+                          border: `1px solid ${t.days.includes(d.key) ? T.spruce : T.line}`,
+                          background: t.days.includes(d.key) ? T.spruce : "transparent",
+                          color: t.days.includes(d.key) ? "white" : T.soft,
+                        }}
+                      >
+                        {d.label}
+                      </button>
+                    ))}
+                  </div>
+                </fieldset>
+              </div>
+            )}
           </div>
         ))}
 
-        <button
-          onClick={addTaskRow}
-          style={{ ...s.linkBtn, marginTop: 10, fontSize: 14 }}
-        >
-          + lägg till en till
-        </button>
+        <div style={{ display: "flex", gap: 14, marginTop: 10, flexWrap: "wrap" }}>
+          <button onClick={addTaskRow} style={{ ...s.linkBtn, fontSize: 14 }}>+ lägg till en till</button>
+          <button
+            onClick={() => setShowTaskDetails((value) => !value)}
+            aria-expanded={showTaskDetails}
+            style={{ ...s.linkBtn, fontSize: 14, color: T.soft }}
+          >
+            {showTaskDetails ? "dölj detaljer" : "visa valfria detaljer"}
+          </button>
+        </div>
 
-        <div style={{ display: "flex", gap: 10, marginTop: 20, justifyContent: "center" }}>
+        <div style={{ display: "flex", gap: 10, marginTop: 20, justifyContent: "center", flexWrap: "wrap" }}>
           <button style={s.secondaryBtn} onClick={() => setStep(2)}>Tillbaka</button>
-          <button style={s.primaryBtn} onClick={() => setStep(4)}>Nästa</button>
+          <button style={s.primaryBtn} onClick={() => setStep(4)}>{tasks.some((task) => task.title.trim()) ? "Nästa" : "Hoppa över uppgifter"}</button>
         </div>
       </div>
     ),
@@ -273,22 +293,25 @@ export default function SetupWizard({ onComplete }) {
             <p style={{ ...s.body, marginTop: 6, fontSize: 14 }}>{item.text}</p>
           </div>
 
-          <div style={{ display: "flex", gap: 6, justifyContent: "center", marginTop: 12 }}>
-            {tourItems.map((_, i) => (
-              <div
-                key={i}
+          <div aria-label="Rundtur" style={{ display: "flex", gap: 6, justifyContent: "center", marginTop: 12 }}>
+            {tourItems.map((tourItem, i) => (
+              <button
+                key={tourItem.title}
+                type="button"
+                aria-label={`Visa ${tourItem.title}`}
+                aria-current={i === tourIdx ? "step" : undefined}
                 style={{
-                  width: 8, height: 8, borderRadius: "50%",
-                  background: i === tourIdx ? T.petrol : T.track,
-                  cursor: "pointer",
-                  transition: "background 0.2s",
+                  width: 24, height: 24, padding: 0, border: 0, borderRadius: "50%",
+                  background: "transparent", cursor: "pointer", position: "relative",
                 }}
                 onClick={() => setTourIdx(i)}
-              />
+              >
+                <span aria-hidden="true" style={{ display: "block", width: 8, height: 8, margin: 8, borderRadius: "50%", background: i === tourIdx ? T.petrol : T.track }} />
+              </button>
             ))}
           </div>
 
-          <div style={{ display: "flex", gap: 10, marginTop: 24, justifyContent: "center" }}>
+          <div style={{ display: "flex", gap: 10, marginTop: 24, justifyContent: "center", flexWrap: "wrap" }}>
             {tourIdx > 0 && (
               <button style={s.secondaryBtn} onClick={() => setTourIdx((v) => v - 1)}>Föregående</button>
             )}
@@ -298,6 +321,9 @@ export default function SetupWizard({ onComplete }) {
               <button style={{ ...s.primaryBtn, background: T.spruce }} onClick={finish}>
                 Börja använda Varv
               </button>
+            )}
+            {tourIdx < tourItems.length - 1 && (
+              <button style={{ ...s.linkBtn, minHeight: 44 }} onClick={finish}>Hoppa över rundturen</button>
             )}
           </div>
         </div>
@@ -342,6 +368,7 @@ const styles = {
     textAlign: "center",
   },
   body: { color: "#6C7370", lineHeight: 1.5 },
+  fieldLabel: { display: "block", color: "#6C7370", fontSize: 12, lineHeight: 1.4 },
   primaryBtn: {
     padding: "10px 20px", borderRadius: 10, border: "none",
     background: "#4C6E75", color: "white", fontSize: 15, fontWeight: 700,

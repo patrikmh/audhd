@@ -11,8 +11,11 @@ export function WorkingMemoryDisplay({ state, settings, onWinddownClick }) {
   const todayLog = state.energyLog.filter((e) => e.day === todayKey());
   const spent = todayLog.filter((e) => e.delta > 0).reduce((a, e) => a + e.delta, 0);
   const recharged = todayLog.filter((e) => e.delta < 0).reduce((a, e) => a + Math.abs(e.delta), 0);
-  const energyRemaining = currentMode.budget - spent;
-  const energyPercentage = Math.max(0, (energyRemaining / currentMode.budget) * 100);
+  // Bounded remaining capacity: recharge refills the same budget it's drawn
+  // from, never above it. Same formula as the App.jsx hero so the two numbers
+  // (dial here, text there) can never disagree and confuse anyone.
+  const energyRemaining = Math.max(0, Math.min(currentMode.budget, currentMode.budget - spent + recharged));
+  const energyPercentage = currentMode.budget > 0 ? Math.max(0, (energyRemaining / currentMode.budget) * 100) : 0;
 
   // Time calculations
   const currentTime = nowHM();
@@ -162,14 +165,24 @@ export function WorkingMemoryDisplay({ state, settings, onWinddownClick }) {
           enough to act on. Efter nedvarvningen säger toppbannern redan samma sak,
           så då är raden bara upprepning. */}
       {minutesUntilWinddown > 0 && (
-      <div
-        onClick={winddownSoon ? onWinddownClick : undefined}
+      <button
+        type="button"
+        disabled={!winddownSoon}
+        onClick={onWinddownClick}
+        aria-label={winddownSoon ? `Öppna sömnankare. Nedvarvning om ${minutesUntilWinddown} minuter` : undefined}
         style={{
+          display: 'block',
+          width: '100%',
           marginTop: '10px',
+          padding: 0,
+          border: 0,
+          background: 'transparent',
+          textAlign: 'left',
           fontFamily: 'Atkinson Hyperlegible',
           fontSize: '0.9rem',
           color: winddownSoon ? T.warn : T.soft,
-          cursor: winddownSoon ? 'pointer' : 'default'
+          cursor: winddownSoon ? 'pointer' : 'default',
+          opacity: 1,
         }}
       >
         Nedvarvning {settings.winddown} · om{' '}
@@ -177,8 +190,8 @@ export function WorkingMemoryDisplay({ state, settings, onWinddownClick }) {
           {hoursUntilWinddown > 0 && `${hoursUntilWinddown}h `}
           {minsUntilWinddown}m
         </b>
-        {winddownSoon && ' · klicka för sömnankare'}
-      </div>
+        {winddownSoon && ' · öppna sömnankare'}
+      </button>
       )}
 
       {/* The only chip left: wins are the one counter that celebrates rather

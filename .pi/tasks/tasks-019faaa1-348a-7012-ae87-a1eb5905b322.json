@@ -1,0 +1,161 @@
+{
+  "nextId": 14,
+  "tasks": [
+    {
+      "id": "1",
+      "subject": "Fix energy/recharge calculation in WorkingMemoryDisplay (#2, #12)",
+      "description": "WorkingMemoryDisplay computes energyRemaining = budget - spent, ignoring recharge. Must match App.jsx's bounded calculation (budget - spent + recharged, clamped to >= 0). Also item #12: one bounded remaining-energy calculation including recharge everywhere.",
+      "status": "in_progress",
+      "activeForm": "Fixing energy/recharge calculation",
+      "metadata": {},
+      "blocks": [],
+      "blockedBy": [],
+      "createdAt": 1785274390105,
+      "updatedAt": 1785274478464
+    },
+    {
+      "id": "2",
+      "subject": "Fix task flow: start routes to Focus prefilled, undo correctness (#3, #8)",
+      "description": "Task flow (#3, #8): startTaskStep currently only sets tool and marks first step done — must route to expanded Focus prefilled with task/step WITHOUT marking done. Undo: one confirmation, avoid duplicate wins/energy. Correct TaskInitiationSupport -> FocusLap goal/duration wiring. Observer \"Starta\"/\"Börja med detta\" should open Focus prefilled.",
+      "status": "pending",
+      "activeForm": "Fixing task flow start/undo wiring",
+      "metadata": {},
+      "blocks": [],
+      "blockedBy": [],
+      "createdAt": 1785274397329,
+      "updatedAt": 1785274397329
+    },
+    {
+      "id": "3",
+      "subject": "Fix capture: pass AI capability, honest copy, Enter=primary (#4, #9)",
+      "description": "Capture (#4, #9): CaptureSheet promises \"agenten sorterar\" without consent; autoCapture lands as idea when classify off but the primary button copy misrepresents availability. Pass AI/classifier capability into CaptureSheet explicitly. Explicit Uppgift/Ide/Inkop always work. Failure saves raw idea and explains destination. Enter matches primary action. Capture never appears to require AI.",
+      "status": "pending",
+      "activeForm": "Fixing capture AI-consent wiring",
+      "metadata": {},
+      "blocks": [],
+      "blockedBy": [],
+      "createdAt": 1785274405955,
+      "updatedAt": 1785274405955
+    },
+    {
+      "id": "4",
+      "subject": "Fix tools: accurate suggestions, reveal count, hidden tools (#5)",
+      "description": "Tools (#5): deterministic contextual suggestions/reasons, accurate reveal count, hidden tools (visibleTools===false) never suggested. Observer disabled shows complete enabled set. Selected semantics/panel headings. Preserve dismissals.",
+      "status": "pending",
+      "activeForm": "Fixing contextual tools suggestions",
+      "metadata": {},
+      "blocks": [],
+      "blockedBy": [],
+      "createdAt": 1785274413853,
+      "updatedAt": 1785274413853
+    },
+    {
+      "id": "5",
+      "subject": "Consolidate settings: single home, connections, persistence status (#6, #10)",
+      "description": "Settings (#6, #10): single home for preferences, tool personalization, agents, AI consent, connections and data. Account menu Settings + logout. Preserve OAuth. Settings state uses existing persistence; closing restores focus to account trigger. Show saving/saved/failed locally. Progressively disclose advanced controls. tablist/tab/tabpanel semantics. Connect is currently in Tools — move/consolidate into Settings (Kopplingar).",
+      "status": "pending",
+      "activeForm": "Fixing settings consolidation",
+      "metadata": {},
+      "blocks": [],
+      "blockedBy": [],
+      "createdAt": 1785274421689,
+      "updatedAt": 1785274421689
+    },
+    {
+      "id": "6",
+      "subject": "Fix wind-down control: keyboard-operable, routes to tools+sleep (#7)",
+      "description": "Wind-down (#7): control semantic/keyboard-operable and routes to view=tools + tool=sleep. Currently WorkingMemoryDisplay onWinddownClick only does setTool(\"sleep\") without setView(\"tools\"). Make it a real button with proper role/label that navigates to tools view with sleep tool.",
+      "status": "pending",
+      "activeForm": "Fixing wind-down control",
+      "metadata": {},
+      "blocks": [],
+      "blockedBy": [],
+      "createdAt": 1785274426942,
+      "updatedAt": 1785274426942
+    },
+    {
+      "id": "7",
+      "subject": "Fix first-use setup: skippable tour, no redundant checkin (#1)",
+      "description": "Setup (#1): optional starter/tour can be skipped; preserve wake/energy and persistence; do not immediately open redundant DailyCheckin. Inspect showSetup/showCheckin/handleSetupComplete. The tour step should be skippable. After setup completes, don't immediately open DailyCheckin (redundant since setup just captured energy).",
+      "status": "pending",
+      "activeForm": "Fixing first-use setup flow",
+      "metadata": {},
+      "blocks": [],
+      "blockedBy": [],
+      "createdAt": 1785274435438,
+      "updatedAt": 1785274435438
+    },
+    {
+      "id": "8",
+      "subject": "Coordinate feedback: no overlap, one completion message (#11)",
+      "description": "Feedback (#11): coordinate SystemStatus, AgentProgress, toast, undo and modals: no overlap/background focus leakage; errors remain; one completion message. Currently toast, undo, AgentProgress all stack at bottom. One completion message per action.",
+      "status": "pending",
+      "activeForm": "Fixing feedback coordination",
+      "metadata": {},
+      "blocks": [],
+      "blockedBy": [],
+      "createdAt": 1785274439688,
+      "updatedAt": 1785274439688
+    },
+    {
+      "id": "9",
+      "subject": "Accessible primary nav: aria-current, targets, focus (#13)",
+      "description": "Nav a11y (#13): named nav, one aria-current page, capture as action, >=44px targets, visible focus, focus restoration, reduced motion. Nav buttons need aria-current, nav element needs aria-label. Capture is an action button. Ensure min target sizes.",
+      "status": "pending",
+      "activeForm": "Fixing accessible primary nav",
+      "metadata": {},
+      "blocks": [],
+      "blockedBy": [],
+      "createdAt": 1785274446703,
+      "updatedAt": 1785274446703
+    },
+    {
+      "id": "10",
+      "subject": "Accessible feedback: status vs alert semantics (#14)",
+      "description": "Feedback a11y (#14): status vs alert semantics (aria-live polite for status, assertive role=alert for errors), semantic retry buttons, color-independent text, avoid repeated announcements; routine status quiet. Toast should be role=status aria-live=polite; errors role=alert.",
+      "status": "pending",
+      "activeForm": "Fixing accessible feedback semantics",
+      "metadata": {},
+      "blocks": [],
+      "blockedBy": [],
+      "createdAt": 1785274455374,
+      "updatedAt": 1785274455374
+    },
+    {
+      "id": "11",
+      "subject": "Responsive setup/settings: 320px, proper tablist semantics (#15)",
+      "description": "Responsive (#15): setup/settings support 320px/zoom: wrap or stack controls, proper tablist/tab/tabpanel semantics with aria-selected/aria-controls/role, labels, optional advanced setup fields disclosed. Make settings tabs proper tablist.",
+      "status": "pending",
+      "activeForm": "Fixing responsive setup/settings",
+      "metadata": {},
+      "blocks": [],
+      "blockedBy": [],
+      "createdAt": 1785274459967,
+      "updatedAt": 1785274459967
+    },
+    {
+      "id": "12",
+      "subject": "Ideas list fallback: accessible default, graph cannot block list (#16)",
+      "description": "Ideas (#16): list default/full accessible path; list/map controls expose selection (aria-pressed); no graph-only actions; preserve lazy load; graph failure cannot block list. Ensure list is default mode. Graph is pointer-centric — ensure list mode is the accessible path and works without graph.",
+      "status": "pending",
+      "activeForm": "Fixing Ideas list fallback",
+      "metadata": {},
+      "blocks": [],
+      "blockedBy": [],
+      "createdAt": 1785274468616,
+      "updatedAt": 1785274468616
+    },
+    {
+      "id": "13",
+      "subject": "Add regression tests, run full build/test suite",
+      "description": "Add regression tests (.test.jsx for vitest) for the key fixed behaviors: energy recharge calc, capture respects AI capability, tools hide correctly, focus prefill on task start. Run npm test, npm run test:ui, npm run build. Report results.",
+      "status": "pending",
+      "activeForm": "Adding regression tests and verifying",
+      "metadata": {},
+      "blocks": [],
+      "blockedBy": [],
+      "createdAt": 1785274473423,
+      "updatedAt": 1785274473423
+    }
+  ]
+}

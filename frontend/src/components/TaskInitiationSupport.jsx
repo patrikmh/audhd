@@ -6,10 +6,10 @@
 import React from 'react';
 import { T } from '../constants/tokens';
 
-export function TaskInitiationSupport({ task, onStartStep, onSetTrigger }) {
+export function TaskInitiationSupport({ task, onStartStep, onSetTrigger, onClose }) {
   if (!task) return null;
 
-  const firstStep = task.steps?.[0];
+  const firstStep = task.steps?.find((step) => !step.done);
   const energyCost = task.energy || 2;
   const timeEstimate = task.minutes || 30;
 
@@ -63,24 +63,36 @@ export function TaskInitiationSupport({ task, onStartStep, onSetTrigger }) {
           </div>
         </div>
 
-        {/* Quick Start Button */}
-        <button
-          style={{
-            background: T.petrol,
-            color: 'white',
-            border: 'none',
-            borderRadius: '6px',
-            padding: '8px 16px',
-            fontSize: '0.9rem',
-            fontFamily: 'Atkinson Hyperlegible',
-            fontWeight: '600',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease'
-          }}
-          onClick={() => onStartStep && onStartStep(task)}
-        >
-          Starta ▶
-        </button>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          {onClose && (
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Stäng starthjälp"
+              style={{ background: 'transparent', color: T.soft, border: 0, minWidth: 44, minHeight: 44, cursor: 'pointer', fontSize: 18 }}
+            >
+              ×
+            </button>
+          )}
+          <button
+            style={{
+              background: T.petrol,
+              color: 'white',
+              border: 'none',
+              borderRadius: '6px',
+              padding: '8px 16px',
+              minHeight: 44,
+              fontSize: '0.9rem',
+              fontFamily: 'Atkinson Hyperlegible',
+              fontWeight: '600',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease'
+            }}
+            onClick={() => onStartStep && onStartStep(task)}
+          >
+            Starta ▶
+          </button>
+        </div>
       </div>
 
       {/* First Step Focus */}
@@ -207,7 +219,7 @@ export function TaskInitiationSupport({ task, onStartStep, onSetTrigger }) {
                 color: T.ink,
                 marginBottom: '8px'
               }}>
-                ÄR du i rätt skjust just nu? Kolla:
+                Är du i rätt läge just nu? Kolla:
               </div>
               <ul style={{
                 margin: 0,

@@ -8,7 +8,7 @@ import { useState, useEffect } from "react";
 import { T } from "../constants/tokens";
 
 export function SystemStatus({ sync, agents, lastSync, onSyncClick }) {
-  const [expanded, setExpanded] = useState(true);
+  const [expanded, setExpanded] = useState(false);
 
   // Auto-collapse after 10 seconds — but never while a sync error is active,
   // since that's exactly the kind of silent failure that caused devices to
@@ -69,7 +69,7 @@ export function SystemStatus({ sync, agents, lastSync, onSyncClick }) {
           boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
           padding: 0,
         }}
-        aria-label="Visa systemstatus"
+        aria-label={`Visa systemstatus. ${syncStatus.text}`}
       >
         <div
           style={{
@@ -138,8 +138,10 @@ export function SystemStatus({ sync, agents, lastSync, onSyncClick }) {
         </div>
       )}
 
-      {/* Sync status */}
-      <div
+      {/* Sync status — a real button only becomes actionable when retry/sync is available. */}
+      <button
+        type="button"
+        disabled={!syncStatus.showAction}
         style={{
           background: T.card,
           border: `1px solid ${syncStatus.status === "error" ? T.warn : T.line}`,
@@ -148,10 +150,13 @@ export function SystemStatus({ sync, agents, lastSync, onSyncClick }) {
           maxWidth: 280,
           boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
           cursor: syncStatus.showAction ? "pointer" : "default",
+          fontFamily: "inherit",
+          textAlign: "left",
+          opacity: 1,
         }}
         onClick={syncStatus.showAction ? onSyncClick : undefined}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <div role={syncStatus.status === "error" ? "alert" : "status"} aria-live={syncStatus.status === "working" ? "polite" : "off"} style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <div
             style={{
               width: 14,
@@ -188,7 +193,7 @@ export function SystemStatus({ sync, agents, lastSync, onSyncClick }) {
 
             {syncStatus.showAction && (
               <div style={{ fontSize: 11, color: T.petrol, marginTop: 1 }}>
-                Klicka för att synka
+                Aktivera för att synka
               </div>
             )}
 
@@ -199,7 +204,7 @@ export function SystemStatus({ sync, agents, lastSync, onSyncClick }) {
             )}
           </div>
         </div>
-      </div>
+      </button>
 
       {/* Collapse button */}
       <button

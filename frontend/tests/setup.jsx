@@ -1,4 +1,4 @@
-import "@testing-library/jest-dom";
+import "@testing-library/jest-dom/vitest";
 
 // jsdom lacks matchMedia; components that probe prefers-color-scheme crash
 // without this stub.

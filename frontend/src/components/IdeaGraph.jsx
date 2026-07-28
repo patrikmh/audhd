@@ -170,6 +170,9 @@ export function IdeaGraph({ ideas, tasks = [], onSelect, selectedId }) {
     const nodeSel = nodeLayer.selectAll("g")
       .data(nodes, (d) => d.id)
       .join("g")
+      .attr("tabindex", (d) => (d.kind === "idea" ? 0 : null))
+      .attr("role", (d) => (d.kind === "idea" ? "button" : null))
+      .attr("aria-label", (d) => (d.kind === "idea" ? `Öppna idé: ${d.label}` : null))
       .style("cursor", (d) => (d.kind === "idea" ? "pointer" : "default"))
       .call(
         drag()
@@ -183,7 +186,13 @@ export function IdeaGraph({ ideas, tasks = [], onSelect, selectedId }) {
             d.fy = null; if (isMindmap) d.fx = null;
           })
       )
-      .on("click", (event, d) => { if (d.kind === "idea") onSelect(d.id); });
+      .on("click", (event, d) => { if (d.kind === "idea") onSelect(d.id); })
+      .on("keydown", (event, d) => {
+        if (d.kind === "idea" && (event.key === "Enter" || event.key === " ")) {
+          event.preventDefault();
+          onSelect(d.id);
+        }
+      });
 
     nodeSel.append("circle")
       .attr("r", (d) => d.r)
@@ -269,6 +278,7 @@ export function IdeaGraph({ ideas, tasks = [], onSelect, selectedId }) {
         {[["ideer", "idéer"], ["uppgifter", "uppgifter"], ["allt", "allt"]].map(([key, label]) => (
           <button
             key={key}
+            aria-pressed={mode === key}
             onClick={() => setMode(key)}
             style={{
               fontSize: 12, padding: "4px 10px", borderRadius: 20, cursor: "pointer", fontFamily: "inherit",

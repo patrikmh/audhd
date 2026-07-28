@@ -19,7 +19,9 @@ export function AgentProgress({ step, text, isRunning }) {
   if (!isRunning && !text) return null;
 
   return (
+    <>
     <div
+      aria-hidden="true"
       style={{
         position: "fixed",
         bottom: 90,
@@ -55,7 +57,7 @@ export function AgentProgress({ step, text, isRunning }) {
           }}
         />
         <span style={{ fontWeight: 500 }}>
-          {step}{isRunning ? DOTS[dotIdx] : ""}
+          {step}<span>{isRunning ? DOTS[dotIdx] : ""}</span>
         </span>
       </div>
       {text && (
@@ -75,5 +77,13 @@ export function AgentProgress({ step, text, isRunning }) {
         </div>
       )}
     </div>
+      <span
+        role="status"
+        aria-live="polite"
+        style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0, 0, 0, 0)", whiteSpace: "nowrap", border: 0 }}
+      >
+        {isRunning ? `${step || "Agent"} pågår` : `${step || "Agent"} klar`}
+      </span>
+    </>
   );
 }
