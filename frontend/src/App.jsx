@@ -14,6 +14,7 @@ import { getAuth, setAuth, clearAuth, login } from "./utils/auth";
 import { useModalDialog } from "./hooks/useModalDialog";
 import { useTheme } from "./hooks/useTheme";
 import { GhostTextarea } from "./components/GhostTextarea";
+import varvLogo from "./assets/varv-logo.png";
 // Cytoscape.js is ~230kb gzipped — split it into its own chunk so opening the
 // app (or the Ideas list view) never pays for it; only "karta" mode does.
 const IdeaGraph = lazy(() => import("./components/IdeaGraph").then((m) => ({ default: m.IdeaGraph })));
@@ -1159,8 +1160,7 @@ function VarvApp({ username, onLogout }) {
       <div className="shell" style={s.shell}>
         {/* ============ header ============ */}
         <header style={s.header}>
-          <div style={s.wordmark}>Varv</div>
-          <div style={s.tagline}>{view === "today" ? "ett varv i taget" : view === "ideas" ? "tänk högt" : view === "lists" ? "ut ur huvudet" : "verktygslådan"}</div>
+          <img src={varvLogo} alt="Varv" style={s.logo} />
           {/* Account menu: configuration (inställningar, agenter, kopplingar) lives
               here so the verktygslådan only holds things you actually *do*. */}
           <div style={{ marginLeft: "auto", position: "relative" }}>
@@ -3687,9 +3687,8 @@ const styles = {
   // Bredden bor i .shell-regeln i <style> så mediafrågan kan bredda den på
   // laptop — en inline maxWidth hade vunnit över stylesheetet.
   shell: { margin: "0 auto", padding: "16px 16px 130px" },
-  header: { display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 },
-  wordmark: { fontFamily: "'Fraunces', serif", fontWeight: 300, fontSize: 30, letterSpacing: "0.01em", lineHeight: 1 },
-  tagline: { color: T.soft, fontSize: 13 },
+  header: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 },
+  logo: { display: "block", width: 132, height: "auto" },
   hero: { background: T.card, border: `1px solid ${T.line}`, borderRadius: 20, padding: "18px 16px 14px", marginTop: 12 },
   eyebrow: { font: "500 11px 'IBM Plex Mono', monospace", letterSpacing: "0.12em", textTransform: "uppercase", color: T.spruce },
   section: { marginTop: 24 },
