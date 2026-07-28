@@ -404,7 +404,16 @@ export function SettingsView({ state, onPatch, onToggleExternalAi, onLogout, onC
         {/* Tools tab */}
         {tab === "verktyg" && (
           <div>
-            <p style={{ fontSize: 13, color: T.soft, marginTop: 0 }}>
+            {/* Samma flagga som observatören under Agenter, men här — det är här
+                man letar när förslagen känns för många. Av = verktygslådan visar
+                alltid hela listan i stället för att leda med det relevanta. */}
+            {toggle(
+              state.agents?.observer !== false,
+              "Verktygsförslag",
+              "föreslå verktyg när läget passar, och låt verktygslådan leda med dem",
+              () => patchAgents("observer")
+            )}
+            <p style={{ fontSize: 13, color: T.soft, marginTop: 18 }}>
               Välj vilka verktyg som ska synas. Resten döljs — du kan alltid återaktivera dem här.
             </p>
             {Object.entries(TOOL_LABELS).map(([key, label]) =>

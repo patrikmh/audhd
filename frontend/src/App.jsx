@@ -175,6 +175,7 @@ function VarvApp({ username, onLogout }) {
   const [googleConnected, setGoogleConnected] = useState(null); // null = okänt än, annars bool
   const [googleBusy, setGoogleBusy] = useState(false);
   const [accountMenu, setAccountMenu] = useState(false); // inställningar/agenter/kopplingar bor här, inte i verktygslådan
+  const [showAllTools, setShowAllTools] = useState(false);
 
   const refreshGoogleStatus = () => {
     apiGet("/api/integrations/google/status")
@@ -398,23 +399,26 @@ function VarvApp({ username, onLogout }) {
 
   const checkedInToday = state.checkins.some((c) => todayKey(new Date(c.ts)) === todayKey());
 
-  const observerSuggestion = useMemo(() => {
-    if (!state.agents.observer) return null;
+  // Alla träffar just nu, oavsett om bannern avfärdats. Verktygslådan använder
+  // listan för att veta vad som är relevant; bannern tar första oavfärdade.
+  const observerCandidates = useMemo(() => {
+    if (!state.agents.observer) return [];
     // Local heuristics only, gated to major milestones — not fine-grained enough
     // to fire on every click (toggling a step, editing text) or it'd just nag.
     const allDoneToday = isToday && visibleTasks.length === 0 && doneForSelectedDate.length > 0;
     const halfwaySpentNoRecharge = !overBudget && mode.budget > 0 && spent >= mode.budget / 2 && recharged === 0;
-    const candidates = [
-      pastWinddown && { key: "winddown", tool: "sleep", text: "Nedvarvningstid — dags att förbereda sömnen?", cta: "Öppna sömnankaret" },
-      state.capacity === "recovery" && { key: "recovery-ground", tool: "ground", text: "Återhämtningsläge — en kort andningspaus?", cta: "Öppna andningsankaret" },
-      overBudget && { key: "overbudget-move", tool: "move", text: "Energin är över budget — en rörelsepaus kan hjälpa.", cta: "Öppna rörelsepausen" },
-      (!checkedInToday && hmToMin(nowHM()) >= hmToMin("14:00")) && { key: "checkin-1400", tool: "checkin", text: "Ingen tankekoll idag än — hur går dagen?", cta: "Öppna tankekoll" },
-      allDoneToday && { key: `all-done-${todayKey()}`, tool: "wins", text: "Allt klart för idag — värt att se vad som blev gjort?", cta: "Öppna vinster" },
-      halfwaySpentNoRecharge && { key: `halfway-${todayKey()}`, tool: "move", text: "Halva energibudgeten förbrukad utan återhämtning än — en kort paus nu kan skydda resten av dagen.", cta: "Öppna rörelsepausen" },
+    return [
+      pastWinddown && { key: "winddown", tool: "sleep", why: "nedvarvningstid", text: "Nedvarvningstid — dags att förbereda sömnen?", cta: "Öppna sömnankaret" },
+      state.capacity === "recovery" && { key: "recovery-ground", tool: "ground", why: "återhämtningsläge", text: "Återhämtningsläge — en kort andningspaus?", cta: "Öppna andningsankaret" },
+      overBudget && { key: "overbudget-move", tool: "move", why: "energin är över budget", text: "Energin är över budget — en rörelsepaus kan hjälpa.", cta: "Öppna rörelsepausen" },
+      (!checkedInToday && hmToMin(nowHM()) >= hmToMin("14:00")) && { key: "checkin-1400", tool: "checkin", why: "ingen tankekoll idag än", text: "Ingen tankekoll idag än — hur går dagen?", cta: "Öppna tankekoll" },
+      allDoneToday && { key: `all-done-${todayKey()}`, tool: "wins", why: "allt klart för idag", text: "Allt klart för idag — värt att se vad som blev gjort?", cta: "Öppna vinster" },
+      halfwaySpentNoRecharge && { key: `halfway-${todayKey()}`, tool: "move", why: "halva budgeten förbrukad", text: "Halva energibudgeten förbrukad utan återhämtning än — en kort paus nu kan skydda resten av dagen.", cta: "Öppna rörelsepausen" },
     ].filter(Boolean);
-    return candidates.find((c) => !dismissedToday(c.key)) || null;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.agents.observer, pastWinddown, state.capacity, overBudget, checkedInToday, state.observerDismissed, isToday, visibleTasks.length, doneForSelectedDate.length, spent, recharged, mode.budget]);
+  }, [state.agents.observer, pastWinddown, state.capacity, overBudget, checkedInToday, isToday, visibleTasks.length, doneForSelectedDate.length, spent, recharged, mode.budget]);
+
+  const observerSuggestion = observerCandidates.find((c) => !dismissedToday(c.key)) || null;
 
   const dismissObserverSuggestion = (key) =>
     setState((st) => ({
@@ -1742,17 +1746,56 @@ function VarvApp({ username, onLogout }) {
         {/* ============ tools view ============ */}
         {view === "tools" && (
           <section style={{ marginTop: 4 }}>
-          <div style={s.toolGrid}>
-            {vt.focus !== false && <ToolBtn active={tool === "focus" || lapRunning} onClick={() => setTool(tool === "focus" ? null : "focus")} label="Fokusvarv" sub={lapRunning ? "pågår…" : "timer + mål"} />}
-            {vt.movement !== false && <ToolBtn active={tool === "move"} onClick={() => setTool(tool === "move" ? null : "move")} label="Rörelsepaus" sub="5 min, +2⚡" />}
-            {vt.checkin !== false && <ToolBtn active={tool === "checkin"} onClick={() => setTool(tool === "checkin" ? null : "checkin")} label="Tankekoll" sub="en snällare läsning" />}
-            {vt.wins !== false && <ToolBtn active={tool === "wins"} onClick={() => setTool(tool === "wins" ? null : "wins")} label="Vinster" sub={`${winsToday.length} idag`} />}
-            {vt.sleep !== false && <ToolBtn active={tool === "sleep"} onClick={() => setTool(tool === "sleep" ? null : "sleep")} label="Sömnankare" sub={`vakna ${state.settings.wake}`} />}
-            {vt.breathing !== false && <ToolBtn active={tool === "ground"} onClick={() => setTool(tool === "ground" ? null : "ground")} label="Andningsankare" sub="3 min, +1⚡" />}
-            {vt.week !== false && <ToolBtn active={tool === "week"} onClick={() => setTool(tool === "week" ? null : "week")} label="Veckoöversikt" sub="energimönster" />}
-            {vt.why === true && <ToolBtn active={tool === "edu"} onClick={() => setTool(tool === "edu" ? null : "edu")} label="Varför det funkar" sub="evidensen" />}
-            <ToolBtn onClick={() => setShowCheckin(true)} label="Morgoncheck" sub="översikt + energi" />
-          </div>
+          {/* Verktygslådan leder med det som är relevant just nu och lägger resten
+              bakom ett klick. Utan förslag (observatören av, eller inget som
+              matchar) visas hela lådan direkt — en tom verktygsvy vore en
+              återvändsgränd. */}
+          {(() => {
+            const allTools = [
+              vt.focus !== false && { id: "focus", label: "Fokusvarv", sub: lapRunning ? "pågår…" : "timer + mål", active: tool === "focus" || lapRunning, onClick: () => setTool(tool === "focus" ? null : "focus") },
+              vt.movement !== false && { id: "move", label: "Rörelsepaus", sub: "5 min, +2⚡", active: tool === "move", onClick: () => setTool(tool === "move" ? null : "move") },
+              vt.checkin !== false && { id: "checkin", label: "Tankekoll", sub: "en snällare läsning", active: tool === "checkin", onClick: () => setTool(tool === "checkin" ? null : "checkin") },
+              vt.wins !== false && { id: "wins", label: "Vinster", sub: `${winsToday.length} idag`, active: tool === "wins", onClick: () => setTool(tool === "wins" ? null : "wins") },
+              vt.sleep !== false && { id: "sleep", label: "Sömnankare", sub: `vakna ${state.settings.wake}`, active: tool === "sleep", onClick: () => setTool(tool === "sleep" ? null : "sleep") },
+              vt.breathing !== false && { id: "ground", label: "Andningsankare", sub: "3 min, +1⚡", active: tool === "ground", onClick: () => setTool(tool === "ground" ? null : "ground") },
+              vt.week !== false && { id: "week", label: "Veckoöversikt", sub: "energimönster", active: tool === "week", onClick: () => setTool(tool === "week" ? null : "week") },
+              vt.why === true && { id: "edu", label: "Varför det funkar", sub: "evidensen", active: tool === "edu", onClick: () => setTool(tool === "edu" ? null : "edu") },
+              { id: "morning", label: "Morgoncheck", sub: "översikt + energi", active: false, onClick: () => setShowCheckin(true) },
+            ].filter(Boolean);
+
+            const whyFor = (id) => observerCandidates.find((c) => c.tool === id)?.why;
+            const suggested = allTools.filter((t) => whyFor(t.id));
+            const rest = allTools.filter((t) => !whyFor(t.id));
+
+            if (suggested.length === 0) {
+              return (
+                <div style={s.toolGrid}>
+                  {allTools.map((t) => <ToolBtn key={t.id} {...t} />)}
+                </div>
+              );
+            }
+
+            return (
+              <>
+                <div style={s.eyebrow}>Föreslås nu</div>
+                <div style={s.toolGrid}>
+                  {suggested.map((t) => <ToolBtn key={t.id} {...t} sub={whyFor(t.id)} />)}
+                </div>
+                <button
+                  style={{ ...s.linkBtn, marginTop: 16 }}
+                  onClick={() => setShowAllTools((v) => !v)}
+                  aria-expanded={showAllTools}
+                >
+                  {showAllTools ? "dölj övriga verktyg" : `visa alla verktyg (${rest.length})`}
+                </button>
+                {showAllTools && (
+                  <div style={s.toolGrid}>
+                    {rest.map((t) => <ToolBtn key={t.id} {...t} />)}
+                  </div>
+                )}
+              </>
+            );
+          })()}
 
           {tool === "agents" && (
             <div style={{ ...s.card, marginTop: 10 }}>

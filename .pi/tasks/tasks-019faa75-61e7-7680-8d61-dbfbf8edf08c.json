@@ -1,0 +1,139 @@
+{
+  "nextId": 9,
+  "tasks": [
+    {
+      "id": "1",
+      "subject": "Characterize the existing observer suggestion journey",
+      "description": "Add a React UI test harness (Vitest/jsdom/Testing Library) while preserving Node tests. Characterize an authenticated setup-complete recovery-mode user with suggestions enabled: the observer suggestion appears and its CTA opens real Andningsankare content without starting it. Test through the real App entry point. Command: cd frontend && npm run test:ui -- -t \"observer suggestion opens\"",
+      "status": "pending",
+      "activeForm": "Characterizing observer journey",
+      "metadata": {},
+      "blocks": [
+        "2",
+        "7"
+      ],
+      "blockedBy": [],
+      "createdAt": 1785271620994,
+      "updatedAt": 1785271655626
+    },
+    {
+      "id": "2",
+      "subject": "Show only contextually relevant tools until “visa alla” is requested",
+      "description": "Test and implement Relevant now + visa alla for a recovery context. Initially only Andningsankare under Föreslås nu; unrelated tools absent. Disclosure reveals remaining enabled tools without duplicating suggestion, exposes aria-expanded, and collapses again. Real VarvApp navigation and ToolBtn rendering. Depends on Task 1.",
+      "status": "pending",
+      "activeForm": "Collapsing contextual tools",
+      "metadata": {},
+      "blocks": [
+        "3",
+        "7"
+      ],
+      "blockedBy": [
+        "1"
+      ],
+      "createdAt": 1785271624436,
+      "updatedAt": 1785271655626
+    },
+    {
+      "id": "3",
+      "subject": "Keep the tool catalog collapsed when no context warrants a suggestion",
+      "description": "Test and correct empty-context behavior. With a deterministic neutral state, no tool card or Föreslås nu heading is initially surfaced; communicate that nothing is suggested and still offer visa alla verktyg. Disclosure reveals enabled catalog. Depends on Tasks 1–2.",
+      "status": "pending",
+      "activeForm": "Handling no-suggestion state",
+      "metadata": {},
+      "blocks": [
+        "4",
+        "7"
+      ],
+      "blockedBy": [
+        "2"
+      ],
+      "createdAt": 1785271627612,
+      "updatedAt": 1785271655626
+    },
+    {
+      "id": "4",
+      "subject": "Interpret “Verktygsförslag av” as stopping suggestions, not expanding tools",
+      "description": "Test and implement actual Settings UI semantics. In a context that would suggest Andningsankare, turning off Verktygsförslag removes the banner, Föreslås nu, and suggested card. The catalog remains collapsed and is manually available via visa alla verktyg. Settings copy explains this. Depends on Tasks 1–3.",
+      "status": "pending",
+      "activeForm": "Implementing suggestion toggle",
+      "metadata": {},
+      "blocks": [
+        "5",
+        "6",
+        "7"
+      ],
+      "blockedBy": [
+        "3"
+      ],
+      "createdAt": 1785271632259,
+      "updatedAt": 1785271655626
+    },
+    {
+      "id": "5",
+      "subject": "Honor “ej nu” across all contextual suggestion surfaces",
+      "description": "Test and enforce daily dismissal semantics. Clicking ej nu removes the current suggestion from Today and Verktyg for the day but does not hide/disable the underlying tool; it remains reachable after expanding visa alla. Depends on Tasks 1–4.",
+      "status": "pending",
+      "activeForm": "Honoring daily dismissals",
+      "metadata": {},
+      "blocks": [
+        "7"
+      ],
+      "blockedBy": [
+        "4"
+      ],
+      "createdAt": 1785271636249,
+      "updatedAt": 1785271655626
+    },
+    {
+      "id": "6",
+      "subject": "Wire suggestion preference into VarvApp persistence",
+      "description": "Verify real SettingsView onPatch updates agents.observer and persists through existing localStorage and /api/me settings paths. Turning suggestions off, flushing debounce, and remounting must preserve agents.observer=false and keep suggestions disabled/collapsed. Depends on Task 4.",
+      "status": "pending",
+      "activeForm": "Testing suggestion persistence",
+      "metadata": {},
+      "blocks": [
+        "7"
+      ],
+      "blockedBy": [
+        "4"
+      ],
+      "createdAt": 1785271642180,
+      "updatedAt": 1785271655626
+    },
+    {
+      "id": "7",
+      "subject": "Extract and wire a canonical contextual tool selector",
+      "description": "Extract observer contextual-tool decisions into one pure canonical frontend module. VarvApp must use real selector output for Today banner and Verktyg, while rendering callbacks and active state remain in VarvApp. Hidden, dismissed, or disabled suggestions must agree across surfaces. Depends on Tasks 1–6.",
+      "status": "pending",
+      "activeForm": "Extracting suggestion selector",
+      "metadata": {},
+      "blocks": [
+        "8"
+      ],
+      "blockedBy": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ],
+      "createdAt": 1785271646274,
+      "updatedAt": 1785271655626
+    },
+    {
+      "id": "8",
+      "subject": "Characterize contextual tool selection rules and edge cases",
+      "description": "Add focused unit coverage for winddown, recovery, over-budget, missing afternoon check-in, all done, halfway without recharge, observer disabled, dismissed keys, hidden tools, multiple candidate priority. Use explicit context inputs. Run Node suite, UI suite, and build. Depends on Task 7.",
+      "status": "pending",
+      "activeForm": "Covering suggestion rules",
+      "metadata": {},
+      "blocks": [],
+      "blockedBy": [
+        "7"
+      ],
+      "createdAt": 1785271649695,
+      "updatedAt": 1785271655626
+    }
+  ]
+}

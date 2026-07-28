@@ -7,7 +7,8 @@
     "dev": "vite",
     "test": "node --test tests/*.test.js",
     "build": "vite build",
-    "preview": "vite preview --host --port 4173"
+    "preview": "vite preview --host --port 4173",
+    "test:ui": "vitest run"
   },
   "dependencies": {
     "d3-drag": "^3.0.0",
@@ -19,7 +20,11 @@
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^14.3.1",
     "@vitejs/plugin-react": "^4.3.4",
-    "vite": "^5.4.11"
+    "jsdom": "^29.1.1",
+    "vite": "^5.4.11",
+    "vitest": "^4.1.10"
   }
 }
