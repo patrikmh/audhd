@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { T } from '../constants/tokens';
+import { F, T } from '../constants/tokens';
 
 export function TaskInitiationSupport({ task, onStartStep, onSetTrigger, onClose }) {
   if (!task) return null;
@@ -31,7 +31,7 @@ export function TaskInitiationSupport({ task, onStartStep, onSetTrigger, onClose
       }}>
         <div>
           <h3 style={{
-            fontFamily: 'Fraunces',
+            fontFamily: F.display,
             fontSize: '1.1rem',
             fontWeight: '400',
             margin: '0 0 4px 0',
@@ -43,7 +43,7 @@ export function TaskInitiationSupport({ task, onStartStep, onSetTrigger, onClose
             display: 'flex',
             gap: '8px',
             fontSize: '0.8rem',
-            fontFamily: 'Atkinson Hyperlegible',
+            fontFamily: F.body,
             color: T.soft
           }}>
             <span>⚡ {energyCost}</span>
@@ -77,13 +77,13 @@ export function TaskInitiationSupport({ task, onStartStep, onSetTrigger, onClose
           <button
             style={{
               background: T.petrol,
-              color: 'white',
+              color: T.textOnAccent,
               border: 'none',
               borderRadius: '6px',
               padding: '8px 16px',
               minHeight: 44,
               fontSize: '0.9rem',
-              fontFamily: 'Atkinson Hyperlegible',
+              fontFamily: F.body,
               fontWeight: '600',
               cursor: 'pointer',
               transition: 'all 0.2s ease'
@@ -110,12 +110,12 @@ export function TaskInitiationSupport({ task, onStartStep, onSetTrigger, onClose
             letterSpacing: '0.5px',
             color: T.soft,
             marginBottom: '6px',
-            fontFamily: 'Atkinson Hyperlegible'
+            fontFamily: F.body
           }}>
             Första steget
           </div>
           <div style={{
-            fontFamily: 'Atkinson Hyperlegible',
+            fontFamily: F.body,
             fontSize: '1rem',
             color: T.ink,
             marginBottom: '8px'
@@ -125,12 +125,12 @@ export function TaskInitiationSupport({ task, onStartStep, onSetTrigger, onClose
           <button
             style={{
               background: T.moss,
-              color: 'white',
+              color: T.textOnAccent,
               border: 'none',
               borderRadius: '4px',
               padding: '6px 12px',
               fontSize: '0.85rem',
-              fontFamily: 'Atkinson Hyperlegible',
+              fontFamily: F.body,
               cursor: 'pointer',
               transition: 'all 0.2s ease'
             }}
@@ -156,13 +156,13 @@ export function TaskInitiationSupport({ task, onStartStep, onSetTrigger, onClose
             letterSpacing: '0.5px',
             color: T.soft,
             marginBottom: '6px',
-            fontFamily: 'Atkinson Hyperlegible'
+            fontFamily: F.body
           }}>
             När-så trigger (valfritt)
           </div>
           <div style={{
             fontSize: '0.85rem',
-            fontFamily: 'Atkinson Hyperlegible',
+            fontFamily: F.body,
             color: T.ink,
             marginBottom: '8px',
             fontStyle: 'italic'
@@ -177,7 +177,7 @@ export function TaskInitiationSupport({ task, onStartStep, onSetTrigger, onClose
               borderRadius: '4px',
               padding: '6px 12px',
               fontSize: '0.85rem',
-              fontFamily: 'Atkinson Hyperlegible',
+              fontFamily: F.body,
               cursor: 'pointer',
               transition: 'all 0.2s ease'
             }}
@@ -205,7 +205,7 @@ export function TaskInitiationSupport({ task, onStartStep, onSetTrigger, onClose
             <span style={{ fontSize: '1.2rem' }}>!</span>
             <div>
               <div style={{
-                fontFamily: 'Atkinson Hyperlegible',
+                fontFamily: F.body,
                 fontSize: '0.9rem',
                 fontWeight: '600',
                 color: T.warn,
@@ -215,7 +215,7 @@ export function TaskInitiationSupport({ task, onStartStep, onSetTrigger, onClose
               </div>
               <div style={{
                 fontSize: '0.85rem',
-                fontFamily: 'Atkinson Hyperlegible',
+                fontFamily: F.body,
                 color: T.ink,
                 marginBottom: '8px'
               }}>
@@ -225,7 +225,7 @@ export function TaskInitiationSupport({ task, onStartStep, onSetTrigger, onClose
                 margin: 0,
                 paddingLeft: '20px',
                 fontSize: '0.85rem',
-                fontFamily: 'Atkinson Hyperlegible',
+                fontFamily: F.body,
                 color: T.ink
               }}>
                 <li>Mentalt fokus? (inte trött)</li>
@@ -258,12 +258,12 @@ export function TaskInitiationButton({ task, onClick, disabled = false }) {
     <button
       style={{
         background: disabled ? T.track : T.petrol,
-        color: disabled ? T.soft : 'white',
+        color: disabled ? T.soft : T.textOnAccent,
         border: 'none',
         borderRadius: '6px',
         padding: '8px 16px',
         fontSize: '0.9rem',
-        fontFamily: 'Atkinson Hyperlegible',
+        fontFamily: F.body,
         fontWeight: '600',
         cursor: disabled ? 'not-allowed' : 'pointer',
         transition: 'all 0.2s ease',

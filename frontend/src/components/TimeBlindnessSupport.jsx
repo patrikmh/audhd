@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { T } from '../constants/tokens';
+import { F, T } from '../constants/tokens';
 import { nowHM, hmToMin, todayKey } from '../utils/helpers';
 
 export function TimeAnchor({ currentTime, settings, large = false }) {
@@ -33,7 +33,7 @@ export function TimeAnchor({ currentTime, settings, large = false }) {
     }}>
       {/* Current Time */}
       <div style={{
-        fontFamily: large ? 'Fraunces' : 'IBM Plex Mono',
+        fontFamily: large ? F.display : F.mono,
         fontSize: large ? '2.5rem' : '1.8rem',
         fontWeight: large ? '300' : '500',
         color: T.ink,
@@ -46,7 +46,7 @@ export function TimeAnchor({ currentTime, settings, large = false }) {
       {/* Relative Time to Next Event */}
       {nextEvent && (
         <div style={{
-          fontFamily: 'Atkinson Hyperlegible',
+          fontFamily: F.body,
           fontSize: large ? '1rem' : '0.85rem',
           color: T.soft,
           marginBottom: large ? '8px' : '4px'
@@ -73,7 +73,7 @@ export function RelativeTime({ targetTime, baseTime = null, showLabel = true }) 
 
   if (diff < 0) {
     return (
-      <span style={{ fontFamily: 'Atkinson Hyperlegible', color: T.soft }}>
+      <span style={{ fontFamily: F.body, color: T.soft }}>
         {showLabel && 'för '} {Math.abs(Math.floor(diff / 60))}h {Math.abs(diff % 60)}m sedan
       </span>
     );
@@ -84,14 +84,14 @@ export function RelativeTime({ targetTime, baseTime = null, showLabel = true }) 
 
   if (hours === 0 && mins === 0) {
     return (
-      <span style={{ fontFamily: 'Atkinson Hyperlegible', color: T.moss, fontWeight: '500' }}>
+      <span style={{ fontFamily: F.body, color: T.moss, fontWeight: '500' }}>
         nu
       </span>
     );
   }
 
   return (
-    <span style={{ fontFamily: 'Atkinson Hyperlegible', color: T.ink }}>
+    <span style={{ fontFamily: F.body, color: T.ink }}>
       {showLabel && 'om '}
       {hours > 0 && <span>{hours}h </span>}
       {mins}m
@@ -136,7 +136,7 @@ export function CountdownTimer({ targetTime, onComplete, size = 'medium' }) {
 
   return (
     <div style={{
-      fontFamily: 'IBM Plex Mono',
+      fontFamily: F.mono,
       fontWeight: '500',
       color: urgent ? T.warn : T.ink,
       ...sizeStyles[size || 'medium']
@@ -171,7 +171,7 @@ export function DayProgress({ current, start, end, compact = false }) {
           }} />
         </div>
         <span style={{
-          fontFamily: 'IBM Plex Mono',
+          fontFamily: F.mono,
           fontSize: '0.8rem',
           color: T.soft,
           minWidth: '35px'
@@ -189,7 +189,7 @@ export function DayProgress({ current, start, end, compact = false }) {
         justifyContent: 'space-between',
         marginBottom: '4px',
         fontSize: '0.75rem',
-        fontFamily: 'Atkinson Hyperlegible',
+        fontFamily: F.body,
         color: T.soft
       }}>
         <span>Dagens progression</span>

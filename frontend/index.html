@@ -4,30 +4,19 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Varv</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500&family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+    />
     <style>
-      /* Ljust som standard. "system" (ingen data-theme satt) följer OS via prefers-color-scheme;
-         "light"/"dark" satta explicit av useTheme() vinner alltid över det. */
-      :root {
-        --paper: #F2F1EC; --card: #FAF9F5; --ink: #33393B; --soft: #6C7370;
-        --spruce: #46564F; --petrol: #4C6E75; --petrol-dark: #3D5960; --moss: #8A977F;
-        --track: #DFDED6; --line: #E4E2DA; --warn: #A66A4F; --rest: #EFEDE4;
-        --recovery-tint: #EFEDE6;
-      }
+      /* Undviker vitt/svart flash innan style/theme.css hunnit ladda. Måste matcha --canvas där. */
+      body { background: #f2f1ec; }
       @media (prefers-color-scheme: dark) {
-        :root:not([data-theme="light"]) {
-          --paper: #1E2224; --card: #262B2D; --ink: #E7E5DF; --soft: #9AA29E;
-          --spruce: #9DB0A6; --petrol: #7FA3AB; --petrol-dark: #A8C4CA; --moss: #A9BC9C;
-          --track: #3A3F40; --line: #3A3F40; --warn: #D08B68; --rest: #2A2F2E;
-          --recovery-tint: #22272A;
-        }
+        :root:not([data-theme="light"]) body { background: #1e2224; }
       }
-      :root[data-theme="dark"] {
-        --paper: #1E2224; --card: #262B2D; --ink: #E7E5DF; --soft: #9AA29E;
-        --spruce: #9DB0A6; --petrol: #7FA3AB; --petrol-dark: #A8C4CA; --moss: #A9BC9C;
-        --track: #3A3F40; --line: #3A3F40; --warn: #D08B68; --rest: #2A2F2E;
-        --recovery-tint: #22272A;
-      }
-      body { background: var(--paper); }
+      :root[data-theme="dark"] body { background: #1e2224; }
     </style>
   </head>
   <body>

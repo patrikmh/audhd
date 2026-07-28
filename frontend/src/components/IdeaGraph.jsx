@@ -142,7 +142,7 @@ export function IdeaGraph({ ideas, tasks = [], onSelect, selectedId }) {
           .attr("stroke", "var(--soft)").attr("stroke-width", 1);
         root.append("text")
           .attr("x", x).attr("y", axisY + 17).attr("text-anchor", "middle")
-          .attr("font-size", 10).attr("font-family", "IBM Plex Mono, monospace").attr("fill", "var(--soft)")
+          .attr("font-size", 10).attr("font-family", "var(--font-mono)").attr("fill", "var(--soft)")
           .text(new Intl.DateTimeFormat("sv-SE", { day: "numeric", month: "short" }).format(tick));
       }
       // "nu" marker
@@ -211,7 +211,7 @@ export function IdeaGraph({ ideas, tasks = [], onSelect, selectedId }) {
       .attr("text-anchor", "middle")
       .attr("y", (d) => d.r + 11)
       .attr("font-size", 10)
-      .attr("font-family", "Atkinson Hyperlegible, sans-serif")
+      .attr("font-family", "var(--font-body)")
       .attr("fill", "var(--ink)")
       .style("pointer-events", "none");
 
@@ -284,7 +284,7 @@ export function IdeaGraph({ ideas, tasks = [], onSelect, selectedId }) {
               fontSize: 12, padding: "4px 10px", borderRadius: 20, cursor: "pointer", fontFamily: "inherit",
               border: `1px solid ${mode === key ? "var(--petrol)" : "var(--line)"}`,
               background: mode === key ? "var(--petrol)" : "transparent",
-              color: mode === key ? "white" : "var(--ink)",
+              color: mode === key ? "var(--text-on-accent)" : "var(--text)",
             }}
           >
             {label}

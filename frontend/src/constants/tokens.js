@@ -2,10 +2,40 @@
  * Design tokens and constants
  */
 
-// Färgvärden lever som CSS-variabler i index.html (ljust/mörkt/system) — de här
-// är bara namn som pekar dit, så useTheme() kan byta färgschema utan att röra
-// någon av de hundratals inline style-referenserna till T.* i resten av appen.
+// Värdena lever som CSS-variabler i styles/theme.css (ljust/mörkt/system) — de
+// här är bara namn som pekar dit, så useTheme() kan byta färgschema utan att
+// röra någon av de hundratals inline style-referenserna i resten av appen.
 export const T = {
+  // Semantiska roller — använd de här i ny kod.
+  canvas: "var(--canvas)",
+  surface: "var(--surface)",
+  surfaceRaised: "var(--surface-raised)",
+  surfaceQuiet: "var(--surface-quiet)",
+  surfaceSelected: "var(--surface-selected)",
+  text: "var(--text)",
+  textMuted: "var(--text-muted)",
+  textOnAccent: "var(--text-on-accent)",
+  accent: "var(--accent)",
+  accentStrong: "var(--accent-strong)",
+  accentSoft: "var(--accent-soft)",
+  success: "var(--success)",
+  warning: "var(--warning)",
+  borderSubtle: "var(--border-subtle)",
+  rule: "var(--rule)",
+  focusRing: "var(--focus-ring)",
+  control: "var(--control)",
+  surfaceRecovery: "var(--surface-recovery)",
+  note: "var(--note)",
+  noteBorder: "var(--note-border)",
+  noteText: "var(--note-text)",
+  info: "var(--info)",
+  infoBorder: "var(--info-border)",
+  night: "var(--night)",
+  nightText: "var(--night-text)",
+  shadow: "var(--shadow)",
+  overlay: "var(--overlay)",
+
+  // Äldre namn, kvar tills alla vyer flyttat över.
   paper: "var(--paper)",
   card: "var(--card)",
   ink: "var(--ink)",
@@ -18,6 +48,24 @@ export const T = {
   line: "var(--line)",
   warn: "var(--warn)",
   rest: "var(--rest)",
+};
+
+// Typografi: tre familjer och en storleksskala. Se styles/theme.css.
+export const F = {
+  display: "var(--font-display)",
+  body: "var(--font-body)",
+  mono: "var(--font-mono)",
+};
+
+export const FS = {
+  hero: "var(--text-hero)",
+  title: "var(--text-title)",
+  heading: "var(--text-heading)",
+  lead: "var(--text-lead)",
+  base: "var(--text-base)",
+  small: "var(--text-small)",
+  meta: "var(--text-meta)",
+  micro: "var(--text-micro)",
 };
 
 export const MODES = {

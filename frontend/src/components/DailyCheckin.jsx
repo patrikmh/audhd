@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { T, MODES, ENERGY_LABELS } from "../constants/tokens";
+import { F, T, MODES, ENERGY_LABELS } from "../constants/tokens";
 import { todayKey, todayWeekday } from "../utils/helpers";
 import { useModalDialog } from "../hooks/useModalDialog";
 
@@ -76,7 +76,7 @@ export default function DailyCheckin({ state, onSetEnergy, onDismiss, onAddTask 
                 <span style={{ fontWeight: 700, fontSize: 15, color: energy === key ? T.petrolDark : T.ink }}>
                   {m.label}
                 </span>
-                <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 13, color: T.soft }}>
+                <span style={{ fontFamily: F.mono, fontSize: 13, color: T.soft }}>
                   {m.budget}p
                 </span>
               </div>
@@ -148,7 +148,7 @@ export default function DailyCheckin({ state, onSetEnergy, onDismiss, onAddTask 
               <div key={t.id} style={s.listItem}>
                 <span style={{ marginRight: 8 }}>{t.icon || "📌"}</span>
                 <span style={{ flex: 1 }}>{t.title}</span>
-                <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 12, color: T.soft }}>
+                <span style={{ fontFamily: F.mono, fontSize: 12, color: T.soft }}>
                   {t.energy}p
                 </span>
               </div>
@@ -204,7 +204,7 @@ export default function DailyCheckin({ state, onSetEnergy, onDismiss, onAddTask 
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        fontFamily: "'Atkinson Hyperlegible', sans-serif",
+        fontFamily: F.body,
       }}
     >
       <div style={{ width: "100%", maxWidth: 420, padding: 24, overflowY: "auto", maxHeight: "100vh" }}>
@@ -230,39 +230,39 @@ export default function DailyCheckin({ state, onSetEnergy, onDismiss, onAddTask 
 }
 
 const styles = {
-  card: { background: "#FAF9F5", borderRadius: 12, padding: 16, border: "1px solid #E4E2DA" },
+  card: { background: T.card, borderRadius: 12, padding: 16, border: `1px solid ${T.line}` },
   input: {
     width: "100%", padding: "10px 12px", borderRadius: 10,
-    border: "1.5px solid #E4E2DA", fontSize: 15, background: "#FAF9F5",
-    fontFamily: "'Atkinson Hyperlegible', sans-serif", boxSizing: "border-box",
+    border: `1.5px solid ${T.line}`, fontSize: 15, background: T.card,
+    fontFamily: F.body, boxSizing: "border-box",
   },
-  body: { color: "#6C7370", lineHeight: 1.5, margin: 0 },
+  body: { color: T.soft, lineHeight: 1.5, margin: 0 },
   title: {
-    fontFamily: "'Fraunces', serif", fontWeight: 400, fontSize: 24,
-    color: "#33393B", margin: "0 0 4px 0",
+    fontFamily: F.display, fontWeight: 400, fontSize: 24,
+    color: T.ink, margin: "0 0 4px 0",
   },
   eyebrow: {
     fontSize: 12, textTransform: "uppercase", letterSpacing: "0.5px",
-    color: "#8A977F", fontWeight: 700, marginTop: 14, marginBottom: 6,
+    color: T.moss, fontWeight: 700, marginTop: 14, marginBottom: 6,
   },
   listItem: {
     display: "flex", alignItems: "center", padding: "8px 0",
-    fontSize: 15, color: "#33393B",
-    borderBottom: "1px solid #E4E2DA",
+    fontSize: 15, color: T.ink,
+    borderBottom: `1px solid ${T.line}`,
   },
   primaryBtn: {
     padding: "10px 20px", borderRadius: 10, border: "none",
-    background: "#4C6E75", color: "white", fontSize: 15, fontWeight: 700,
-    cursor: "pointer", fontFamily: "'Atkinson Hyperlegible', sans-serif",
+    background: T.petrol, color: T.textOnAccent, fontSize: 15, fontWeight: 700,
+    cursor: "pointer", fontFamily: F.body,
   },
   secondaryBtn: {
-    padding: "10px 20px", borderRadius: 10, border: "1.5px solid #E4E2DA",
-    background: "transparent", color: "#6C7370", fontSize: 15, fontWeight: 600,
-    cursor: "pointer", fontFamily: "'Atkinson Hyperlegible', sans-serif",
+    padding: "10px 20px", borderRadius: 10, border: `1.5px solid ${T.line}`,
+    background: "transparent", color: T.soft, fontSize: 15, fontWeight: 600,
+    cursor: "pointer", fontFamily: F.body,
   },
   linkBtn: {
-    background: "none", border: "none", color: "#4C6E75",
+    background: "none", border: "none", color: T.petrol,
     fontWeight: 600, cursor: "pointer", padding: 0,
-    fontFamily: "'Atkinson Hyperlegible', sans-serif",
+    fontFamily: F.body,
   },
 };

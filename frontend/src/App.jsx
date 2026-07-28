@@ -8,22 +8,23 @@ import { TaskInitiationSupport } from "./components/TaskInitiationSupport";
 import { useAgentStream } from "./hooks/useAgentStream";
 import { AgentProgress } from "./components/AgentProgress";
 import { SettingsView } from "./components/SettingsView";
-import { T, MODES, ENERGY_LABELS, MOVEMENT_IDEAS, REST_MENU, EDU_CARDS, ICON_CHOICES, WEEKDAYS, ICON_KEYWORDS, PRIORITY_ORDER, API_BASE, AUTH_KEY } from "./constants/tokens";
+import { F, T, MODES, ENERGY_LABELS, MOVEMENT_IDEAS, REST_MENU, EDU_CARDS, ICON_CHOICES, WEEKDAYS, ICON_KEYWORDS, PRIORITY_ORDER, API_BASE, AUTH_KEY } from "./constants/tokens";
 import { uid, todayKey, todayWeekday, guessIcon, energyColor, nowHM, hmToMin } from "./utils/helpers";
 import { getAuth, setAuth, clearAuth, login } from "./utils/auth";
 import { useModalDialog } from "./hooks/useModalDialog";
 import { useTheme } from "./hooks/useTheme";
 import { GhostTextarea } from "./components/GhostTextarea";
 import varvLogo from "./assets/varv-logo.png";
+import { IconTrash, IconCalendar, IconSparkle, IconMic, IconStop, IconIdea, IconImage, IconLoop, IconAgent } from "./components/icons.jsx";
 // Cytoscape.js is ~230kb gzipped — split it into its own chunk so opening the
 // app (or the Ideas list view) never pays for it; only "karta" mode does.
 const IdeaGraph = lazy(() => import("./components/IdeaGraph").then((m) => ({ default: m.IdeaGraph })));
 
 /* ============================================================
    VARV — an AuDHD day companion
-   Design tokens:
-   paper #F2F1EC · ink #33393B · spruce #46564F · petrol #4C6E75
-   moss #8A977F · track #DFDED6 · card #FAF9F5 · warn #A66A4F
+   Färger och typografi bor i styles/theme.css och nås via T/F/FS från
+   constants/tokens.js. Skriv aldrig en hex-kod här — den överlever inte
+   mörkt läge.
    Type: Fraunces (display) · Atkinson Hyperlegible (body) · IBM Plex Mono (data)
    Signature: the energy dial — a chronograph-style subdial that
    shows today's remaining capacity as an arc with tick marks.
@@ -236,16 +237,6 @@ function VarvApp({ username, onLogout }) {
   useEffect(() => {
     const t = setInterval(() => setTick((n) => n + 1), 30000);
     return () => clearInterval(t);
-  }, []);
-
-  /* ---------- fonts ---------- */
-  useEffect(() => {
-    const l = document.createElement("link");
-    l.rel = "stylesheet";
-    l.href =
-      "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500&family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:wght@400;500&display=swap";
-    document.head.appendChild(l);
-    return () => document.head.removeChild(l);
   }, []);
 
   /* ---------- load / save (localStorage — vanlig webbläsare, ingen sandlåda) ---------- */
@@ -1102,7 +1093,7 @@ function VarvApp({ username, onLogout }) {
 
   if (!loaded)
     return (
-      <div style={{ minHeight: "100vh", background: T.paper, display: "grid", placeItems: "center", color: T.soft, fontFamily: "'Atkinson Hyperlegible', sans-serif" }}>
+      <div style={{ minHeight: "100vh", background: T.paper, display: "grid", placeItems: "center", color: T.soft, fontFamily: F.body }}>
         Öppnar din dag…
       </div>
     );
@@ -1111,7 +1102,7 @@ function VarvApp({ username, onLogout }) {
   const recoveryTint = state.capacity === "recovery";
 
   return (
-    <div style={{ ...s.page, background: recoveryTint ? "#EFEDE6" : T.paper }}>
+    <div style={{ ...s.page, background: recoveryTint ? T.surfaceRecovery : T.paper }}>
       <style>{`
         *:focus-visible { outline: 2px solid ${T.petrol}; outline-offset: 2px; border-radius: 4px; }
         button { touch-action: manipulation; }
@@ -1125,9 +1116,13 @@ function VarvApp({ username, onLogout }) {
         button:not(:disabled) { transition: transform 0.12s ease, box-shadow 0.15s ease, opacity 0.15s ease; }
         button:not(:disabled):active { transform: scale(0.97); }
         @media (hover: hover) {
-          .card-hoverable:hover { box-shadow: 0 2px 10px rgba(51,57,59,0.08); transform: translateY(-1px); }
+          .card-hoverable:hover { box-shadow: 0 2px 10px var(--shadow); transform: translateY(-1px); }
+          /* En rad i dagboken ligger på pappret och kan inte lyfta — den
+             tonas i stället, med marginalen indragen så tonen täcker raden. */
+          .row-hoverable:hover { background: var(--surface-quiet); }
         }
         .card-hoverable { transition: box-shadow 0.18s ease, transform 0.18s ease; }
+        .row-hoverable { transition: background 0.18s ease; border-radius: 8px; }
         .visually-hidden { position: absolute !important; width: 1px !important; height: 1px !important; padding: 0 !important; margin: -1px !important; overflow: hidden !important; clip: rect(0, 0, 0, 0) !important; white-space: nowrap !important; border: 0 !important; }
         :focus-visible { outline: 3px solid ${T.petrol}; outline-offset: 3px; }
 
@@ -1183,7 +1178,7 @@ function VarvApp({ username, onLogout }) {
                   background: T.card,
                   border: `1px solid ${T.line}`,
                   borderRadius: 10,
-                  boxShadow: "0 6px 20px rgba(0,0,0,0.10)",
+                  boxShadow: `0 6px 20px ${T.shadow}`,
                   minWidth: 190,
                   padding: 6,
                   zIndex: 60,
@@ -1285,11 +1280,11 @@ function VarvApp({ username, onLogout }) {
                   onClick={() => patch({ capacity: k, capacityBy: { day: todayKey(), by: "user" } })}
                   style={{
                     background: state.capacity === k ? T.petrol : 'transparent',
-                    color: state.capacity === k ? 'white' : T.soft,
+                    color: state.capacity === k ? T.textOnAccent : T.soft,
                     border: state.capacity === k ? `1px solid ${T.petrol}` : `1px solid transparent`,
                     borderRadius: '12px',
                     padding: '3px 9px',
-                    fontFamily: 'Atkinson Hyperlegible',
+                    fontFamily: F.body,
                     fontSize: '0.72rem',
                     fontWeight: state.capacity === k ? 700 : 400,
                     cursor: 'pointer',
@@ -1349,7 +1344,7 @@ function VarvApp({ username, onLogout }) {
         </section>
         {/* ============ recovery rest menu ============ */}
         {recoveryTint && (
-          <section style={{ ...s.card, background: T.rest }}>
+          <section style={s.leaf}>
             <div style={s.eyebrow}>Vilomeny</div>
             <p style={{ ...s.body, marginTop: 6 }}>
               I återhämtningsläge krymper planen med flit. Välj en, sluta sedan besluta.
@@ -1365,7 +1360,7 @@ function VarvApp({ username, onLogout }) {
                 return (
                   <button
                     key={i}
-                    style={{ ...s.restItem, opacity: done ? 0.55 : 1 }}
+                    style={{ ...s.restItem, ...(i > 0 ? s.rowRule : null), opacity: done ? 0.55 : 1 }}
                     disabled={done}
                     onClick={() => {
                       logEnergy(-2, "Vila");
@@ -1389,7 +1384,7 @@ function VarvApp({ username, onLogout }) {
         )}
 
         {/* ============ now / next ============ */}
-        <section aria-labelledby="next-task-heading" style={{ ...s.card, borderLeft: `4px solid ${T.petrol}` }}>
+        <section aria-labelledby="next-task-heading" style={s.leafLap}>
           <h2 id="next-task-heading" style={{ ...s.eyebrow, margin: 0 }}>{nextTask ? "En tydlig nästa sak" : "Inget i kön"}</h2>
           {nextTask ? (
             <>
@@ -1425,7 +1420,7 @@ function VarvApp({ username, onLogout }) {
                       return (
                         <>
                           <div style={{ fontSize: 13, color: T.soft }}>Glöm hela uppgiften. Bara detta:</div>
-                          <div style={{ fontFamily: "'Fraunces', serif", fontSize: 20, marginTop: 4 }}>{firstStep.title}</div>
+                          <div style={{ fontFamily: F.display, fontSize: 20, marginTop: 4 }}>{firstStep.title}</div>
                           <p style={{ ...s.body, marginTop: 8 }}>
                             Tio minuter, sedan får du sluta. Para ihop det med något du bara tillåter under uppgifter — en viss spellista eller podd. Motivationen följer intresset; låna det.
                           </p>
@@ -1479,6 +1474,7 @@ function VarvApp({ username, onLogout }) {
           <section style={s.section}>
             <div style={s.eyebrow}>Nästa halvdag</div>
               <div style={s.timeline}>
+                <div style={s.timelineSpine} aria-hidden="true" />
                 <NowMarker />
                 {scheduled.map((t, i) => {
                   const next = scheduled[i + 1];
@@ -1556,7 +1552,7 @@ function VarvApp({ username, onLogout }) {
                       borderRadius: 10,
                       border: isSelected ? `2px solid ${T.petrol}` : isTodayDate ? `1.5px solid ${T.petrol}` : `1px solid ${T.line}`,
                       background: isSelected ? T.petrol : 'transparent',
-                      color: isSelected ? 'white' : T.ink,
+                      color: isSelected ? T.textOnAccent : T.ink,
                       cursor: 'pointer',
                       flexShrink: 0,
                       fontFamily: "inherit",
@@ -1565,7 +1561,7 @@ function VarvApp({ username, onLogout }) {
                     }}
                   >
                     <div style={{ fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.03em', opacity: isSelected ? 0.9 : 0.7 }}>{dayName}</div>
-                    <div style={{ fontSize: 22, fontWeight: 700, fontFamily: "'Fraunces', serif", marginTop: 2 }}>{dayNum}</div>
+                    <div style={{ fontSize: 22, fontWeight: 700, fontFamily: F.display, marginTop: 2 }}>{dayNum}</div>
                   </button>
                 );
               })}
@@ -1602,7 +1598,7 @@ function VarvApp({ username, onLogout }) {
                 ← idag
               </button>
               {selectedDate > todayKey() && (
-                <span style={{ fontSize: 12, color: T.petrol, fontFamily: "'IBM Plex Mono', monospace" }}>
+                <span style={{ fontSize: 12, color: T.petrol, fontFamily: F.mono }}>
                   {new Date(selectedDate + 'T12:00:00').toLocaleDateString('sv-SE', { weekday: 'long', day: 'numeric', month: 'short' })}
                 </span>
               )}
@@ -1637,9 +1633,9 @@ function VarvApp({ username, onLogout }) {
                   items: [
                     { icon: "✎", label: "Redigera", action: () => selectTask(t) },
                     { icon: t.done ? "↩" : "✓", label: t.done ? "Återställ" : "Markera klar", action: () => t.done ? undoCompleteTask(t) : completeTask(t) },
-                    { icon: "📅", label: "Schemalägg", action: () => { selectTask(t); setTool(null); } },
+                    { icon: <IconCalendar />, label: "Schemalägg", action: () => { selectTask(t); setTool(null); } },
                     { separator: true },
-                    { icon: "🗑", label: "Ta bort", danger: true, action: () => removeTask(t.id) },
+                    { icon: <IconTrash />, label: "Ta bort", danger: true, action: () => removeTask(t.id) },
                   ],
                 });
               }}
@@ -1673,7 +1669,7 @@ function VarvApp({ username, onLogout }) {
           <section style={s.section}>
             <div style={s.eyebrow}>{isToday ? "Klart idag" : "Klart"} ({doneForSelectedDate.length})</div>
             {doneForSelectedDate.map((entry) => (
-              <div key={entry.occurrence ? `${entry.task.id}:${entry.date}` : entry.task.id} style={{ ...s.card, marginTop: 8, opacity: 0.75 }}>
+              <div key={entry.occurrence ? `${entry.task.id}:${entry.date}` : entry.task.id} style={{ ...s.leaf, marginTop: 8, opacity: 0.75 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   <span style={s.coin}>{entry.task.icon || "📌"}</span>
                   <span style={{ textDecoration: "line-through", color: T.soft, flex: 1 }}>{entry.task.title}</span>
@@ -1717,7 +1713,7 @@ function VarvApp({ username, onLogout }) {
                     key={m}
                     aria-pressed={ideaMode === m}
                     onClick={() => { setIdeaMode(m); if (m === "map") runSync(); }}
-                    style={{ ...s.medBtn, background: ideaMode === m ? "#E5EBE9" : "transparent", fontWeight: ideaMode === m ? 700 : 400 }}
+                    style={{ ...s.medBtn, background: ideaMode === m ? T.accentSoft : "transparent", fontWeight: ideaMode === m ? 700 : 400 }}
                   >
                     {l}
                   </button>
@@ -1726,7 +1722,7 @@ function VarvApp({ username, onLogout }) {
             </div>
             {state.ideas.length === 0 && (
               <p style={{ ...s.body, marginTop: 14 }}>
-                Tomt. Tryck på + och sedan 💡 Idé — eller 🎙 och prata på.
+                Tomt. Tryck på + och sedan Idé — eller mikrofonen och prata på.
               </p>
             )}
             {ideaMode === "map" && state.ideas.length > 0 && (
@@ -1763,9 +1759,9 @@ function VarvApp({ username, onLogout }) {
                     items: [
                       { icon: "✎", label: "Redigera", action: () => {} },
                       { icon: "→", label: "Till uppgift", action: () => ideaToTask(idea) },
-                      { icon: "✨", label: "Förfina", action: () => refineIdea(idea.id, idea.raw) },
+                      { icon: <IconSparkle />, label: "Förfina", action: () => refineIdea(idea.id, idea.raw) },
                       { separator: true },
-                      { icon: "🗑", label: "Ta bort", danger: true, action: () => removeIdea(idea.id) },
+                      { icon: <IconTrash />, label: "Ta bort", danger: true, action: () => removeIdea(idea.id) },
                     ],
                   });
                 }}
@@ -1973,7 +1969,7 @@ function VarvApp({ username, onLogout }) {
           <span>✓ {undoTask.title}</span>
           <button
             onClick={() => undoCompleteTask(undoTask)}
-            style={{ background: 'white', color: T.petrol, border: 'none', borderRadius: 6, padding: '4px 12px', fontWeight: 700, cursor: 'pointer', fontSize: 13 }}
+            style={{ background: T.control, color: T.petrol, border: 'none', borderRadius: 6, padding: '4px 12px', fontWeight: 700, cursor: 'pointer', fontSize: 13 }}
           >
             Ångra
           </button>
@@ -2093,9 +2089,9 @@ function Login({ onLoggedIn }) {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: T.paper, display: "grid", placeItems: "center", fontFamily: "'Atkinson Hyperlegible', sans-serif" }}>
+    <div style={{ minHeight: "100vh", background: T.paper, display: "grid", placeItems: "center", fontFamily: F.body }}>
       <form onSubmit={submit} style={{ background: T.card, padding: 28, borderRadius: 16, width: 280, display: "flex", flexDirection: "column", gap: 12 }}>
-        <div style={{ fontFamily: "'Fraunces', serif", fontWeight: 300, fontSize: 28, color: T.ink }}>Varv</div>
+        <div style={{ fontFamily: F.display, fontWeight: 300, fontSize: 28, color: T.ink }}>Varv</div>
         <input
           autoFocus
           placeholder="Användarnamn"
@@ -2235,7 +2231,7 @@ function CaptureSheet({ onClose, onTask, onListItem, onIdea, onAuto, onTranscrib
             disabled={vBusy || !voiceEnabled}
             aria-label={rec ? "Sluta spela in" : voiceEnabled ? "Tala in" : "Rösttranskribering är avstängd"}
           >
-            {vBusy ? "…" : rec ? "■" : "🎙"}
+            {vBusy ? "…" : rec ? <IconStop size={18} /> : <IconMic size={18} />}
           </button>
         </div>
         {rec && <div style={{ fontSize: 12, color: T.warn, textAlign: "center", marginTop: 6 }}>● spelar in — tala fritt, tryck ■ när du är klar</div>}
@@ -2251,7 +2247,7 @@ function CaptureSheet({ onClose, onTask, onListItem, onIdea, onAuto, onTranscrib
             Uppgift
           </button>
           <button style={{ ...s.ghostBtn, flex: 1, fontSize: 13, padding: "8px 6px", opacity: v.trim() ? 1 : 0.5 }} disabled={!v.trim()} onClick={idea}>
-            💡 Idé
+            <IconIdea size={14} /> Idé
           </button>
           <button style={{ ...s.ghostBtn, flex: 1, fontSize: 13, padding: "8px 6px", opacity: v.trim() ? 1 : 0.5 }} disabled={!v.trim()} onClick={listItem}>
             Inköp
@@ -2295,10 +2291,10 @@ function EnergyDial({ budget, remaining }) {
           strokeDasharray={`${C * pct} ${C}`}
           style={{ transition: "stroke-dasharray 0.6s ease" }}
         />
-        <text x="80" y="72" textAnchor="middle" style={{ font: "500 28px 'IBM Plex Mono', monospace", fill: T.ink }}>
+        <text x="80" y="72" textAnchor="middle" style={{ font: `500 28px ${F.mono}`, fill: T.ink }}>
           {remaining}
         </text>
-        <text x="80" y="88" textAnchor="middle" style={{ font: "400 11px 'IBM Plex Mono', monospace", fill: T.soft }}>
+        <text x="80" y="88" textAnchor="middle" style={{ font: `400 11px ${F.mono}`, fill: T.soft }}>
           of {budget} ⚡
         </text>
       </svg>
@@ -2309,7 +2305,7 @@ function EnergyDial({ budget, remaining }) {
 function NowMarker() {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "2px 0 10px" }}>
-      <span style={{ font: "500 12px 'IBM Plex Mono', monospace", color: T.petrolDark }}>{nowHM()}</span>
+      <span style={{ font: `500 12px ${F.mono}`, color: T.petrolDark }}>{nowHM()}</span>
       <div style={{ flex: 1, height: 1, background: T.petrol, opacity: 0.5 }} />
       <span style={{ fontSize: 11, color: T.petrolDark }}>nu</span>
     </div>
@@ -2357,10 +2353,10 @@ function ContextMenu({ x, y, items, onClose }) {
         background: T.card,
         border: `1px solid ${T.line}`,
         borderRadius: 10,
-        boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
+        boxShadow: `0 8px 24px ${T.shadow}`,
         padding: "6px 0",
         minWidth: 160,
-        fontFamily: "'Atkinson Hyperlegible', sans-serif",
+        fontFamily: F.body,
         fontSize: 14,
       }}
     >
@@ -2373,7 +2369,9 @@ function ContextMenu({ x, y, items, onClose }) {
             key={i}
             onClick={() => { item.action(); onClose(); }}
             style={{
-              display: "block",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
               width: "100%",
               textAlign: "left",
               padding: "8px 16px",
@@ -2384,10 +2382,11 @@ function ContextMenu({ x, y, items, onClose }) {
               fontFamily: "inherit",
               fontSize: "inherit",
             }}
-            onMouseEnter={(e) => e.target.style.background = T.track}
-            onMouseLeave={(e) => e.target.style.background = "none"}
+            // currentTarget, inte target — annars färgas SVG-ikonen istället för raden.
+            onMouseEnter={(e) => e.currentTarget.style.background = T.track}
+            onMouseLeave={(e) => e.currentTarget.style.background = "none"}
           >
-            {item.icon && <span style={{ marginRight: 8 }}>{item.icon}</span>}
+            {item.icon}
             {item.label}
           </button>
         );
@@ -2448,7 +2447,7 @@ function VoiceInputButton({ onResult, language = "sv-SE", style: btnStyle }) {
           width: 32, height: 32, borderRadius: "50%",
           border: `1.5px solid ${listening ? T.warn : T.line}`,
           background: listening ? T.warn : "transparent",
-          color: listening ? "white" : T.soft,
+          color: listening ? T.textOnAccent : T.soft,
           cursor: "pointer",
           display: "flex", alignItems: "center", justifyContent: "center",
           fontSize: 16,
@@ -2456,7 +2455,7 @@ function VoiceInputButton({ onResult, language = "sv-SE", style: btnStyle }) {
           flexShrink: 0,
         }}
       >
-        {listening ? "■" : "🎤"}
+        {listening ? <IconStop size={18} /> : <IconMic size={18} />}
       </button>
       {transcript && (
         <div
@@ -2493,7 +2492,7 @@ const voiceStyle = document.createElement("style");
 voiceStyle.textContent = `
   @keyframes voiceFadeIn { from { opacity: 0; transform: translateY(-50%) translateX(-6px); } to { opacity: 1; transform: translateY(-50%) translateX(0); } }
   .voice-fade-in { animation: voiceFadeIn 0.3s ease; }
-  @keyframes pulseGlow { 0%,100% { box-shadow: 0 0 0 0 rgba(166,106,79,0.4); } 50% { box-shadow: 0 0 0 8px rgba(166,106,79,0); } }
+  @keyframes pulseGlow { 0%,100% { box-shadow: 0 0 0 0 var(--warning); } 50% { box-shadow: 0 0 0 8px transparent; } }
   .voice-pulse { animation: pulseGlow 1.5s infinite; }
   @keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
   .slide-up { animation: slideUp 0.35s ease; }
@@ -2544,7 +2543,7 @@ function AddTask({ onAdd, defaultDate }) {
               style={{
                 fontSize: 18, padding: "4px 7px", borderRadius: 8, cursor: "pointer",
                 border: shownIcon === ic ? `2px solid ${T.petrol}` : `1px solid ${T.line}`,
-                background: shownIcon === ic ? "#E5EBE9" : "transparent",
+                background: shownIcon === ic ? T.accentSoft : "transparent",
               }}
             >
               {ic}
@@ -2739,7 +2738,7 @@ function TaskCard({ task, onDone, onUpdate, onRemove, onWin, agentBusy, aiEnable
   };
 
   return (
-    <div className="card-hoverable row-settle" style={{ ...s.card, marginTop: 10, padding: expanded ? 16 : "12px 16px" }}>
+    <div className={`${expanded ? "card-hoverable" : "row-hoverable"} row-settle`} style={expanded ? { ...s.card, marginTop: 10 } : s.taskRow}>
       {/* collapsed row — the whole row is the expand toggle */}
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
         <button
@@ -2755,8 +2754,8 @@ function TaskCard({ task, onDone, onUpdate, onRemove, onWin, agentBusy, aiEnable
             </span>
             <span style={{ display: "block", fontSize: 12, color: T.soft, marginTop: 2 }}>
               {agentBusy && (
-                <span style={{ color: T.petrol, fontWeight: 500 }}>
-                  🤖 Nedbrytaren jobbar… · 
+                <span style={{ color: T.petrol, fontWeight: 500, display: "inline-flex", alignItems: "center", gap: 4 }}>
+                  <IconAgent size={13} /> Nedbrytaren jobbar… ·{" "}
                 </span>
               )}
               {task.scheduled_date && task.scheduled_date !== todayKey() && (
@@ -2791,7 +2790,7 @@ function TaskCard({ task, onDone, onUpdate, onRemove, onWin, agentBusy, aiEnable
               {task.trigger && <span style={s.chipSoft}>när {task.trigger}</span>}
               {task.essential && <span style={s.chipSoft}>nödvändig</span>}
               {(task.repeatDays || []).length > 0 && (
-                <span style={s.chipSoft}>🔁 {task.repeatDays.map((k) => WEEKDAYS.find((d) => d.key === k).label).join(", ")}</span>
+                <span style={{ ...s.chipSoft, display: "inline-flex", alignItems: "center", gap: 4 }}><IconLoop size={12} /> {task.repeatDays.map((k) => WEEKDAYS.find((d) => d.key === k).label).join(", ")}</span>
               )}
               {(task.tags || []).map((tg) => <span key={tg} style={s.chipSoft}>#{tg}</span>)}
             </div>
@@ -2814,7 +2813,7 @@ function TaskCard({ task, onDone, onUpdate, onRemove, onWin, agentBusy, aiEnable
               <input
                 value={editTitle}
                 onChange={(e) => setEditTitle(e.target.value)}
-                style={{ fontSize: 14, fontFamily: 'Fraunces', fontWeight: 600, padding: '6px 8px', border: `1px solid ${T.line}`, borderRadius: 6, background: T.card }}
+                style={{ fontSize: 14, fontFamily: F.display, fontWeight: 600, padding: '6px 8px', border: `1px solid ${T.line}`, borderRadius: 6, background: T.card }}
                 placeholder="Rubrik…"
               />
               <GhostTextarea
@@ -2823,7 +2822,7 @@ function TaskCard({ task, onDone, onUpdate, onRemove, onWin, agentBusy, aiEnable
                 context={task.title}
                 enabled={aiEnabled}
                 rows={3}
-                style={{ fontSize: 13, fontFamily: 'Atkinson Hyperlegible', border: `1px solid ${T.line}`, borderRadius: 6, background: T.card, resize: 'vertical' }}
+                style={{ fontSize: 13, fontFamily: F.body, border: `1px solid ${T.line}`, borderRadius: 6, background: T.card, resize: 'vertical' }}
                 placeholder="Anteckning…"
               />
               <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
@@ -2851,7 +2850,7 @@ function TaskCard({ task, onDone, onUpdate, onRemove, onWin, agentBusy, aiEnable
                   disabled={imgBusy}
                   onClick={() => document.getElementById(`img-${task.id}`).click()}
                 >
-                  {imgBusy ? 'bearbetar…' : task.image ? 'byt bild' : '🖼️ bild'}
+                  {imgBusy ? 'bearbetar…' : task.image ? 'byt bild' : <><IconImage size={13} /> bild</>}
                 </button>
                 {task.image && (
                   <button
@@ -2864,7 +2863,7 @@ function TaskCard({ task, onDone, onUpdate, onRemove, onWin, agentBusy, aiEnable
                 )}
                 <div style={{ flex: 1 }} />
                 <button
-                  style={{ ...s.linkBtn, background: T.petrol, color: 'white' }}
+                  style={{ ...s.linkBtn, background: T.petrol, color: T.textOnAccent }}
                   onClick={() => {
                     onUpdate({ title: editTitle.trim() || task.title, note: editNote.trim() || null });
                     setEditing(false);
@@ -3085,7 +3084,7 @@ function FocusLap({ taskTitle, initialGoal, initialMins, persisted, onDone, onRu
   if (left !== null && mini)
     return (
       <button style={s.miniLap} onClick={onExpand}>
-        <span style={{ font: "500 14px 'IBM Plex Mono', monospace" }}>
+        <span style={{ font: `500 14px ${F.mono}` }}>
           {left > 0 ? `${Math.floor(left / 60)}:${String(left % 60).padStart(2, "0")}` : "klart"}
         </span>
         <span style={{ fontSize: 13, opacity: 0.85, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
@@ -3100,10 +3099,10 @@ function FocusLap({ taskTitle, initialGoal, initialMins, persisted, onDone, onRu
     const e = Number(est) || 0;
     return (
       <div style={{ ...s.card, marginTop: 10, textAlign: "center" }}>
-        <div style={{ fontFamily: "'Fraunces', serif", fontSize: 22 }}>Varvet klart.</div>
+        <div style={{ fontFamily: F.display, fontSize: 22 }}>Varvet klart.</div>
         <p style={s.body}>Hur långt du än kom räknas det.</p>
         {e > 0 && (
-          <p style={{ ...s.body, fontFamily: "'IBM Plex Mono', monospace" }}>
+          <p style={{ ...s.body, fontFamily: F.mono }}>
             gissning {e} min · faktisk {actual} min
           </p>
         )}
@@ -3115,7 +3114,7 @@ function FocusLap({ taskTitle, initialGoal, initialMins, persisted, onDone, onRu
   if (left !== null)
     return (
       <div style={{ ...s.card, marginTop: 10, textAlign: "center" }}>
-        <div style={{ font: "500 40px 'IBM Plex Mono', monospace", color: T.petrolDark }}>
+        <div style={{ font: `500 40px ${F.mono}`, color: T.petrolDark }}>
           {Math.floor(left / 60)}:{String(left % 60).padStart(2, "0")}
         </div>
         <div style={{ color: T.soft, marginTop: 4 }}>{goal || "fokuserar"}</div>
@@ -3288,7 +3287,7 @@ function BreathingSpace({ onDone }) {
   if (sec >= TOTAL)
     return (
       <div style={{ ...s.card, marginTop: 10, textAlign: "center" }}>
-        <div style={{ fontFamily: "'Fraunces', serif", fontSize: 22 }}>Landat.</div>
+        <div style={{ fontFamily: F.display, fontSize: 22 }}>Landat.</div>
         <button style={{ ...s.primaryBtn, marginTop: 10 }} onClick={onDone}>Klart (+1⚡)</button>
       </div>
     );
@@ -3302,12 +3301,12 @@ function BreathingSpace({ onDone }) {
       <div
         style={{
           width: 90, height: 90, borderRadius: 45, margin: "10px auto",
-          background: "#DDE5E2", border: `2px solid ${T.petrol}`,
+          background: T.accentSoft, border: `2px solid ${T.petrol}`,
           transform: `scale(${grow})`, transition: "transform 3.5s ease-in-out",
         }}
       />
-      <div style={{ fontFamily: "'Fraunces', serif", fontSize: 22 }}>{words[phase]}</div>
-      <div style={{ font: "500 16px 'IBM Plex Mono', monospace", color: T.soft, marginTop: 4 }}>{count}</div>
+      <div style={{ fontFamily: F.display, fontSize: 22 }}>{words[phase]}</div>
+      <div style={{ font: `500 16px ${F.mono}`, color: T.soft, marginTop: 4 }}>{count}</div>
       <div style={{ fontSize: 12, color: T.soft, marginTop: 8 }}>{Math.floor((TOTAL - sec) / 60)}:{String((TOTAL - sec) % 60).padStart(2, "0")} kvar</div>
     </div>
   );
@@ -3344,12 +3343,12 @@ function WeekReview({ energyLog, wins, tagLog = [] }) {
         <>
           {days.map((d) => (
             <div key={d.key} style={{ display: "flex", alignItems: "center", gap: 10, padding: "5px 0" }}>
-              <span style={{ font: "500 12px 'IBM Plex Mono', monospace", color: T.soft, width: 32 }}>{d.label}</span>
+              <span style={{ font: `500 12px ${F.mono}`, color: T.soft, width: 32 }}>{d.label}</span>
               <div style={{ flex: 1, display: "flex", gap: 2, height: 10 }}>
                 <div style={{ width: `${(d.spent / max) * 100}%`, background: T.petrol, borderRadius: 3 }} />
                 <div style={{ width: `${(d.rech / max) * 100}%`, background: T.moss, borderRadius: 3 }} />
               </div>
-              <span style={{ font: "400 11px 'IBM Plex Mono', monospace", color: T.soft, width: 74, textAlign: "right" }}>
+              <span style={{ font: `400 11px ${F.mono}`, color: T.soft, width: 74, textAlign: "right" }}>
                 −{d.spent} / +{d.rech} · {d.wins}v
               </span>
             </div>
@@ -3384,7 +3383,7 @@ function EduCards() {
   return (
     <div style={{ ...s.card, marginTop: 10 }}>
       <div style={{ ...s.eyebrow, marginBottom: 6 }}>{i + 1} / {EDU_CARDS.length}</div>
-      <div style={{ fontFamily: "'Fraunces', serif", fontWeight: 500, fontSize: 20 }}>{card.t}</div>
+      <div style={{ fontFamily: F.display, fontWeight: 500, fontSize: 20 }}>{card.t}</div>
       <p style={{ ...s.body, fontSize: 15, marginTop: 8 }}>{card.b}</p>
       <div style={{ display: "flex", gap: 16, marginTop: 12 }}>
         <button style={s.linkBtn} onClick={() => setI((i - 1 + EDU_CARDS.length) % EDU_CARDS.length)}>← föregående</button>
@@ -3552,7 +3551,7 @@ function IdeaCard({ idea, onRefine, onToTask, onRemove, onUpdate, onContextMenu,
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <input
-              style={{ ...s.input, fontFamily: "'Fraunces', serif", fontWeight: 500, fontSize: 18, flex: 1 }}
+              style={{ ...s.input, fontFamily: F.display, fontWeight: 500, fontSize: 18, flex: 1 }}
               placeholder="Rubrik…"
               value={editTitle}
               onChange={(e) => setEditTitle(e.target.value)}
@@ -3563,7 +3562,7 @@ function IdeaCard({ idea, onRefine, onToTask, onRemove, onUpdate, onContextMenu,
           <div style={{ display: "flex", alignItems: "flex-start", gap: 8, marginTop: 8 }}>
             <GhostTextarea
               containerStyle={{ flex: 1 }}
-              style={{ ...s.input, minHeight: 80, marginTop: 0, resize: "vertical", fontFamily: "'Atkinson Hyperlegible', sans-serif" }}
+              style={{ ...s.input, minHeight: 80, marginTop: 0, resize: "vertical", fontFamily: F.body }}
               placeholder="Beskriv idén mer detaljerat…"
               value={editNote}
               onChange={setEditNote}
@@ -3597,7 +3596,7 @@ function IdeaCard({ idea, onRefine, onToTask, onRemove, onUpdate, onContextMenu,
               disabled={imgBusy}
               onClick={() => document.getElementById(`idea-img-${idea.id}`).click()}
             >
-              {imgBusy ? '…' : idea.image ? 'byt bild' : '🖼️ bild'}
+              {imgBusy ? '…' : idea.image ? 'byt bild' : <><IconImage size={13} /> bild</>}
             </button>
             {idea.image && (
               <button type="button" style={{ ...s.ghostBtn, color: T.warn }} onClick={() => onUpdate(idea.id, { image: null })}>
@@ -3612,7 +3611,7 @@ function IdeaCard({ idea, onRefine, onToTask, onRemove, onUpdate, onContextMenu,
           {idea.image && (
             <img src={idea.image} alt="" style={{ width: '100%', maxHeight: 200, objectFit: 'cover', borderRadius: 10, marginBottom: 10 }} />
           )}
-          <div style={{ fontFamily: "'Fraunces', serif", fontWeight: 500, fontSize: 19 }}>{idea.title}</div>
+          <div style={{ fontFamily: F.display, fontWeight: 500, fontSize: 19 }}>{idea.title}</div>
           {idea.note && (
             <p style={{ ...s.body, color: T.ink, fontSize: 14, marginTop: 6 }}>{idea.note}</p>
           )}
@@ -3625,7 +3624,7 @@ function IdeaCard({ idea, onRefine, onToTask, onRemove, onUpdate, onContextMenu,
       ) : (
         /* === Raw / refining / fail view === */
         <>
-          <div style={{ fontFamily: "'Fraunces', serif", fontWeight: 500, fontSize: 16, color: T.ink }}>
+          <div style={{ fontFamily: F.display, fontWeight: 500, fontSize: 16, color: T.ink }}>
             {idea.raw.slice(0, 80)}{idea.raw.length > 80 ? "…" : ""}
           </div>
           {idea.raw.length > 80 && (
@@ -3649,12 +3648,12 @@ function IdeaCard({ idea, onRefine, onToTask, onRemove, onUpdate, onContextMenu,
           <button style={s.linkBtn} onClick={onRefine}>förfina</button>
         )}
         <button style={{ ...s.linkBtn, color: T.soft }} onClick={onRemove}>ta bort</button>
-        <span style={{ fontSize: 11, color: T.soft, marginLeft: "auto", fontFamily: "'IBM Plex Mono', monospace" }}>
+        <span style={{ fontSize: 11, color: T.soft, marginLeft: "auto", fontFamily: F.mono }}>
           {new Date(idea.ts).toLocaleDateString("sv-SE", { month: "short", day: "numeric" })}
         </span>
       </div>
       {showRaw && (
-        <div style={{ marginTop: 8, padding: "8px 10px", background: "#F1F0EA", borderRadius: 10, fontSize: 13, color: T.soft }}>
+        <div style={{ marginTop: 8, padding: "8px 10px", background: T.surfaceQuiet, borderRadius: 10, fontSize: 13, color: T.soft }}>
           {idea.raw}
         </div>
       )}
@@ -3676,41 +3675,58 @@ function ToolBtn({ label, sub, onClick, active }) {
       }}
     >
       <div style={{ fontWeight: 700 }}>{label}</div>
-      <div style={{ fontSize: 12, color: active ? "#D7DDD8" : T.soft }}>{sub}</div>
+      <div style={{ fontSize: 12, color: active ? T.textOnAccent : T.soft }}>{sub}</div>
     </button>
   );
 }
 
 /* ============================================================ */
 const styles = {
-  page: { minHeight: "100vh", fontFamily: "'Atkinson Hyperlegible', sans-serif", color: T.ink, transition: "background 0.4s" },
+  page: { minHeight: "100vh", fontFamily: F.body, color: T.ink, transition: "background 0.4s" },
   // Bredden bor i .shell-regeln i <style> så mediafrågan kan bredda den på
   // laptop — en inline maxWidth hade vunnit över stylesheetet.
   shell: { margin: "0 auto", padding: "16px 16px 130px" },
   header: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 },
   logo: { display: "block", width: 132, height: "auto" },
   hero: { background: T.card, border: `1px solid ${T.line}`, borderRadius: 20, padding: "18px 16px 14px", marginTop: 12 },
-  eyebrow: { font: "500 11px 'IBM Plex Mono', monospace", letterSpacing: "0.12em", textTransform: "uppercase", color: T.spruce },
+  eyebrow: { font: `500 11px ${F.mono}`, letterSpacing: "0.12em", textTransform: "uppercase", color: T.spruce },
   section: { marginTop: 24 },
   card: { background: T.card, border: `1px solid ${T.line}`, borderRadius: 16, padding: 16, marginTop: 14 },
+
+  /* Dagboksuppslaget. Ett blad är inte en låda: det ligger direkt på pappret
+     och skiljs från nästa av en hårfin linjal, som avsnitt i en anteckningsbok.
+     Använd `card` bara där ytan faktiskt ligger *ovanpå* dagen — verktygs-
+     paneler, dialoger — annars staplas ramar inuti ramar. */
+  leaf: { marginTop: 22, paddingTop: 18, borderTop: `1px solid ${T.rule}` },
+  /* Första bladet under hjälten har ingen linjal ovanför sig. */
+  leafFirst: { marginTop: 18 },
+  /* Varvet: en lodrät markering i vänsterkanten som binder ihop dagens rader. */
+  leafLap: { marginTop: 22, paddingTop: 4, paddingLeft: 14, borderLeft: `2px solid ${T.petrol}` },
+  /* Rad i en lista — skiljs av linjal, inte av egen ram. */
+  rowRule: { borderTop: `1px solid ${T.rule}` },
+  // Hopfälld uppgift: en rad i dagboken. Utfälld byter den till `card`, för då
+  // ligger detaljerna faktiskt ovanpå dagen.
+  taskRow: { borderTop: `1px solid ${T.rule}`, padding: "12px 8px", marginTop: 0 },
   body: { color: T.soft, fontSize: 14, lineHeight: 1.5, margin: "6px 0 0" },
   modeRow: { display: "flex", gap: 8, marginTop: 12 },
   modeBtn: { flex: 1, padding: "10px 6px", borderRadius: 12, border: `1.5px solid`, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" },
   modeBlurb: { color: T.soft, fontSize: 13, marginTop: 8, textAlign: "center" },
-  nextTitle: { fontFamily: "'Fraunces', serif", fontWeight: 500, fontSize: 24, marginTop: 6, lineHeight: 1.15 },
+  nextTitle: { fontFamily: F.display, fontWeight: 500, fontSize: 24, marginTop: 6, lineHeight: 1.15 },
   metaRow: { display: "flex", gap: 8, flexWrap: "wrap", marginTop: 8, alignItems: "center" },
-  mono: { font: "500 13px 'IBM Plex Mono', monospace", color: T.petrolDark },
-  chip: { fontSize: 12, background: "#E7EAE3", color: T.spruce, padding: "3px 9px", borderRadius: 20 },
+  mono: { font: `500 13px ${F.mono}`, color: T.petrolDark },
+  chip: { fontSize: 12, background: T.accentSoft, color: T.spruce, padding: "3px 9px", borderRadius: 20 },
   chipSoft: { fontSize: 12, border: `1px solid ${T.line}`, color: T.soft, padding: "2px 9px", borderRadius: 20 },
   primaryBtn: { background: T.petrol, color: T.card, border: "none", borderRadius: 12, padding: "11px 16px", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" },
   ghostBtn: { background: "transparent", color: T.petrolDark, border: `1.5px solid ${T.petrol}`, borderRadius: 12, padding: "10px 14px", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" },
   linkBtn: { background: "none", border: "none", color: T.petrolDark, fontSize: 14, fontWeight: 700, cursor: "pointer", padding: "6px 2px", fontFamily: "inherit" },
-  input: { width: "100%", boxSizing: "border-box", padding: "11px 12px", borderRadius: 12, border: `1px solid ${T.line}`, background: "#FFFFFF", fontSize: 15, marginTop: 8, fontFamily: "inherit", color: T.ink },
-  select: { padding: "9px 10px", borderRadius: 10, border: `1px solid ${T.line}`, background: "#FFF", fontSize: 14, fontFamily: "inherit", marginTop: 4 },
+  input: { width: "100%", boxSizing: "border-box", padding: "11px 12px", borderRadius: 12, border: `1px solid ${T.line}`, background: T.control, fontSize: 15, marginTop: 8, fontFamily: "inherit", color: T.ink },
+  select: { padding: "9px 10px", borderRadius: 10, border: `1px solid ${T.line}`, background: T.control, fontSize: 14, fontFamily: "inherit", marginTop: 4 },
   smallLabel: { display: "flex", flexDirection: "column", fontSize: 12, color: T.soft, marginTop: 8 },
-  timeline: { marginTop: 12, paddingLeft: 2 },
+  timeline: { position: "relative", marginTop: 12, paddingLeft: 2 },
+  // Ryggen ligger under prickarna (vänsterkant 56 + halva prickens 9).
+  timelineSpine: { position: "absolute", left: 60, top: 6, bottom: 6, width: 1, background: T.rule },
   tlRow: { display: "flex", alignItems: "center", gap: 10, padding: "7px 0" },
-  tlTime: { font: "500 13px 'IBM Plex Mono', monospace", color: T.spruce, width: 46 },
+  tlTime: { font: `500 13px ${F.mono}`, color: T.spruce, width: 46 },
   tlDot: { width: 9, height: 9, borderRadius: 5, background: T.petrol, flexShrink: 0 },
   tlBody: { fontSize: 15 },
   bufferRow: { paddingLeft: 56, margin: "2px 0" },
@@ -3720,34 +3736,34 @@ const styles = {
   toolBtn: { border: `1px solid ${T.line}`, borderRadius: 14, padding: "13px 12px", textAlign: "left", cursor: "pointer", fontFamily: "inherit" },
   doneBtn: { width: 44, height: 44, borderRadius: 22, border: `1.5px solid ${T.moss}`, background: "transparent", color: T.spruce, fontSize: 18, cursor: "pointer", flexShrink: 0 },
   stepRow: { display: "flex", gap: 10, alignItems: "flex-start", width: "100%", minHeight: 44, boxSizing: "border-box", background: "none", border: "none", padding: "12px 0", cursor: "pointer", fontSize: 14, fontFamily: "inherit" },
-  stepBox: { width: 22, height: 22, borderRadius: 6, border: `1.5px solid ${T.moss}`, color: "#fff", fontSize: 13, display: "grid", placeItems: "center", flexShrink: 0, marginTop: 0 },
-  restItem: { display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", background: "#FFFFFF", border: `1px solid ${T.line}`, borderRadius: 12, padding: "12px 12px", marginTop: 8, fontSize: 14, cursor: "pointer", fontFamily: "inherit", color: T.ink, textAlign: "left", gap: 10 },
-  restPlus: { font: "500 13px 'IBM Plex Mono', monospace", color: T.moss, flexShrink: 0 },
+  stepBox: { width: 22, height: 22, borderRadius: 6, border: `1.5px solid ${T.moss}`, color: T.textOnAccent, fontSize: 13, display: "grid", placeItems: "center", flexShrink: 0, marginTop: 0 },
+  restItem: { display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", background: "none", border: "none", padding: "13px 2px", marginTop: 0, fontSize: 14, cursor: "pointer", fontFamily: "inherit", color: T.ink, textAlign: "left", gap: 10 },
+  restPlus: { font: `500 13px ${F.mono}`, color: T.moss, flexShrink: 0 },
   footer: { textAlign: "center", color: T.soft, fontSize: 13, marginTop: 36 },
   captureRow: { display: "flex", gap: 8, marginBottom: 6 },
-  captureInput: { flex: 1, boxSizing: "border-box", width: "100%", padding: "11px 14px", borderRadius: 12, border: `1.5px solid ${T.track}`, background: "#FFFFFF", fontSize: 15, fontFamily: "inherit", color: T.ink },
-  winddownBanner: { background: "#3A4145", color: "#E8E6DE", borderRadius: 12, padding: "10px 14px", fontSize: 14, marginTop: 10 },
+  captureInput: { flex: 1, boxSizing: "border-box", width: "100%", padding: "11px 14px", borderRadius: 12, border: `1.5px solid ${T.track}`, background: T.control, fontSize: 15, fontFamily: "inherit", color: T.ink },
+  winddownBanner: { background: T.night, color: T.nightText, borderRadius: 12, padding: "10px 14px", fontSize: 14, marginTop: 10 },
   medRow: { display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginTop: 12, paddingTop: 12, borderTop: `1px solid ${T.line}`, flexWrap: "wrap" },
   medBtn: { background: "transparent", border: `1px solid ${T.line}`, borderRadius: 16, padding: "7px 11px", fontSize: 12, color: T.spruce, cursor: "pointer", fontFamily: "inherit" },
   medStatus: { background: "none", border: "none", color: T.spruce, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", padding: "6px 0" },
   lapRow: { display: "flex", alignItems: "center", gap: 10, width: "100%", background: "none", border: "none", padding: "9px 0", cursor: "pointer", fontSize: 15, fontFamily: "inherit", color: T.ink },
   lapBadge: { width: 26, height: 26, borderRadius: 13, border: `1.5px solid ${T.moss}`, display: "grid", placeItems: "center", fontSize: 12, fontWeight: 700, flexShrink: 0 },
   prioBadge: { display: "inline-grid", placeItems: "center", width: 20, height: 20, borderRadius: 10, background: T.spruce, color: T.card, fontSize: 11, fontWeight: 700, marginRight: 8, verticalAlign: "middle" },
-  nudge: { marginTop: 12, padding: "10px 12px", background: "#F5EDE6", border: `1px solid #E2D3C4`, borderRadius: 12, fontSize: 13, color: "#7A5A42", lineHeight: 1.5 },
-  transitionCue: { marginTop: 14, padding: "10px 14px", background: "#E5EBE9", border: `1px solid #CBD8D4`, borderRadius: 12, fontSize: 14, color: T.petrolDark, lineHeight: 1.5 },
-  unstickBox: { marginTop: 12, padding: "12px 14px", background: "#F7F2EC", border: `1px solid #E6DACB`, borderRadius: 12 },
+  nudge: { marginTop: 12, padding: "10px 12px", background: T.note, border: `1px solid ${T.noteBorder}`, borderRadius: 12, fontSize: 13, color: T.noteText, lineHeight: 1.5 },
+  transitionCue: { marginTop: 14, padding: "10px 14px", background: T.info, border: `1px solid ${T.infoBorder}`, borderRadius: 12, fontSize: 14, color: T.petrolDark, lineHeight: 1.5 },
+  unstickBox: { marginTop: 12, padding: "12px 14px", background: T.note, border: `1px solid ${T.noteBorder}`, borderRadius: 12 },
   syncRow: { display: "flex", gap: 8, marginTop: 12 },
-  micBtn: { width: 48, height: 48, borderRadius: 24, border: "none", color: "#FFF", fontSize: 20, cursor: "pointer", flexShrink: 0, display: "grid", placeItems: "center" },
-  coin: { width: 32, height: 32, borderRadius: 10, background: "#EBEEE7", border: `1px solid ${T.line}`, display: "grid", placeItems: "center", fontSize: 16, flexShrink: 0 },
-  coinLg: { width: 42, height: 42, borderRadius: 13, background: "#EBEEE7", border: `1px solid ${T.line}`, display: "grid", placeItems: "center", fontSize: 21, flexShrink: 0 },
+  micBtn: { width: 48, height: 48, borderRadius: 24, border: "none", color: T.textOnAccent, fontSize: 20, cursor: "pointer", flexShrink: 0, display: "grid", placeItems: "center" },
+  coin: { width: 32, height: 32, borderRadius: 10, background: T.surfaceQuiet, border: `1px solid ${T.line}`, display: "grid", placeItems: "center", fontSize: 16, flexShrink: 0 },
+  coinLg: { width: 42, height: 42, borderRadius: 13, background: T.surfaceQuiet, border: `1px solid ${T.line}`, display: "grid", placeItems: "center", fontSize: 21, flexShrink: 0 },
   nav: { position: "fixed", bottom: 0, left: 0, right: 0, height: 66, background: T.card, borderTop: `1px solid ${T.line}`, display: "flex", justifyContent: "space-around", alignItems: "center", maxWidth: "100%", zIndex: 40, paddingBottom: "env(safe-area-inset-bottom)" },
   navBtn: { position: "relative", minWidth: 52, minHeight: 48, background: "none", border: "none", fontSize: 13, fontFamily: "inherit", cursor: "pointer", padding: "10px 10px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3 },
   navDash: { width: 20, height: 3, borderRadius: 2, background: T.petrol, display: "block" },
   navDot: { position: "absolute", top: 8, right: 8, width: 8, height: 8, borderRadius: 4, background: T.warn },
-  navPlus: { width: 48, height: 48, borderRadius: 24, background: T.petrol, color: T.card, border: "none", fontSize: 26, fontWeight: 400, cursor: "pointer", lineHeight: 1, boxShadow: "0 2px 8px rgba(60,89,96,0.35)" },
-  sheetBackdrop: { position: "fixed", inset: 0, background: "rgba(51,57,59,0.35)", zIndex: 50, display: "flex", alignItems: "flex-end" },
+  navPlus: { width: 48, height: 48, borderRadius: 24, background: T.petrol, color: T.card, border: "none", fontSize: 26, fontWeight: 400, cursor: "pointer", lineHeight: 1, boxShadow: `0 2px 8px ${T.shadow}` },
+  sheetBackdrop: { position: "fixed", inset: 0, background: T.overlay, zIndex: 50, display: "flex", alignItems: "flex-end" },
   sheet: { background: T.card, borderRadius: "20px 20px 0 0", padding: "10px 16px 26px", width: "100%", maxWidth: 560, margin: "0 auto", boxSizing: "border-box" },
   sheetHandle: { width: 40, height: 4, borderRadius: 2, background: T.track, margin: "4px auto 14px" },
-  toast: { position: "fixed", bottom: 122, left: "50%", transform: "translateX(-50%)", background: T.spruce, color: "#EFF1EC", padding: "9px 16px", borderRadius: 20, fontSize: 13, zIndex: 45, maxWidth: "85%", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", boxShadow: "0 2px 10px rgba(51,57,59,0.25)" },
-  miniLap: { position: "fixed", bottom: 66, left: 0, right: 0, maxWidth: 560, margin: "0 auto", background: T.petrolDark, color: "#EDF0EC", border: "none", padding: "10px 16px", display: "flex", alignItems: "center", gap: 12, cursor: "pointer", zIndex: 39, fontFamily: "inherit", borderRadius: "12px 12px 0 0" },
+  toast: { position: "fixed", bottom: 122, left: "50%", transform: "translateX(-50%)", background: T.spruce, color: T.textOnAccent, padding: "9px 16px", borderRadius: 20, fontSize: 13, zIndex: 45, maxWidth: "85%", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", boxShadow: `0 2px 10px ${T.shadow}` },
+  miniLap: { position: "fixed", bottom: 66, left: 0, right: 0, maxWidth: 560, margin: "0 auto", background: T.petrolDark, color: T.textOnAccent, border: "none", padding: "10px 16px", display: "flex", alignItems: "center", gap: 12, cursor: "pointer", zIndex: 39, fontFamily: "inherit", borderRadius: "12px 12px 0 0" },
 };

@@ -4,7 +4,7 @@
  */
 
 import { todayKey, todayWeekday, hmToMin, nowHM } from '../utils/helpers';
-import { T, MODES } from '../constants/tokens';
+import { F, T, MODES } from '../constants/tokens';
 
 export function WorkingMemoryDisplay({ state, settings, onWinddownClick }) {
   const currentMode = MODES[state.capacity];
@@ -37,14 +37,14 @@ export function WorkingMemoryDisplay({ state, settings, onWinddownClick }) {
     mon: 'måndag', tue: 'tisdag', wed: 'onsdag', thu: 'torsdag', fri: 'fredag', sat: 'lördag', sun: 'söndag',
   }[todayWeekday()];
 
+  // Dagens huvud står överst på uppslaget, inte i en egen låda: ett kort här
+  // skulle bara bli en ram runt en ram, eftersom energirutan nedan redan är en.
+  // Linjalen under skiljer huvudet från dagen.
   return (
     <div style={{
-      background: T.card,
-      borderRadius: '8px',
-      padding: '16px',
-      marginBottom: '16px',
-      border: `1px solid ${T.line}`,
-      boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+      paddingBottom: '18px',
+      marginBottom: '18px',
+      borderBottom: `1px solid ${T.rule}`,
     }}>
       {/* Header: a tear-off-calendar date tile is the first thing the eye lands on
           (figure-ground via strong color contrast), placed right next to the
@@ -59,20 +59,20 @@ export function WorkingMemoryDisplay({ state, settings, onWinddownClick }) {
           padding: '6px 8px',
           borderRadius: 12,
           background: T.petrol,
-          color: 'white',
+          color: T.textOnAccent,
           lineHeight: 1,
           flexShrink: 0,
         }}>
-          <span style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.06em', opacity: 0.85, fontFamily: 'Atkinson Hyperlegible' }}>
+          <span style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.06em', opacity: 0.85, fontFamily: F.body }}>
             {monthShort}
           </span>
-          <span style={{ fontFamily: "'Fraunces', serif", fontSize: '2rem', fontWeight: 600, marginTop: 2 }}>
+          <span style={{ fontFamily: F.display, fontSize: '2rem', fontWeight: 600, marginTop: 2 }}>
             {dayNum}
           </span>
         </div>
         <div>
           <h2 style={{
-            fontFamily: 'Fraunces',
+            fontFamily: F.display,
             fontSize: '1.5rem',
             fontWeight: '300',
             margin: '0 0 4px 0',
@@ -81,7 +81,7 @@ export function WorkingMemoryDisplay({ state, settings, onWinddownClick }) {
             Hej{settings.displayName ? ` ${settings.displayName}` : ''}! Idag är {weekdayFull}
           </h2>
           <p style={{
-            fontFamily: 'Atkinson Hyperlegible',
+            fontFamily: F.body,
             fontSize: '0.9rem',
             color: T.soft,
             margin: 0
@@ -94,7 +94,7 @@ export function WorkingMemoryDisplay({ state, settings, onWinddownClick }) {
       {/* Energy is the only number that earns a box — it is the one thing the
           rest of the day is budgeted against. */}
       <div style={{
-        background: T.paper,
+        background: T.surfaceQuiet,
         padding: '12px',
         borderRadius: '6px',
         border: `1px solid ${T.line}`,
@@ -119,14 +119,14 @@ export function WorkingMemoryDisplay({ state, settings, onWinddownClick }) {
           letterSpacing: '0.5px',
           color: T.soft,
           marginBottom: '4px',
-          fontFamily: 'Atkinson Hyperlegible',
+          fontFamily: F.body,
           position: 'relative',
           zIndex: 1
         }}>
           Energi idag
         </div>
         <div style={{
-          fontFamily: 'IBM Plex Mono',
+          fontFamily: F.mono,
           fontSize: '1.2rem',
           fontWeight: '500',
           color: T.ink,
@@ -139,7 +139,7 @@ export function WorkingMemoryDisplay({ state, settings, onWinddownClick }) {
           fontSize: '0.75rem',
           color: T.soft,
           marginTop: '2px',
-          fontFamily: 'Atkinson Hyperlegible',
+          fontFamily: F.body,
           position: 'relative',
           zIndex: 1
         }}>
@@ -152,7 +152,7 @@ export function WorkingMemoryDisplay({ state, settings, onWinddownClick }) {
       {activeFocus && (
         <div style={{
           marginTop: '10px',
-          fontFamily: 'Atkinson Hyperlegible',
+          fontFamily: F.body,
           fontSize: '0.9rem',
           color: T.ink
         }}>
@@ -178,7 +178,7 @@ export function WorkingMemoryDisplay({ state, settings, onWinddownClick }) {
           border: 0,
           background: 'transparent',
           textAlign: 'left',
-          fontFamily: 'Atkinson Hyperlegible',
+          fontFamily: F.body,
           fontSize: '0.9rem',
           color: winddownSoon ? T.warn : T.soft,
           cursor: winddownSoon ? 'pointer' : 'default',
@@ -204,7 +204,7 @@ export function WorkingMemoryDisplay({ state, settings, onWinddownClick }) {
           padding: '6px 10px',
           borderRadius: '4px',
           fontSize: '0.8rem',
-          fontFamily: 'Atkinson Hyperlegible',
+          fontFamily: F.body,
           color: T.ink,
           border: `1px solid ${T.line}`
         }}>

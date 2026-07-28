@@ -9,7 +9,7 @@
  * Each surface message has: { components[], dataModel{} }
  */
 import React, { useState, useEffect, useCallback } from "react";
-import { T } from "../constants/tokens";
+import { F, T } from "../constants/tokens";
 
 // ── A2UI v0.9 normalization ────────────────────────────────────────────────
 
@@ -238,7 +238,7 @@ function DividerComponent() {
 
 function TextComponent({ text, style }) {
   const fontStyle = style === "h3"
-    ? { fontFamily: "Fraunces, serif", fontSize: 17, fontWeight: 600, color: T.ink }
+    ? { fontFamily: F.display, fontSize: 17, fontWeight: 600, color: T.ink }
     : style === "small"
     ? { fontSize: 13, color: T.ink + "99" }
     : style === "accent"
@@ -327,7 +327,7 @@ function TaskCardComponent({ title, energy, essential, priority, icon, onAction 
           onClick={() => onAction("startTask", { title })}
           style={{
             background: T.spruce,
-            color: "#fff",
+            color: T.textOnAccent,
             border: "none",
             borderRadius: 8,
             padding: "6px 12px",
@@ -422,7 +422,7 @@ function BreathingWidgetComponent() {
         transform: phase === "inhale" ? "scale(1.2)" : phase === "exhale" ? "scale(0.8)" : "scale(1)",
         transition: "transform 1s ease-in-out",
       }}>
-        <span style={{ fontSize: 28, color: T.petrol, fontFamily: "IBM Plex Mono" }}>{count}</span>
+        <span style={{ fontSize: 28, color: T.petrol, fontFamily: F.mono }}>{count}</span>
       </div>
       <div style={{ fontSize: 15, color: T.ink, fontWeight: 500 }}>{labels[phase]}</div>
     </div>
@@ -498,7 +498,7 @@ function RecoveryMenuComponent({ reason, onAction }) {
 function MorningCheckinComponent({ onAction }) {
   return (
     <div style={{ textAlign: "center", padding: 8 }}>
-      <div style={{ fontSize: 17, fontFamily: "Fraunces, serif", fontWeight: 600, color: T.ink, marginBottom: 4 }}>
+      <div style={{ fontSize: 17, fontFamily: F.display, fontWeight: 600, color: T.ink, marginBottom: 4 }}>
         God morgon
       </div>
       <div style={{ fontSize: 14, color: T.ink + "99", marginBottom: 12 }}>
@@ -508,7 +508,7 @@ function MorningCheckinComponent({ onAction }) {
         onClick={() => onAction?.("openCheckin")}
         style={{
           background: T.spruce,
-          color: "#fff",
+          color: T.textOnAccent,
           border: "none",
           borderRadius: 10,
           padding: "10px 24px",
@@ -584,7 +584,7 @@ function QuickCaptureComponent({ placeholder, onAction }) {
         disabled={!text.trim()}
         style={{
           background: text.trim() ? T.spruce : T.moss + "33",
-          color: text.trim() ? "#fff" : T.ink + "55",
+          color: text.trim() ? T.textOnAccent : T.soft,
           border: "none",
           borderRadius: 10,
           padding: "8px 14px",

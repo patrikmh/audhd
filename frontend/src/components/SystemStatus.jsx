@@ -66,7 +66,7 @@ export function SystemStatus({ sync, agents, lastSync, onSyncClick }) {
           alignItems: "center",
           justifyContent: "center",
           cursor: "pointer",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+          boxShadow: `0 2px 8px ${T.shadow}`,
           padding: 0,
         }}
         aria-label={`Visa systemstatus. ${syncStatus.text}`}
@@ -108,7 +108,7 @@ export function SystemStatus({ sync, agents, lastSync, onSyncClick }) {
             borderRadius: 10,
             padding: "6px 10px",
             maxWidth: 260,
-            boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+            boxShadow: `0 2px 8px ${T.shadow}`,
           }}
         >
           <div
@@ -148,7 +148,7 @@ export function SystemStatus({ sync, agents, lastSync, onSyncClick }) {
           borderRadius: 10,
           padding: "8px 12px",
           maxWidth: 280,
-          boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+          boxShadow: `0 2px 8px ${T.shadow}`,
           cursor: syncStatus.showAction ? "pointer" : "default",
           fontFamily: "inherit",
           textAlign: "left",
@@ -167,7 +167,7 @@ export function SystemStatus({ sync, agents, lastSync, onSyncClick }) {
               alignItems: "center",
               justifyContent: "center",
               fontSize: 9,
-              color: "white",
+              color: T.textOnAccent,
               flexShrink: 0,
             }}
           >

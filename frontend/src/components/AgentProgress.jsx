@@ -3,7 +3,7 @@
  * Shows current step + accumulated text with a subtle animation.
  */
 import { useEffect, useState } from "react";
-import { T } from "../constants/tokens";
+import { F, T } from "../constants/tokens";
 
 const DOTS = ["", ".", "..", "..."];
 
@@ -33,7 +33,7 @@ export function AgentProgress({ step, text, isRunning }) {
         borderRadius: 12,
         padding: "10px 16px",
         maxWidth: 320,
-        boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
+        boxShadow: `0 4px 16px ${T.shadow}`,
         animation: "voiceFadeIn 0.3s ease",
       }}
     >
@@ -66,7 +66,7 @@ export function AgentProgress({ step, text, isRunning }) {
             marginTop: 6,
             fontSize: 12,
             color: T.soft,
-            fontFamily: "'IBM Plex Mono', monospace",
+            fontFamily: F.mono,
             lineHeight: 1.4,
             maxHeight: 60,
             overflow: "hidden",

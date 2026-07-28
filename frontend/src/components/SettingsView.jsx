@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { T } from "../constants/tokens";
+import { F, T } from "../constants/tokens";
 import { todayKey } from "../utils/helpers";
 import { INTEGRATIONS } from "../constants/integrations";
 import { useModalDialog } from "../hooks/useModalDialog";
@@ -155,7 +155,7 @@ export function SettingsView({
       style={{
         position: "fixed",
         inset: 0,
-        background: "rgba(0,0,0,0.4)",
+        background: T.overlay,
         zIndex: 1000,
         display: "flex",
         alignItems: "stretch",
@@ -182,7 +182,7 @@ export function SettingsView({
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, gap: 12 }}>
           <div>
-            <h2 style={{ fontFamily: "'Fraunces', serif", fontSize: 22, margin: 0, color: T.ink }}>Inställningar</h2>
+            <h2 style={{ fontFamily: F.display, fontSize: 22, margin: 0, color: T.ink }}>Inställningar</h2>
             <div role={saveStatus === "error" ? "alert" : "status"} aria-live="polite" style={{ minHeight: 18, marginTop: 2, fontSize: 12, color: saveStatus === "error" ? T.warn : T.soft }}>
               {saveStatus === "saving" ? "Sparar…" : saveStatus === "saved" ? "Sparat" : saveStatus === "error" ? "Kunde inte spara — ditt val finns kvar på enheten" : ""}
             </div>
@@ -324,7 +324,7 @@ export function SettingsView({
                     borderRadius: 8,
                     border: (s.theme || "system") === t.key ? `1.5px solid ${T.petrol}` : `1px solid ${T.line}`,
                     background: (s.theme || "system") === t.key ? T.petrol : T.card,
-                    color: (s.theme || "system") === t.key ? "white" : T.ink,
+                    color: (s.theme || "system") === t.key ? T.textOnAccent : T.ink,
                     cursor: "pointer",
                     fontFamily: "inherit",
                   }}
@@ -362,7 +362,7 @@ export function SettingsView({
                     border:
                       s.defaultCapacity === c.key ? `1.5px solid ${T.petrol}` : `1px solid ${T.line}`,
                     background: s.defaultCapacity === c.key ? T.petrol : T.card,
-                    color: s.defaultCapacity === c.key ? "white" : T.ink,
+                    color: s.defaultCapacity === c.key ? T.textOnAccent : T.ink,
                     cursor: "pointer",
                     fontFamily: "inherit",
                     textAlign: "center",
@@ -395,7 +395,7 @@ export function SettingsView({
                     border:
                       s.voiceLang === l ? `1.5px solid ${T.petrol}` : `1px solid ${T.line}`,
                     background: s.voiceLang === l ? T.petrol : T.card,
-                    color: s.voiceLang === l ? "white" : T.ink,
+                    color: s.voiceLang === l ? T.textOnAccent : T.ink,
                     cursor: "pointer",
                     fontFamily: "inherit",
                   }}
@@ -418,7 +418,7 @@ export function SettingsView({
                     borderRadius: 8,
                     border: (s.defaultFocusMinutes || 25) === m ? `1.5px solid ${T.petrol}` : `1px solid ${T.line}`,
                     background: (s.defaultFocusMinutes || 25) === m ? T.petrol : T.card,
-                    color: (s.defaultFocusMinutes || 25) === m ? "white" : T.ink,
+                    color: (s.defaultFocusMinutes || 25) === m ? T.textOnAccent : T.ink,
                     cursor: "pointer",
                     fontFamily: "inherit",
                   }}
@@ -488,12 +488,12 @@ export function SettingsView({
                 )
               )}
             </div>
-            <h3 style={{ fontFamily: "'Fraunces', serif", fontWeight: 400, color: T.ink, margin: "22px 0 6px" }}>Senaste aktivitet</h3>
+            <h3 style={{ fontFamily: F.display, fontWeight: 400, color: T.ink, margin: "22px 0 6px" }}>Senaste aktivitet</h3>
             {(state.agentLog || []).length === 0 ? (
               <p style={{ fontSize: 13, color: T.soft }}>Ingen agentaktivitet ännu.</p>
             ) : (
               state.agentLog.slice(0, 8).map((entry, index) => (
-                <div key={`${entry.ts}-${index}`} style={{ fontSize: 12, color: T.soft, padding: "5px 0", fontFamily: "'IBM Plex Mono', monospace" }}>
+                <div key={`${entry.ts}-${index}`} style={{ fontSize: 12, color: T.soft, padding: "5px 0", fontFamily: F.mono }}>
                   {new Date(entry.ts).toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" })} <b style={{ color: T.ink }}>{entry.agent}</b> {entry.text}
                 </div>
               ))
@@ -514,7 +514,7 @@ export function SettingsView({
               Synka allt nu
             </button>
 
-            <h3 style={{ fontFamily: "'Fraunces', serif", fontWeight: 400, color: T.ink, margin: "22px 0 6px" }}>Google</h3>
+            <h3 style={{ fontFamily: F.display, fontWeight: 400, color: T.ink, margin: "22px 0 6px" }}>Google</h3>
             <p style={{ fontSize: 13, color: T.soft, margin: "0 0 10px" }}>Kalenderhändelser och prioriterad e-post kan bli fångster automatiskt.</p>
             <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
               <span role="status" style={{ fontSize: 13, color: T.soft }}>
@@ -529,21 +529,21 @@ export function SettingsView({
               )}
             </div>
 
-            <h3 style={{ fontFamily: "'Fraunces', serif", fontWeight: 400, color: T.ink, margin: "22px 0 6px" }}>Oura</h3>
+            <h3 style={{ fontFamily: F.display, fontWeight: 400, color: T.ink, margin: "22px 0 6px" }}>Oura</h3>
             <label style={labelStyle}>
               personlig access-token
               <input type="password" style={{ ...inputStyle, marginTop: 4 }} value={s.ouraToken || ""} onChange={(e) => patchSettings({ ouraToken: e.target.value })} placeholder="OURA_..." />
             </label>
             <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
               {[["<6", "Sov <6h"], ["6-7", "6–7h"], [">7", ">7h"]].map(([value, label]) => (
-                <button key={value} aria-pressed={state.oura?.day === todayKey() && state.oura?.manual === value} onClick={() => onSetManualSleep?.(value)} style={{ padding: "8px 10px", borderRadius: 8, border: `1px solid ${T.line}`, background: state.oura?.day === todayKey() && state.oura?.manual === value ? T.petrol : T.card, color: state.oura?.day === todayKey() && state.oura?.manual === value ? "white" : T.ink, cursor: "pointer" }}>
+                <button key={value} aria-pressed={state.oura?.day === todayKey() && state.oura?.manual === value} onClick={() => onSetManualSleep?.(value)} style={{ padding: "8px 10px", borderRadius: 8, border: `1px solid ${T.line}`, background: state.oura?.day === todayKey() && state.oura?.manual === value ? T.petrol : T.card, color: state.oura?.day === todayKey() && state.oura?.manual === value ? T.textOnAccent : T.ink, cursor: "pointer" }}>
                   {label}
                 </button>
               ))}
               <button onClick={onSyncOura} style={{ padding: "8px 10px", borderRadius: 8, border: `1px solid ${T.line}`, background: T.card, color: T.petrol, cursor: "pointer" }}>Synka Oura nu</button>
             </div>
 
-            <h3 style={{ fontFamily: "'Fraunces', serif", fontWeight: 400, color: T.ink, margin: "22px 0 6px" }}>Övriga kopplingar</h3>
+            <h3 style={{ fontFamily: F.display, fontWeight: 400, color: T.ink, margin: "22px 0 6px" }}>Övriga kopplingar</h3>
             {Object.entries(INTEGRATIONS).filter(([key]) => !["oura", "calendar", "gmail"].includes(key)).map(([key, info]) => (
               <div key={key} style={{ display: "flex", justifyContent: "space-between", gap: 12, padding: "6px 0", fontSize: 13, color: T.soft }}>
                 <span>{info.label}</span><span>{info.available ? "aktiv" : "inte kopplad än"}</span>

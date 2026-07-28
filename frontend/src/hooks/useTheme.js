@@ -1,12 +1,23 @@
 import { useEffect } from "react";
 
 /** Applies settings.theme ("system" | "light" | "dark") to <html data-theme>.
- * The actual color values live as CSS variables in index.html — this hook only
- * ever sets/clears one attribute, never touches colors directly. */
+ * "system" löses upp här mot prefers-color-scheme så att attributet alltid är
+ * satt — då behöver styles/theme.css bara ett mörkt block istället för två
+ * identiska (ett för mediafrågan, ett för det explicita valet). */
 export function useTheme(theme) {
   useEffect(() => {
     const root = document.documentElement;
-    if (theme === "light" || theme === "dark") root.dataset.theme = theme;
-    else delete root.dataset.theme; // "system" — let prefers-color-scheme decide
+    if (theme !== "system") {
+      root.dataset.theme = theme;
+      return;
+    }
+
+    const query = window.matchMedia("(prefers-color-scheme: dark)");
+    const apply = () => {
+      root.dataset.theme = query.matches ? "dark" : "light";
+    };
+    apply();
+    query.addEventListener("change", apply);
+    return () => query.removeEventListener("change", apply);
   }, [theme]);
 }

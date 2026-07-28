@@ -46,15 +46,17 @@ export const guessIcon = (title) => {
   return hit ? hit[1] : "📌";
 };
 
+// CSS-variabler, inte hex — annars behåller energiprickarna sina ljusa färger
+// i mörkt läge. Se styles/theme.css.
 export const energyColor = (e) => {
   const colors = {
-    1: "#8A977F", // moss
-    2: "#8A977F", // moss
-    3: "#4C6E75", // petrol
-    4: "#A66A4F", // warn
-    5: "#A66A4F", // warn
+    1: "var(--success-fill)",
+    2: "var(--success-fill)",
+    3: "var(--accent)",
+    4: "var(--warning)",
+    5: "var(--warning)",
   };
-  return colors[e] || "#8A977F";
+  return colors[e] || "var(--success-fill)";
 };
 
 export const nowHM = (date = new Date()) => {

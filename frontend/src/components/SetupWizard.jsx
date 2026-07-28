@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { T, MODES, ICON_CHOICES, WEEKDAYS } from "../constants/tokens";
+import { F, T, MODES, ICON_CHOICES, WEEKDAYS } from "../constants/tokens";
 import { uid, guessIcon } from "../utils/helpers";
 import { useModalDialog } from "../hooks/useModalDialog";
 
@@ -75,7 +75,7 @@ export default function SetupWizard({ onComplete }) {
     () => (
       <div style={{ textAlign: "center" }}>
         <div style={{ fontSize: 48, marginBottom: 12 }}>🔄</div>
-        <h2 style={{ fontFamily: "'Fraunces', serif", fontWeight: 400, fontSize: 28, color: T.ink, margin: 0 }}>
+        <h2 style={{ fontFamily: F.display, fontWeight: 400, fontSize: 28, color: T.ink, margin: 0 }}>
           Välkommen till Varv
         </h2>
         <p style={{ ...s.body, marginTop: 12, fontSize: 16 }}>
@@ -209,7 +209,7 @@ export default function SetupWizard({ onComplete }) {
                       style={{
                         width: 32, height: 32, borderRadius: 6, border: `1.5px solid ${t.energy === n ? T.petrol : T.line}`,
                         background: t.energy === n ? T.petrol : "transparent",
-                        color: t.energy === n ? "white" : T.soft,
+                        color: t.energy === n ? T.textOnAccent : T.soft,
                         fontSize: 12, fontWeight: 700, cursor: "pointer",
                       }}
                     >
@@ -241,7 +241,7 @@ export default function SetupWizard({ onComplete }) {
                           minWidth: 36, minHeight: 36, padding: "4px 8px", borderRadius: 6, fontSize: 11, cursor: "pointer",
                           border: `1px solid ${t.days.includes(d.key) ? T.spruce : T.line}`,
                           background: t.days.includes(d.key) ? T.spruce : "transparent",
-                          color: t.days.includes(d.key) ? "white" : T.soft,
+                          color: t.days.includes(d.key) ? T.textOnAccent : T.soft,
                         }}
                       >
                         {d.label}
@@ -289,7 +289,7 @@ export default function SetupWizard({ onComplete }) {
 
           <div style={{ ...s.card, marginTop: 16, textAlign: "center", minHeight: 140, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
             <div style={{ fontSize: 36, marginBottom: 8 }}>{item.icon}</div>
-            <div style={{ fontFamily: "'Fraunces', serif", fontSize: 18, fontWeight: 500, color: T.ink }}>{item.title}</div>
+            <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 500, color: T.ink }}>{item.title}</div>
             <p style={{ ...s.body, marginTop: 6, fontSize: 14 }}>{item.text}</p>
           </div>
 
@@ -345,7 +345,7 @@ export default function SetupWizard({ onComplete }) {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        fontFamily: "'Atkinson Hyperlegible', sans-serif",
+        fontFamily: F.body,
       }}
     >
       <div style={{ width: "100%", maxWidth: 420, padding: 24, overflowY: "auto", maxHeight: "100vh" }}>
@@ -356,40 +356,40 @@ export default function SetupWizard({ onComplete }) {
 }
 
 const styles = {
-  card: { background: "#FAF9F5", borderRadius: 12, padding: 16, border: "1px solid #E4E2DA" },
+  card: { background: T.card, borderRadius: 12, padding: 16, border: `1px solid ${T.line}` },
   input: {
     width: "100%", padding: "10px 12px", borderRadius: 10,
-    border: "1.5px solid #E4E2DA", fontSize: 15, background: "#FAF9F5",
-    fontFamily: "'Atkinson Hyperlegible', sans-serif", boxSizing: "border-box",
+    border: `1.5px solid ${T.line}`, fontSize: 15, background: T.card,
+    fontFamily: F.body, boxSizing: "border-box",
   },
   timeInput: {
-    padding: "10px 14px", borderRadius: 10, border: "1.5px solid #E4E2DA",
-    fontSize: 20, fontFamily: "'IBM Plex Mono', monospace", background: "#FAF9F5",
+    padding: "10px 14px", borderRadius: 10, border: `1.5px solid ${T.line}`,
+    fontSize: 20, fontFamily: F.mono, background: T.card,
     textAlign: "center",
   },
-  body: { color: "#6C7370", lineHeight: 1.5 },
-  fieldLabel: { display: "block", color: "#6C7370", fontSize: 12, lineHeight: 1.4 },
+  body: { color: T.soft, lineHeight: 1.5 },
+  fieldLabel: { display: "block", color: T.soft, fontSize: 12, lineHeight: 1.4 },
   primaryBtn: {
     padding: "10px 20px", borderRadius: 10, border: "none",
-    background: "#4C6E75", color: "white", fontSize: 15, fontWeight: 700,
-    cursor: "pointer", fontFamily: "'Atkinson Hyperlegible', sans-serif",
+    background: T.petrol, color: T.textOnAccent, fontSize: 15, fontWeight: 700,
+    cursor: "pointer", fontFamily: F.body,
   },
   secondaryBtn: {
-    padding: "10px 20px", borderRadius: 10, border: "1.5px solid #E4E2DA",
-    background: "transparent", color: "#6C7370", fontSize: 15, fontWeight: 600,
-    cursor: "pointer", fontFamily: "'Atkinson Hyperlegible', sans-serif",
+    padding: "10px 20px", borderRadius: 10, border: `1.5px solid ${T.line}`,
+    background: "transparent", color: T.soft, fontSize: 15, fontWeight: 600,
+    cursor: "pointer", fontFamily: F.body,
   },
   linkBtn: {
-    background: "none", border: "none", color: "#4C6E75",
+    background: "none", border: "none", color: T.petrol,
     fontWeight: 600, cursor: "pointer", padding: 0,
-    fontFamily: "'Atkinson Hyperlegible', sans-serif",
+    fontFamily: F.body,
   },
   stepEyebrow: {
     fontSize: 12, textTransform: "uppercase", letterSpacing: "0.5px",
-    color: "#8A977F", fontWeight: 700, marginBottom: 6,
+    color: T.moss, fontWeight: 700, marginBottom: 6,
   },
   stepTitle: {
-    fontFamily: "'Fraunces', serif", fontWeight: 400, fontSize: 24,
-    color: "#33393B", margin: 0,
+    fontFamily: F.display, fontWeight: 400, fontSize: 24,
+    color: T.ink, margin: 0,
   },
 };
