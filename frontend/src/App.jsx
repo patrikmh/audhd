@@ -174,6 +174,7 @@ function VarvApp({ username, onLogout }) {
   const saveTimer = useRef(null);
   const [googleConnected, setGoogleConnected] = useState(null); // null = okänt än, annars bool
   const [googleBusy, setGoogleBusy] = useState(false);
+  const [accountMenu, setAccountMenu] = useState(false); // inställningar/agenter/kopplingar bor här, inte i verktygslådan
 
   const refreshGoogleStatus = () => {
     apiGet("/api/integrations/google/status")
@@ -1090,16 +1091,96 @@ function VarvApp({ username, onLogout }) {
 
         @keyframes rowSettle { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
         .row-settle { animation: rowSettle 0.25s ease; }
+
+        /* På laptop är en 560px-kolumn mitt i en 1440px-skärm bara en telefon med
+           tomma marginaler — dagen får två spalter i stället, så halva rullningen
+           försvinner. Under 900px är allt oförändrat en kolumn. */
+        .shell { max-width: 560px; }
+        @media (min-width: 900px) {
+          .shell { max-width: 1080px; }
+          .today-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 28px;
+            align-items: start;
+          }
+          .today-grid > * { min-width: 0; }
+          .today-col > section:first-child { margin-top: 0; }
+        }
+        /* Navigeringen ska följa innehållskolumnen, inte klistras ut i
+           skärmkanterna. */
+        .nav-inner { display: flex; justify-content: space-around; align-items: center;
+                     width: 100%; max-width: 560px; margin: 0 auto; height: 100%; }
       `}</style>
-      <div style={s.shell}>
+      <div className="shell" style={s.shell}>
         {/* ============ header ============ */}
         <header style={s.header}>
           <div style={s.wordmark}>Varv</div>
           <div style={s.tagline}>{view === "today" ? "ett varv i taget" : view === "ideas" ? "tänk högt" : view === "lists" ? "ut ur huvudet" : "verktygslådan"}</div>
-          <button style={{ ...s.linkBtn, marginLeft: "auto", fontSize: 12, color: T.soft }} onClick={onLogout}>
-            {state.settings.avatarEmoji || "🌀"} {state.settings.displayName || username} · logga ut
-          </button>
+          {/* Account menu: configuration (inställningar, agenter, kopplingar) lives
+              here so the verktygslådan only holds things you actually *do*. */}
+          <div style={{ marginLeft: "auto", position: "relative" }}>
+            <button
+              style={{ ...s.linkBtn, fontSize: 12, color: T.soft }}
+              onClick={() => setAccountMenu((v) => !v)}
+              aria-expanded={accountMenu}
+              aria-haspopup="menu"
+            >
+              {state.settings.avatarEmoji || "🌀"} {state.settings.displayName || username} ▾
+            </button>
+            {accountMenu && (
+              <div
+                role="menu"
+                style={{
+                  position: "absolute",
+                  right: 0,
+                  top: "calc(100% + 6px)",
+                  background: T.card,
+                  border: `1px solid ${T.line}`,
+                  borderRadius: 10,
+                  boxShadow: "0 6px 20px rgba(0,0,0,0.10)",
+                  minWidth: 190,
+                  padding: 6,
+                  zIndex: 60,
+                }}
+              >
+                {[
+                  ["Inställningar", () => setShowSettings(true)],
+                  ["Agenter", () => { setView("tools"); setTool("agents"); }],
+                  ["Kopplingar", () => { setView("tools"); setTool("connect"); }],
+                  ["Logga ut", onLogout],
+                ].map(([label, action]) => (
+                  <button
+                    key={label}
+                    role="menuitem"
+                    onClick={() => { setAccountMenu(false); action(); }}
+                    style={{
+                      display: "block",
+                      width: "100%",
+                      textAlign: "left",
+                      background: "none",
+                      border: "none",
+                      padding: "9px 10px",
+                      borderRadius: 6,
+                      fontFamily: "inherit",
+                      fontSize: 14,
+                      color: label === "Logga ut" ? T.soft : T.ink,
+                      cursor: "pointer",
+                    }}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </header>
+        {accountMenu && (
+          <div
+            onClick={() => setAccountMenu(false)}
+            style={{ position: "fixed", inset: 0, zIndex: 50 }}
+          />
+        )}
 
         {/* ============ wind-down banner ============ */}
         {pastWinddown && (
@@ -1109,7 +1190,8 @@ function VarvApp({ username, onLogout }) {
         )}
 
         {view === "today" && (
-          <>
+          <div className="today-grid">
+            <div className="today-col">
         {/* ============ observatören: kontextuellt verktygsförslag ============ */}
         {observerSuggestion && (
           <div style={s.nudge}>
@@ -1385,7 +1467,9 @@ function VarvApp({ username, onLogout }) {
               </div>
           </section>
         )}
+            </div>
 
+            <div className="today-col">
         {/* ============ tasks ============ */}
         <section style={s.section}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
@@ -1448,52 +1532,36 @@ function VarvApp({ username, onLogout }) {
           </div>
 
           {/* Stats for the day shown above — grouped right under the day-nav instead
-              of floating elsewhere, since they describe that same day (proximity). */}
+              of floating elsewhere, since they describe that same day (proximity).
+              Zeroes are omitted: a row of noughts is noise, not status. Energy
+              lives in the hero card and is deliberately not repeated here. */}
           <div style={{ display: "flex", gap: 14, flexWrap: "wrap", fontSize: 13, color: T.soft, marginBottom: 10 }}>
-            <span><b style={{ color: T.ink }}>{doneForSelectedDate.length}</b> klara</span>
+            {doneForSelectedDate.length > 0 && (
+              <span><b style={{ color: T.ink }}>{doneForSelectedDate.length}</b> klara</span>
+            )}
             <span><b style={{ color: T.ink }}>{visibleTasks.length}</b> kvar</span>
-            <span><b style={{ color: T.ink }}>{spent}⚡</b> förbrukat · <b style={{ color: T.ink }}>{recharged}⚡</b> återladdat</span>
-            <span><b style={{ color: T.ink }}>{winsToday.length}</b> vinster</span>
+            {winsToday.length > 0 && (
+              <span><b style={{ color: T.ink }}>{winsToday.length}</b> vinster</span>
+            )}
           </div>
 
-          {/* Jump to any date + back to today */}
-          <div style={{ display: "flex", gap: 8, marginBottom: 12, alignItems: "center" }}>
-            <input
-              type="date"
-              value={selectedDate}
-              onChange={(e) => {
-                if (!e.target.value) return;
-                const picked = e.target.value;
-                setSelectedDate(picked);
-                // Shift week window so the picked date is visible in the strip
-                const diffDays = Math.round((new Date(picked) - new Date(todayKey())) / 86400000);
-                if (diffDays < -2 || diffDays > 3) setWeekOffset(Math.floor((diffDays + 2) / 7));
-                else setWeekOffset(0);
-              }}
-              style={{
-                padding: "4px 8px",
-                borderRadius: 8,
-                border: "1px solid #E8E7E2",
-                fontSize: 12,
-                fontFamily: "'IBM Plex Mono', monospace",
-                color: T.ink,
-                background: "transparent",
-              }}
-            />
-            {!isToday && (
+          {/* Back to today — the week strip above is the date picker, so there is
+              no second one here. */}
+          {!isToday && (
+            <div style={{ display: "flex", gap: 8, marginBottom: 12, alignItems: "center" }}>
               <button
                 style={s.linkBtn}
                 onClick={() => { setSelectedDate(todayKey()); setWeekOffset(0); }}
               >
                 ← idag
               </button>
-            )}
-            {selectedDate > todayKey() && (
-              <span style={{ fontSize: 12, color: T.petrol, fontFamily: "'IBM Plex Mono', monospace" }}>
-                {new Date(selectedDate + 'T12:00:00').toLocaleDateString('sv-SE', { weekday: 'long', day: 'numeric', month: 'short' })}
-              </span>
-            )}
-          </div>
+              {selectedDate > todayKey() && (
+                <span style={{ fontSize: 12, color: T.petrol, fontFamily: "'IBM Plex Mono', monospace" }}>
+                  {new Date(selectedDate + 'T12:00:00').toLocaleDateString('sv-SE', { weekday: 'long', day: 'numeric', month: 'short' })}
+                </span>
+              )}
+            </div>
+          )}
 
           {showAdd && (
             <AddTask
@@ -1583,7 +1651,8 @@ function VarvApp({ username, onLogout }) {
             ))}
           </section>
         )}
-          </>
+            </div>
+          </div>
         )}
 
         {/* ============ idéer view ============ */}
@@ -1682,10 +1751,7 @@ function VarvApp({ username, onLogout }) {
             {vt.breathing !== false && <ToolBtn active={tool === "ground"} onClick={() => setTool(tool === "ground" ? null : "ground")} label="Andningsankare" sub="3 min, +1⚡" />}
             {vt.week !== false && <ToolBtn active={tool === "week"} onClick={() => setTool(tool === "week" ? null : "week")} label="Veckoöversikt" sub="energimönster" />}
             {vt.why === true && <ToolBtn active={tool === "edu"} onClick={() => setTool(tool === "edu" ? null : "edu")} label="Varför det funkar" sub="evidensen" />}
-            {vt.connections !== false && <ToolBtn active={tool === "connect"} onClick={() => setTool(tool === "connect" ? null : "connect")} label="Kopplingar" sub="Oura ring" />}
-            {vt.agents !== false && <ToolBtn active={tool === "agents"} onClick={() => setTool(tool === "agents" ? null : "agents")} label="Agenter" sub={`${Object.values(state.agents).filter(Boolean).length}/5 aktiva`} />}
             <ToolBtn onClick={() => setShowCheckin(true)} label="Morgoncheck" sub="översikt + energi" />
-            <ToolBtn onClick={() => setShowSettings(true)} label="Inställningar" sub="preferenser" />
           </div>
 
           {tool === "agents" && (
@@ -1966,7 +2032,11 @@ function VarvApp({ username, onLogout }) {
       )}
 
       {/* ============ bottom navigation ============ */}
+      {/* Modalerna täcker hela skärmen — då ska navigeringen inte ligga kvar och
+          se klickbar ut (eller nås med tab) bakom dem. */}
+      {!showSettings && !showSetup && !showCheckin && (
       <nav style={s.nav}>
+        <div className="nav-inner">
         {[["today", "Idag"], ["ideas", "Idéer"], ["capture", "+"], ["lists", "Listor"], ["tools", "Verktyg"]].map(([k, label]) =>
           k === "capture" ? (
             <button key={k} style={s.navPlus} onClick={() => setCaptureOpen(true)} aria-label="Fånga en tanke">
@@ -1984,7 +2054,9 @@ function VarvApp({ username, onLogout }) {
             </button>
           )
         )}
+        </div>
       </nav>
+      )}
 
       {/* ============ System Status (ADHD anxiety reduction) ============ */}
       <SystemStatus
@@ -3609,7 +3681,9 @@ function ToolBtn({ label, sub, onClick, active }) {
 /* ============================================================ */
 const styles = {
   page: { minHeight: "100vh", fontFamily: "'Atkinson Hyperlegible', sans-serif", color: T.ink, transition: "background 0.4s" },
-  shell: { maxWidth: 560, margin: "0 auto", padding: "16px 16px 130px" },
+  // Bredden bor i .shell-regeln i <style> så mediafrågan kan bredda den på
+  // laptop — en inline maxWidth hade vunnit över stylesheetet.
+  shell: { margin: "0 auto", padding: "16px 16px 130px" },
   header: { display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 },
   wordmark: { fontFamily: "'Fraunces', serif", fontWeight: 300, fontSize: 30, letterSpacing: "0.01em", lineHeight: 1 },
   tagline: { color: T.soft, fontSize: 13 },

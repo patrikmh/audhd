@@ -37,6 +37,8 @@ export default function SetupWizard({ onComplete }) {
       )
     );
 
+  const ALL_DAYS = WEEKDAYS.map((d) => d.key);
+
   const finish = () => {
     const builtTasks = tasks
       .filter((t) => t.title.trim())
@@ -53,7 +55,9 @@ export default function SetupWizard({ onComplete }) {
         inbox: false,
         done: false,
         steps: [],
-        repeatDays: t.days,
+        // Utan vald dag skulle uppgiften varken ha repeatDays eller datum och
+        // därmed aldrig synas någonstans — varje dag är den rimliga tolkningen.
+        repeatDays: t.days.length ? t.days : ALL_DAYS,
         day: null,
         ts: Date.now(),
       }));

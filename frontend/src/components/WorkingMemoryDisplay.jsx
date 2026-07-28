@@ -22,11 +22,7 @@ export function WorkingMemoryDisplay({ state, settings, onWinddownClick }) {
   const hoursUntilWinddown = Math.floor(minutesUntilWinddown / 60);
   const minsUntilWinddown = minutesUntilWinddown % 60;
 
-  // Day progress
-  const dayStartMinutes = hmToMin(settings.wake);
-  const dayEndMinutes = hmToMin(settings.winddown);
-  const totalDayMinutes = dayEndMinutes - dayStartMinutes;
-  const dayProgress = Math.min(100, Math.max(0, ((currentMinutes - dayStartMinutes) / totalDayMinutes) * 100));
+  const winddownSoon = minutesUntilWinddown < 60;
 
   // Current focus — only a lap that's actually running, never a guessed-at task.
   const activeFocus = state.activeFocus;
@@ -92,238 +88,116 @@ export function WorkingMemoryDisplay({ state, settings, onWinddownClick }) {
         </div>
       </div>
 
-      {/* Main grid */}
+      {/* Energy is the only number that earns a box — it is the one thing the
+          rest of the day is budgeted against. */}
       <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-        gap: '12px'
+        background: T.paper,
+        padding: '12px',
+        borderRadius: '6px',
+        border: `1px solid ${T.line}`,
+        position: 'relative',
+        overflow: 'hidden'
       }}>
-        {/* Current Focus */}
         <div style={{
-          background: T.paper,
-          padding: '12px',
-          borderRadius: '6px',
-          border: activeFocus ? `2px solid ${T.petrol}` : `1px solid ${T.line}`
-        }}>
-          <div style={{
-            fontSize: '0.75rem',
-            textTransform: 'uppercase',
-            letterSpacing: '0.5px',
-            color: T.soft,
-            marginBottom: '4px',
-            fontFamily: 'Atkinson Hyperlegible'
-          }}>
-            Fokus just nu
-          </div>
-          {activeFocus ? (
-            <div style={{
-              fontFamily: 'Atkinson Hyperlegible',
-              fontSize: '1rem',
-              color: T.ink,
-              fontWeight: '500'
-            }}>
-              {activeFocus.goal || "fokuserar"}
-            </div>
-          ) : (
-            <div style={{
-              fontFamily: 'Atkinson Hyperlegible',
-              fontSize: '0.9rem',
-              color: T.soft,
-              fontStyle: 'italic'
-            }}>
-              Ingen aktivt fokus
-            </div>
-          )}
-        </div>
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: `${energyPercentage}%`,
+          background: energyPercentage > 50 ? T.moss :
+                    energyPercentage > 25 ? T.petrol : T.warn,
+          opacity: 0.2,
+          transition: 'all 0.3s ease'
+        }} />
 
-        {/* Energy Budget */}
         <div style={{
-          background: T.paper,
-          padding: '12px',
-          borderRadius: '6px',
-          border: `1px solid ${T.line}`,
+          fontSize: '0.75rem',
+          textTransform: 'uppercase',
+          letterSpacing: '0.5px',
+          color: T.soft,
+          marginBottom: '4px',
+          fontFamily: 'Atkinson Hyperlegible',
           position: 'relative',
-          overflow: 'hidden'
+          zIndex: 1
         }}>
-          <div style={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: `${energyPercentage}%`,
-            background: energyPercentage > 50 ? T.moss :
-                      energyPercentage > 25 ? T.petrol : T.warn,
-            opacity: 0.2,
-            transition: 'all 0.3s ease'
-          }} />
-
-          <div style={{
-            fontSize: '0.75rem',
-            textTransform: 'uppercase',
-            letterSpacing: '0.5px',
-            color: T.soft,
-            marginBottom: '4px',
-            fontFamily: 'Atkinson Hyperlegible',
-            position: 'relative',
-            zIndex: 1
-          }}>
-            Energi idag
-          </div>
-          <div style={{
-            fontFamily: 'IBM Plex Mono',
-            fontSize: '1.2rem',
-            fontWeight: '500',
-            color: T.ink,
-            position: 'relative',
-            zIndex: 1
-          }}>
-            {energyRemaining} <span style={{ fontSize: '0.9rem', color: T.soft }}>av {currentMode.budget} ⚡</span>
-          </div>
-          <div style={{
-            fontSize: '0.75rem',
-            color: T.soft,
-            marginTop: '2px',
-            fontFamily: 'Atkinson Hyperlegible',
-            position: 'relative',
-            zIndex: 1
-          }}>
-            {spent} uttagen · {recharged} återhämtad
-          </div>
+          Energi idag
         </div>
-
-        {/* Time Until Winddown */}
         <div style={{
-          background: T.paper,
-          padding: '12px',
-          borderRadius: '6px',
-          border: minutesUntilWinddown < 60 ? `2px solid ${T.warn}` : `1px solid ${T.line}`,
-          cursor: minutesUntilWinddown < 60 ? 'pointer' : 'default',
-          transition: 'all 0.2s ease'
+          fontFamily: 'IBM Plex Mono',
+          fontSize: '1.2rem',
+          fontWeight: '500',
+          color: T.ink,
+          position: 'relative',
+          zIndex: 1
+        }}>
+          {energyRemaining} <span style={{ fontSize: '0.9rem', color: T.soft }}>av {currentMode.budget} ⚡</span>
+        </div>
+        <div style={{
+          fontSize: '0.75rem',
+          color: T.soft,
+          marginTop: '2px',
+          fontFamily: 'Atkinson Hyperlegible',
+          position: 'relative',
+          zIndex: 1
+        }}>
+          {spent} uttagen · {recharged} återhämtad
+        </div>
+      </div>
+
+      {/* Focus is a line, not a panel — and only when a lap is actually running.
+          An empty "Ingen aktivt fokus" box costs more attention than it repays. */}
+      {activeFocus && (
+        <div style={{
+          marginTop: '10px',
+          fontFamily: 'Atkinson Hyperlegible',
+          fontSize: '0.9rem',
+          color: T.ink
+        }}>
+          <span style={{ color: T.soft }}>Fokus just nu · </span>
+          <b>{activeFocus.goal || 'fokuserar'}</b>
+        </div>
+      )}
+
+      {/* Wind-down: one line, and only clickable (and coloured) when it is close
+          enough to act on. Efter nedvarvningen säger toppbannern redan samma sak,
+          så då är raden bara upprepning. */}
+      {minutesUntilWinddown > 0 && (
+      <div
+        onClick={winddownSoon ? onWinddownClick : undefined}
+        style={{
+          marginTop: '10px',
+          fontFamily: 'Atkinson Hyperlegible',
+          fontSize: '0.9rem',
+          color: winddownSoon ? T.warn : T.soft,
+          cursor: winddownSoon ? 'pointer' : 'default'
         }}
-        onClick={minutesUntilWinddown < 60 ? onWinddownClick : undefined}
-        >
-          <div style={{
-            fontSize: '0.75rem',
-            textTransform: 'uppercase',
-            letterSpacing: '0.5px',
-            color: T.soft,
-            marginBottom: '4px',
-            fontFamily: 'Atkinson Hyperlegible'
-          }}>
-            Till nedvarvning
-          </div>
-          <div style={{
-            fontFamily: 'IBM Plex Mono',
-            fontSize: '1.2rem',
-            fontWeight: '500',
-            color: minutesUntilWinddown < 60 ? T.warn : T.ink
-          }}>
-            {hoursUntilWinddown > 0 && `${hoursUntilWinddown}h `}
-            {minsUntilWinddown}m
-          </div>
-          <div style={{
-            fontSize: '0.75rem',
-            color: T.soft,
-            marginTop: '2px',
-            fontFamily: 'Atkinson Hyperlegible'
-          }}>
-            klockan {settings.winddown}
-            {minutesUntilWinddown < 60 && ' · klicka för sömnankare'}
-          </div>
-        </div>
+      >
+        Nedvarvning {settings.winddown} · om{' '}
+        <b>
+          {hoursUntilWinddown > 0 && `${hoursUntilWinddown}h `}
+          {minsUntilWinddown}m
+        </b>
+        {winddownSoon && ' · klicka för sömnankare'}
+      </div>
+      )}
 
-        {/* Day Progress */}
+      {/* The only chip left: wins are the one counter that celebrates rather
+          than nags. Task counts and the check-in nudge live elsewhere already. */}
+      {state.wins.filter(w => w.day === todayKey()).length > 0 && (
         <div style={{
+          marginTop: '12px',
+          display: 'inline-block',
           background: T.paper,
-          padding: '12px',
-          borderRadius: '6px',
-          border: `1px solid ${T.line}`,
-          position: 'relative'
+          padding: '6px 10px',
+          borderRadius: '4px',
+          fontSize: '0.8rem',
+          fontFamily: 'Atkinson Hyperlegible',
+          color: T.ink,
+          border: `1px solid ${T.line}`
         }}>
-          <div style={{
-            fontSize: '0.75rem',
-            textTransform: 'uppercase',
-            letterSpacing: '0.5px',
-            color: T.soft,
-            marginBottom: '4px',
-            fontFamily: 'Atkinson Hyperlegible'
-          }}>
-            Dagens progression
-          </div>
-          <div style={{
-            fontFamily: 'IBM Plex Mono',
-            fontSize: '1.2rem',
-            fontWeight: '500',
-            color: T.ink
-          }}>
-            {Math.round(dayProgress)}%
-          </div>
-          <div style={{
-            background: T.track,
-            height: '4px',
-            borderRadius: '2px',
-            marginTop: '6px',
-            overflow: 'hidden'
-          }}>
-            <div style={{
-              background: T.petrol,
-              height: '100%',
-              width: `${dayProgress}%`,
-              borderRadius: '2px',
-              transition: 'width 0.5s ease'
-            }} />
-          </div>
+          🎉 {state.wins.filter(w => w.day === todayKey()).length} vinster idag
         </div>
-      </div>
-
-      {/* Quick status indicators */}
-      <div style={{
-        marginTop: '12px',
-        display: 'flex',
-        gap: '8px',
-        flexWrap: 'wrap'
-      }}>
-        {state.tasks.filter(t => !t.done).length > 0 && (
-          <div style={{
-            background: T.paper,
-            padding: '6px 10px',
-            borderRadius: '4px',
-            fontSize: '0.8rem',
-            fontFamily: 'Atkinson Hyperlegible',
-            color: T.ink,
-            border: `1px solid ${T.line}`
-          }}>
-            📋 {state.tasks.filter(t => !t.done).length} uppgifter kvar
-          </div>
-        )}
-        {state.wins.filter(w => w.day === todayKey()).length > 0 && (
-          <div style={{
-            background: T.paper,
-            padding: '6px 10px',
-            borderRadius: '4px',
-            fontSize: '0.8rem',
-            fontFamily: 'Atkinson Hyperlegible',
-            color: T.ink,
-            border: `1px solid ${T.line}`
-          }}>
-            🎉 {state.wins.filter(w => w.day === todayKey()).length} vinster idag
-          </div>
-        )}
-        {state.checkins.filter(c => c.day === todayKey()).length === 0 && (
-          <div style={{
-            background: T.paper,
-            padding: '6px 10px',
-            borderRadius: '4px',
-            fontSize: '0.8rem',
-            fontFamily: 'Atkinson Hyperlegible',
-            color: T.petrol,
-            border: `1px solid ${T.petrol}`,
-            cursor: 'pointer'
-          }}>
-            🔔 Kolla in saknas idag
-          </div>
-        )}
-      </div>
+      )}
     </div>
   );
 }
