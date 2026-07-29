@@ -107,7 +107,8 @@ export const EDU_CARDS = [
   { t: "Varför listor slår minnet", b: "Prospektivt minne — att komma ihåg att komma ihåg — är precis det ADHD-arbetsminnet tappar. Om det är viktigt bor det på en lista inom tre sekunder från tanken. Att bocka av ger dessutom belöningsloopen en takt." },
 ];
 
-export const ICON_CHOICES = ["📌", "🛒", "📞", "✉️", "🧹", "🧺", "🐈", "🩺", "🏃", "📚", "💻", "✍️", "💳", "🗓️", "🍳", "🔧"];
+// Nycklar in i TASK_ICONS (components/TaskIcon.jsx), inte emoji.
+export const ICON_CHOICES = ["pin", "cart", "phone", "mail", "broom", "laundry", "cat", "health", "run", "book", "laptop", "pen", "card", "calendar", "cooking", "wrench"];
 
 export const WEEKDAYS = [
   { key: "mon", label: "Mån" }, { key: "tue", label: "Tis" }, { key: "wed", label: "Ons" },
@@ -115,14 +116,14 @@ export const WEEKDAYS = [
 ];
 
 export const ICON_KEYWORDS = [
-  ["handla", "🛒"], ["köp", "🛒"], ["buy", "🛒"], ["shop", "🛒"], ["grocer", "🛒"],
-  ["ring", "📞"], ["call", "📞"], ["mail", "✉️"], ["mejl", "✉️"], ["email", "✉️"],
-  ["clean", "🧹"], ["städ", "🧹"], ["tvätt", "🧺"], ["laundry", "🧺"],
-  ["vet", "🐈"], ["katt", "🐈"], ["cat", "🐈"], ["läkar", "🩺"], ["doctor", "🩺"], ["vård", "🩺"],
-  ["gym", "🏃"], ["träna", "🏃"], ["run", "🏃"], ["walk", "🏃"], ["promenad", "🏃"],
-  ["read", "📚"], ["läs", "📚"], ["book", "📚"], ["code", "💻"], ["kod", "💻"], ["deploy", "💻"],
-  ["write", "✍️"], ["skriv", "✍️"], ["cv", "✍️"], ["pay", "💳"], ["betal", "💳"], ["faktur", "💳"], ["invoice", "💳"],
-  ["meeting", "🗓️"], ["möte", "🗓️"], ["cook", "🍳"], ["laga mat", "🍳"], ["fix", "🔧"], ["repair", "🔧"],
+  ["handla", "cart"], ["köp", "cart"], ["buy", "cart"], ["shop", "cart"], ["grocer", "cart"],
+  ["ring", "phone"], ["call", "phone"], ["mail", "mail"], ["mejl", "mail"], ["email", "mail"],
+  ["clean", "broom"], ["städ", "broom"], ["tvätt", "laundry"], ["laundry", "laundry"],
+  ["vet", "cat"], ["katt", "cat"], ["cat", "cat"], ["läkar", "health"], ["doctor", "health"], ["vård", "health"],
+  ["gym", "run"], ["träna", "run"], ["run", "run"], ["walk", "run"], ["promenad", "run"],
+  ["read", "book"], ["läs", "book"], ["book", "book"], ["code", "laptop"], ["kod", "laptop"], ["deploy", "laptop"],
+  ["write", "pen"], ["skriv", "pen"], ["cv", "pen"], ["pay", "card"], ["betal", "card"], ["faktur", "card"], ["invoice", "card"],
+  ["meeting", "calendar"], ["möte", "calendar"], ["cook", "cooking"], ["laga mat", "cooking"], ["fix", "wrench"], ["repair", "wrench"],
 ];
 
 export const PRIORITY_ORDER = { A: 0, B: 1, C: 2 };

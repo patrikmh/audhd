@@ -133,7 +133,7 @@ export function WorkingMemoryDisplay({ state, settings, onWinddownClick }) {
           position: 'relative',
           zIndex: 1
         }}>
-          {energyRemaining} <span style={{ fontSize: '0.9rem', color: T.soft }}>av {currentMode.budget} ⚡</span>
+          {energyRemaining} <span style={{ fontSize: '0.9rem', color: T.soft }}>av {currentMode.budget}p</span>
         </div>
         <div style={{
           fontSize: '0.75rem',
@@ -208,7 +208,7 @@ export function WorkingMemoryDisplay({ state, settings, onWinddownClick }) {
           color: T.ink,
           border: `1px solid ${T.line}`
         }}>
-          🎉 {state.wins.filter(w => w.day === todayKey()).length} vinster idag
+          {state.wins.filter(w => w.day === todayKey()).length} vinster idag
         </div>
       )}
     </div>

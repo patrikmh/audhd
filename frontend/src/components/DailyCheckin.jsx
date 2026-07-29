@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { F, T, MODES, ENERGY_LABELS } from "../constants/tokens";
 import { todayKey, todayWeekday } from "../utils/helpers";
 import { useModalDialog } from "../hooks/useModalDialog";
+import { TaskIcon } from "./TaskIcon.jsx";
 
 /**
  * Daily Morning Check-in — shows on first load each day.
@@ -146,7 +147,7 @@ export default function DailyCheckin({ state, onSetEnergy, onDismiss, onAddTask 
             <div style={s.eyebrow}>På dagens lista ({todayTasks.length})</div>
             {todayTasks.slice(0, 6).map((t) => (
               <div key={t.id} style={s.listItem}>
-                <span style={{ marginRight: 8 }}>{t.icon || "📌"}</span>
+                <span style={{ marginRight: 8, color: T.ink, display: "inline-flex" }}><TaskIcon name={t.icon} size={16} /></span>
                 <span style={{ flex: 1 }}>{t.title}</span>
                 <span style={{ fontFamily: F.mono, fontSize: 12, color: T.soft }}>
                   {t.energy}p

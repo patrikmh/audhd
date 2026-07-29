@@ -277,7 +277,7 @@ export default function SetupWizard({ onComplete }) {
       const tourItems = [
         { icon: "🎤", title: "Fånga", text: "Tryck + för att fånga tankar med röst eller text. AI sorterar och förfinar." },
         { icon: "🔄", title: "Varvet", text: "Din dagliga översikt. Energi, uppgifter, framsteg — allt på en skärm." },
-        { icon: "⚡", title: "Energi", text: "Byt nivå när dagen förändras. Systemet anpassar kraven." },
+        { icon: "p", title: "Energi", text: "Byt nivå när dagen förändras. Systemet anpassar kraven." },
         { icon: "💡", title: "Idéer", text: "Sparade idéer förfinas automatiskt. Tryck rätt knapp för att göra om till uppgift." },
         { icon: "📋", title: "Listor", text: "Inköp, packing, vad som helst. Bocka av, återanvänd." },
       ];

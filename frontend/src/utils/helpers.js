@@ -31,19 +31,19 @@ export const todayWeekday = (date = new Date()) => WEEKDAY_MAP[stockholmParts(da
 
 export const guessIcon = (title) => {
   const ICON_KEYWORDS = [
-    ["handla", "🛒"], ["köp", "🛒"], ["buy", "🛒"], ["shop", "🛒"], ["grocer", "🛒"],
-    ["ring", "📞"], ["call", "📞"], ["mail", "✉️"], ["mejl", "✉️"], ["email", "✉️"],
-    ["clean", "🧹"], ["städ", "🧹"], ["tvätt", "🧺"], ["laundry", "🧺"],
-    ["vet", "🐈"], ["katt", "🐈"], ["cat", "🐈"], ["läkar", "🩺"], ["doctor", "🩺"], ["vård", "🩺"],
-    ["gym", "🏃"], ["träna", "🏃"], ["run", "🏃"], ["walk", "🏃"], ["promenad", "🏃"],
-    ["read", "📚"], ["läs", "📚"], ["book", "📚"], ["code", "💻"], ["kod", "💻"], ["deploy", "💻"],
-    ["write", "✍️"], ["skriv", "✍️"], ["cv", "✍️"], ["pay", "💳"], ["betal", "💳"], ["faktur", "💳"], ["invoice", "💳"],
-    ["meeting", "🗓️"], ["möte", "🗓️"], ["cook", "🍳"], ["laga mat", "🍳"], ["fix", "🔧"], ["repair", "🔧"],
+    ["handla", "cart"], ["köp", "cart"], ["buy", "cart"], ["shop", "cart"], ["grocer", "cart"],
+    ["ring", "phone"], ["call", "phone"], ["mail", "mail"], ["mejl", "mail"], ["email", "mail"],
+    ["clean", "broom"], ["städ", "broom"], ["tvätt", "laundry"], ["laundry", "laundry"],
+    ["vet", "cat"], ["katt", "cat"], ["cat", "cat"], ["läkar", "health"], ["doctor", "health"], ["vård", "health"],
+    ["gym", "run"], ["träna", "run"], ["run", "run"], ["walk", "run"], ["promenad", "run"],
+    ["read", "book"], ["läs", "book"], ["book", "book"], ["code", "laptop"], ["kod", "laptop"], ["deploy", "laptop"],
+    ["write", "pen"], ["skriv", "pen"], ["cv", "pen"], ["pay", "card"], ["betal", "card"], ["faktur", "card"], ["invoice", "card"],
+    ["meeting", "calendar"], ["möte", "calendar"], ["cook", "cooking"], ["laga mat", "cooking"], ["fix", "wrench"], ["repair", "wrench"],
   ];
 
   const words = title.toLowerCase().split(/\s+/);
   const hit = ICON_KEYWORDS.find(([k]) => words.some((w) => w.startsWith(k)));
-  return hit ? hit[1] : "📌";
+  return hit ? hit[1] : "pin";
 };
 
 // CSS-variabler, inte hex — annars behåller energiprickarna sina ljusa färger

@@ -22,7 +22,7 @@ export const DEFAULT_STATE = {
     defaultCapacity: "steady",
     theme: "system", // 'system' | 'light' | 'dark'
     displayName: "",
-    avatarEmoji: "🌀",
+    avatarIcon: "spiral",
     defaultFocusMinutes: 25,
     visibleTools: {
       focus: true,
@@ -65,7 +65,7 @@ export const DEFAULT_STATE = {
 
 export const DEFAULT_TASK = {
   title: "",
-  icon: "📌",
+  icon: "pin",
   trigger: "",
   energy: 2,
   time: null,

@@ -3,6 +3,7 @@ import { F, T } from "../constants/tokens";
 import { todayKey } from "../utils/helpers";
 import { INTEGRATIONS } from "../constants/integrations";
 import { useModalDialog } from "../hooks/useModalDialog";
+import { AvatarIcon, AVATAR_ICON_KEYS, avatarIconKey } from "./TaskIcon.jsx";
 
 /**
  * SettingsView — full settings/preferences panel.
@@ -37,7 +38,7 @@ const THEME_OPTIONS = [
   { key: "dark", label: "Mörkt" },
 ];
 
-const AVATAR_CHOICES = ["🌀", "🌿", "🌊", "🔥", "⭐", "🦉", "🐈", "🌙"];
+const AVATAR_CHOICES = AVATAR_ICON_KEYS;
 
 export function SettingsView({
   state,
@@ -220,20 +221,20 @@ export function SettingsView({
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0, flex: 1 }}>
               <div aria-label="Välj avatar" style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
-                {AVATAR_CHOICES.map((emoji) => (
+                {AVATAR_CHOICES.map((key) => (
                   <button
-                    key={emoji}
-                    onClick={() => patchSettings({ avatarEmoji: emoji })}
-                    aria-label={`Välj avatar ${emoji}`}
-                    aria-pressed={(s.avatarEmoji || "🌀") === emoji}
+                    key={key}
+                    onClick={() => patchSettings({ avatarIcon: key })}
+                    aria-label={`Välj avatar ${key}`}
+                    aria-pressed={avatarIconKey(s) === key}
                     style={{
-                      width: 32, height: 32, fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center",
-                      borderRadius: 8, cursor: "pointer", fontFamily: "inherit",
-                      border: (s.avatarEmoji || "🌀") === emoji ? `1.5px solid ${T.petrol}` : "1px solid transparent",
-                      background: (s.avatarEmoji || "🌀") === emoji ? T.paper : "transparent",
+                      width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center",
+                      borderRadius: 8, cursor: "pointer", fontFamily: "inherit", color: T.ink,
+                      border: avatarIconKey(s) === key ? `1.5px solid ${T.petrol}` : "1px solid transparent",
+                      background: avatarIconKey(s) === key ? T.paper : "transparent",
                     }}
                   >
-                    {emoji}
+                    <AvatarIcon name={key} size={16} />
                   </button>
                 ))}
               </div>

@@ -15,7 +15,8 @@ import { useModalDialog } from "./hooks/useModalDialog";
 import { useTheme } from "./hooks/useTheme";
 import { GhostTextarea } from "./components/GhostTextarea";
 import varvLogo from "./assets/varv-logo.png";
-import { IconTrash, IconCalendar, IconSparkle, IconMic, IconStop, IconIdea, IconImage, IconLoop, IconAgent } from "./components/icons.jsx";
+import { IconTrash, IconCalendar, IconSparkle, IconMic, IconStop, IconIdea, IconImage, IconLoop, IconAgent, IconCheck, IconClose, IconPencil, IconUndo, IconDot } from "./components/icons.jsx";
+import { TaskIcon, AvatarIcon, avatarIconKey } from "./components/TaskIcon.jsx";
 // Cytoscape.js is ~230kb gzipped — split it into its own chunk so opening the
 // app (or the Ideas list view) never pays for it; only "karta" mode does.
 const IdeaGraph = lazy(() => import("./components/IdeaGraph").then((m) => ({ default: m.IdeaGraph })));
@@ -465,7 +466,7 @@ function VarvApp({ username, onLogout }) {
             time: ev.start,
             m: hmToMin(ev.start),
             minutes: Math.max(15, (hmToMin(ev.end) || hmToMin(ev.start) + 30) - hmToMin(ev.start)),
-            icon: "🗓️",
+            icon: "calendar",
             isEvent: true,
           }))
         : [];
@@ -740,7 +741,7 @@ function VarvApp({ username, onLogout }) {
   };
 
   const DEFAULT_TASK = {
-    icon: "📌", trigger: "", energy: 2, time: "", essential: false, steps: [],
+    icon: "pin", trigger: "", energy: 2, time: "", essential: false, steps: [],
     done: false, doneAt: null, minutes: 30, priority: null, inbox: true, tags: [], repeatDays: [],
   };
 
@@ -851,7 +852,7 @@ function VarvApp({ username, onLogout }) {
       ideas: [newIdea, ...st.ideas].slice(0, 100),
     }));
     sync.trackChange('idea', id, 'upsert', newIdea);
-    setToast(canRefine ? "💡 Sparad — förfinas i bakgrunden" : "💡 Sparad som idé");
+    setToast(canRefine ? "Sparad — förfinas i bakgrunden" : "Sparad som idé");
     clearTimeout(toastTimer.current);
     toastTimer.current = setTimeout(() => setToast(null), 2200);
     if (canRefine) refineIdea(id, raw, newIdea); // fire-and-forget: fångsten väntar aldrig på AI
@@ -859,7 +860,7 @@ function VarvApp({ username, onLogout }) {
 
   const ideaToTask = (idea) => {
     const title = idea.title || idea.raw.slice(0, 60);
-    addTask({ title, icon: "💡" });
+    addTask({ title, icon: "idea" });
     addWin(`Idé → uppgift: ${title}`);
   };
 
@@ -1166,7 +1167,7 @@ function VarvApp({ username, onLogout }) {
               aria-expanded={accountMenu}
               aria-haspopup="menu"
             >
-              {state.settings.avatarEmoji || "🌀"} {state.settings.displayName || username} ▾
+              <AvatarIcon name={avatarIconKey(state.settings)} size={14} /> {state.settings.displayName || username} ▾
             </button>
             {accountMenu && (
               <div
@@ -1302,7 +1303,7 @@ function VarvApp({ username, onLogout }) {
                 style={{ background: 'none', border: 'none', color: medToday.status === 'taken' ? T.moss : T.soft, fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', padding: 0 }}
                 onClick={() => setState((st) => ({ ...st, meds: st.meds.filter((m) => m.day !== todayKey()) }))}
               >
-                {medToday.status === "taken" ? "✓ medicin" : medToday.status === "skipped" ? "~ medicin" : "· medicin"}
+                {medToday.status === "taken" ? <><IconCheck size={12} /> medicin</> : medToday.status === "skipped" ? "~ medicin" : "· medicin"}
               </button>
             ) : (
               <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -1322,7 +1323,7 @@ function VarvApp({ username, onLogout }) {
                       fontFamily: 'inherit'
                     }}
                   >
-                    {v === "taken" ? "✓" : v === "skipped" ? "~" : "·"}
+                    {v === "taken" ? <IconCheck size={12} /> : v === "skipped" ? "~" : "·"}
                   </button>
                 ))}
               </div>
@@ -1368,7 +1369,7 @@ function VarvApp({ username, onLogout }) {
                     }}
                   >
                     <span>{r}</span>
-                    <span style={s.restPlus}>{done ? "✓ +2" : "+2"}</span>
+                    <span style={{ ...s.restPlus, display: "inline-flex", alignItems: "center", gap: 4 }}>{done && <IconCheck size={12} />}+2</span>
                   </button>
                 );
               });
@@ -1389,13 +1390,13 @@ function VarvApp({ username, onLogout }) {
           {nextTask ? (
             <>
               <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginTop: 8 }}>
-                <span style={s.coinLg}>{nextTask.icon || "📌"}</span>
+                <span style={s.coinLg}><TaskIcon name={nextTask.icon} size={22} /></span>
                 <div style={{ ...s.nextTitle, marginTop: 4, flex: 1 }}>{nextTask.title}</div>
-                <button style={s.doneBtn} onClick={() => completeTask(nextTask)} aria-label="Markera klar">✓</button>
+                <button style={s.doneBtn} onClick={() => completeTask(nextTask)} aria-label="Markera klar"><IconCheck size={18} /></button>
               </div>
               <div style={s.metaRow}>
                 {nextTask.time && <span style={s.mono}>{nextTask.time}</span>}
-                <span style={{ ...s.chip, background: "transparent", border: `1.5px solid ${energyColor(nextTask.energy)}`, color: T.spruce }}>{nextTask.energy}⚡</span>
+                <span style={{ ...s.chip, background: "transparent", border: `1.5px solid ${energyColor(nextTask.energy)}`, color: T.spruce }}>{nextTask.energy}p</span>
                 {nextTask.trigger && <span style={s.chipSoft}>när {nextTask.trigger}</span>}
               </div>
               {nextTask.steps && nextTask.steps.length > 0 && (
@@ -1485,10 +1486,10 @@ function VarvApp({ username, onLogout }) {
                         <div style={s.tlTime}>{t.time}</div>
                         <div style={t.isEvent ? { ...s.tlDot, background: "transparent", border: `2px solid ${T.petrol}` } : { ...s.tlDot, background: energyColor(t.energy) }} />
                         <div style={{ ...s.tlBody, display: "flex", alignItems: "center", gap: 8 }}>
-                          <span style={s.coin}>{t.icon || "📌"}</span>
+                          <span style={s.coin}><TaskIcon name={t.icon} size={18} /></span>
                           <span>
                             <span style={{ fontWeight: 700 }}>{t.title}</span>
-                            <span style={{ color: T.soft }}>{t.isEvent ? ` · ${t.minutes} min` : ` · ${t.energy}⚡`}</span>
+                            <span style={{ color: T.soft }}>{t.isEvent ? ` · ${t.minutes} min` : ` · ${t.energy}p`}</span>
                           </span>
                         </div>
                       </div>
@@ -1631,8 +1632,8 @@ function VarvApp({ username, onLogout }) {
                 setContextMenu({
                   x: e.clientX, y: e.clientY,
                   items: [
-                    { icon: "✎", label: "Redigera", action: () => selectTask(t) },
-                    { icon: t.done ? "↩" : "✓", label: t.done ? "Återställ" : "Markera klar", action: () => t.done ? undoCompleteTask(t) : completeTask(t) },
+                    { icon: <IconPencil />, label: "Redigera", action: () => selectTask(t) },
+                    { icon: t.done ? <IconUndo /> : <IconCheck />, label: t.done ? "Återställ" : "Markera klar", action: () => t.done ? undoCompleteTask(t) : completeTask(t) },
                     { icon: <IconCalendar />, label: "Schemalägg", action: () => { selectTask(t); setTool(null); } },
                     { separator: true },
                     { icon: <IconTrash />, label: "Ta bort", danger: true, action: () => removeTask(t.id) },
@@ -1671,7 +1672,7 @@ function VarvApp({ username, onLogout }) {
             {doneForSelectedDate.map((entry) => (
               <div key={entry.occurrence ? `${entry.task.id}:${entry.date}` : entry.task.id} style={{ ...s.leaf, marginTop: 8, opacity: 0.75 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <span style={s.coin}>{entry.task.icon || "📌"}</span>
+                  <span style={s.coin}><TaskIcon name={entry.task.icon} size={18} /></span>
                   <span style={{ textDecoration: "line-through", color: T.soft, flex: 1 }}>{entry.task.title}</span>
                   {entry.doneAt && (
                     <span style={{ fontSize: 12, color: T.soft }}>{new Date(entry.doneAt).toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" })}</span>
@@ -1684,7 +1685,7 @@ function VarvApp({ username, onLogout }) {
                   <div style={{ marginTop: 6, paddingLeft: 34 }}>
                     {entry.steps.map((st, i) => (
                       <div key={st.id || i} style={{ fontSize: 13, color: T.soft, textDecoration: st.done ? "line-through" : "none" }}>
-                        {st.done ? "✓" : "·"} {st.title}
+                        {st.done ? <IconCheck size={13} /> : <IconDot size={13} />} {st.title}
                       </div>
                     ))}
                   </div>
@@ -1757,7 +1758,7 @@ function VarvApp({ username, onLogout }) {
                   setContextMenu({
                     x: e.clientX, y: e.clientY,
                     items: [
-                      { icon: "✎", label: "Redigera", action: () => {} },
+                      { icon: <IconPencil />, label: "Redigera", action: () => {} },
                       { icon: "→", label: "Till uppgift", action: () => ideaToTask(idea) },
                       { icon: <IconSparkle />, label: "Förfina", action: () => refineIdea(idea.id, idea.raw) },
                       { separator: true },
@@ -1800,11 +1801,11 @@ function VarvApp({ username, onLogout }) {
           {(() => {
             const allTools = [
               vt.focus !== false && { id: "focus", label: "Fokusvarv", sub: lapRunning ? "pågår…" : "timer + mål", active: tool === "focus" || lapRunning, onClick: () => setTool(tool === "focus" ? null : "focus") },
-              vt.movement !== false && { id: "move", label: "Rörelsepaus", sub: "5 min, +2⚡", active: tool === "move", onClick: () => setTool(tool === "move" ? null : "move") },
+              vt.movement !== false && { id: "move", label: "Rörelsepaus", sub: "5 min, +2p", active: tool === "move", onClick: () => setTool(tool === "move" ? null : "move") },
               vt.checkin !== false && { id: "checkin", label: "Tankekoll", sub: "en snällare läsning", active: tool === "checkin", onClick: () => setTool(tool === "checkin" ? null : "checkin") },
               vt.wins !== false && { id: "wins", label: "Vinster", sub: `${winsToday.length} idag`, active: tool === "wins", onClick: () => setTool(tool === "wins" ? null : "wins") },
               vt.sleep !== false && { id: "sleep", label: "Sömnankare", sub: `vakna ${state.settings.wake}`, active: tool === "sleep", onClick: () => setTool(tool === "sleep" ? null : "sleep") },
-              vt.breathing !== false && { id: "ground", label: "Andningsankare", sub: "3 min, +1⚡", active: tool === "ground", onClick: () => setTool(tool === "ground" ? null : "ground") },
+              vt.breathing !== false && { id: "ground", label: "Andningsankare", sub: "3 min, +1p", active: tool === "ground", onClick: () => setTool(tool === "ground" ? null : "ground") },
               vt.week !== false && { id: "week", label: "Veckoöversikt", sub: "energimönster", active: tool === "week", onClick: () => setTool(tool === "week" ? null : "week") },
               vt.why === true && { id: "edu", label: "Varför det funkar", sub: "evidensen", active: tool === "edu", onClick: () => setTool(tool === "edu" ? null : "edu") },
               { id: "morning", label: "Morgoncheck", sub: "översikt + energi", active: false, onClick: () => setShowCheckin(true) },
@@ -1966,7 +1967,7 @@ function VarvApp({ username, onLogout }) {
       {!blockingOverlayOpen && <AgentProgress step={streamAgent.step} text={streamAgent.text} isRunning={streamAgent.isRunning} />}
       {!blockingOverlayOpen && undoTask && (
         <div role="status" aria-live="polite" style={{ ...s.toast, background: T.petrol, display: 'flex', gap: 10, alignItems: 'center' }}>
-          <span>✓ {undoTask.title}</span>
+          <span><IconCheck size={13} /> {undoTask.title}</span>
           <button
             onClick={() => undoCompleteTask(undoTask)}
             style={{ background: T.control, color: T.petrol, border: 'none', borderRadius: 6, padding: '4px 12px', fontWeight: 700, cursor: 'pointer', fontSize: 13 }}
@@ -2295,7 +2296,7 @@ function EnergyDial({ budget, remaining }) {
           {remaining}
         </text>
         <text x="80" y="88" textAnchor="middle" style={{ font: `400 11px ${F.mono}`, fill: T.soft }}>
-          of {budget} ⚡
+          of {budget}p
         </text>
       </svg>
     </div>
@@ -2531,8 +2532,8 @@ function AddTask({ onAdd, defaultDate }) {
         <input style={{ ...s.input, flex: 1 }} placeholder="Vad behöver göras?" value={title} onChange={(e) => setTitle(e.target.value)} />
         <VoiceInputButton onResult={(t) => setTitle((prev) => prev ? prev + " " + t : t)} language={"sv-SE"} />
       </div>
-      <button style={{ ...s.linkBtn, fontSize: 13, marginTop: 6 }} onClick={() => setPickIcon((v) => !v)}>
-        ikon {shownIcon} · {pickIcon ? "klar" : "ändra"}
+      <button style={{ ...s.linkBtn, fontSize: 13, marginTop: 6, display: "inline-flex", alignItems: "center", gap: 6 }} onClick={() => setPickIcon((v) => !v)}>
+        <TaskIcon name={shownIcon} size={14} /> ikon · {pickIcon ? "klar" : "ändra"}
       </button>
       {pickIcon && (
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 6 }}>
@@ -2540,13 +2541,17 @@ function AddTask({ onAdd, defaultDate }) {
             <button
               key={ic}
               onClick={() => { setIcon(ic); setPickIcon(false); }}
+              aria-label={`Välj ikon ${ic}`}
+              aria-pressed={shownIcon === ic}
               style={{
-                fontSize: 18, padding: "4px 7px", borderRadius: 8, cursor: "pointer",
+                display: "inline-flex", alignItems: "center", justifyContent: "center",
+                width: 32, height: 32, padding: 0, borderRadius: 8, cursor: "pointer",
+                color: T.ink,
                 border: shownIcon === ic ? `2px solid ${T.petrol}` : `1px solid ${T.line}`,
                 background: shownIcon === ic ? T.accentSoft : "transparent",
               }}
             >
-              {ic}
+              <TaskIcon name={ic} size={18} />
             </button>
           ))}
         </div>
@@ -2746,7 +2751,7 @@ function TaskCard({ task, onDone, onUpdate, onRemove, onWin, agentBusy, aiEnable
           style={{ display: "flex", alignItems: "center", gap: 10, flex: 1, background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: "inherit", textAlign: "left", minWidth: 0 }}
           aria-expanded={expanded} aria-label="Visa detaljer"
         >
-          <span style={s.coin}>{task.icon || "📌"}</span>
+          <span style={s.coin}><TaskIcon name={task.icon} size={18} /></span>
           <span style={{ flex: 1, minWidth: 0 }}>
             <span style={{ fontWeight: 700, fontSize: 15, color: T.ink }}>
               {task.priority && <span style={s.prioBadge}>{task.priority}</span>}
@@ -2775,11 +2780,11 @@ function TaskCard({ task, onDone, onUpdate, onRemove, onWin, agentBusy, aiEnable
                   </span>
                 );
               })()}
-              {task.time ? `${task.time} · ` : ""}{task.energy}⚡{stepsLeft > 0 ? ` · ${stepsLeft} steg kvar` : ""}{expanded ? "" : " · tryck för mer"}
+              {task.time ? `${task.time} · ` : ""}{task.energy}p{stepsLeft > 0 ? ` · ${stepsLeft} steg kvar` : ""}{expanded ? "" : " · tryck för mer"}
             </span>
           </span>
         </button>
-        <button className={popping ? "check-pop" : ""} style={s.doneBtn} onClick={handleDone} aria-label="Markera klar">✓</button>
+        <button className={popping ? "check-pop" : ""} style={s.doneBtn} onClick={handleDone} aria-label="Markera klar"><IconCheck size={18} /></button>
       </div>
 
       {/* expanded details */}
@@ -2894,7 +2899,7 @@ function TaskCard({ task, onDone, onUpdate, onRemove, onWin, agentBusy, aiEnable
                 />
               </label>
               <button style={{ ...s.linkBtn, fontSize: 12 }} onClick={() => { setEditTitle(task.title); setEditNote(task.note || ''); setEditing(true); }}>
-                ✎ redigera
+                <IconPencil size={13} /> redigera
               </button>
             </div>
           )}
@@ -2934,7 +2939,7 @@ function TaskCard({ task, onDone, onUpdate, onRemove, onWin, agentBusy, aiEnable
               {busy ? "bryter ner…" : task.steps.length ? "bryt ner igen (AI)" : "bryt ner (AI)"}
             </button>
             <button style={{ ...s.linkBtn, fontSize: 12 }} onClick={() => setShowFocusHint((v) => !v)}>
-              {showFocusHint ? "dölj fokus" : focusHint ? "✓ fokus satt" : "+ fokusera på något?"}
+              {showFocusHint ? "dölj fokus" : focusHint ? <><IconCheck size={12} /> fokus satt</> : "+ fokusera på något?"}
             </button>
             <button style={s.linkBtn} onClick={() => setEditingSteps((v) => !v)}>
               {editingSteps ? "klar med steg" : "redigera steg"}
@@ -2976,7 +2981,7 @@ function TaskCard({ task, onDone, onUpdate, onRemove, onWin, agentBusy, aiEnable
                     onClick={() => removeStep(st.id)}
                     aria-label={`Ta bort steg: ${st.title || `steg ${i + 1}`}`}
                   >
-                    ✕
+                    <IconClose size={14} />
                   </button>
                 </div>
               ))}
@@ -2987,7 +2992,7 @@ function TaskCard({ task, onDone, onUpdate, onRemove, onWin, agentBusy, aiEnable
               <div style={{ marginTop: 4 }}>
                 {task.steps.map((st) => (
                   <button key={st.id} style={s.stepRow} onClick={() => toggleStep(st.id)}>
-                    <span style={{ ...s.stepBox, background: st.done ? T.moss : "transparent" }}>{st.done ? "✓" : ""}</span>
+                    <span style={{ ...s.stepBox, background: st.done ? T.moss : "transparent" }}>{st.done ? <IconCheck size={13} /> : null}</span>
                     <span style={{ textDecoration: st.done ? "line-through" : "none", color: st.done ? T.soft : T.ink, textAlign: "left" }}>
                       {st.title} <span style={{ color: T.soft }}>· {st.minutes} min</span>
                     </span>
@@ -3175,7 +3180,7 @@ function MovementSnack({ onDone }) {
       <div style={{ fontWeight: 700 }}>{idea}</div>
       <p style={s.body}>Fem minuters rörelse hjälper uppmärksamheten mätbart. Intensiteten spelar ingen roll — rörelsen gör det.</p>
       <div style={{ display: "flex", gap: 10, marginTop: 8, alignItems: "center" }}>
-        <button style={s.primaryBtn} onClick={() => onDone(idea)}>Klart (+2⚡)</button>
+        <button style={s.primaryBtn} onClick={() => onDone(idea)}>Klart (+2p)</button>
         <button style={s.linkBtn} onClick={() => setIdea(MOVEMENT_IDEAS[(MOVEMENT_IDEAS.indexOf(idea) + 1) % MOVEMENT_IDEAS.length])}>
           ett annat förslag
         </button>
@@ -3288,7 +3293,7 @@ function BreathingSpace({ onDone }) {
     return (
       <div style={{ ...s.card, marginTop: 10, textAlign: "center" }}>
         <div style={{ fontFamily: F.display, fontSize: 22 }}>Landat.</div>
-        <button style={{ ...s.primaryBtn, marginTop: 10 }} onClick={onDone}>Klart (+1⚡)</button>
+        <button style={{ ...s.primaryBtn, marginTop: 10 }} onClick={onDone}>Klart (+1p)</button>
       </div>
     );
 
@@ -3465,7 +3470,7 @@ function Lists({ lists, onAddList, onRemoveList, onAddItem, onToggleItem, onRese
 
           {[...l.items].sort((a, b) => Number(a.done) - Number(b.done)).map((it) => (
             <button key={it.id} style={s.stepRow} onClick={() => onToggleItem(l.id, it.id)}>
-              <span style={{ ...s.stepBox, background: it.done ? T.moss : "transparent" }}>{it.done ? "✓" : ""}</span>
+              <span style={{ ...s.stepBox, background: it.done ? T.moss : "transparent" }}>{it.done ? <IconCheck size={13} /> : null}</span>
               <span style={{ textDecoration: it.done ? "line-through" : "none", color: it.done ? T.soft : T.ink, textAlign: "left", fontSize: 15 }}>{it.text}</span>
             </button>
           ))}
@@ -3630,7 +3635,7 @@ function IdeaCard({ idea, onRefine, onToTask, onRemove, onUpdate, onContextMenu,
           {idea.raw.length > 80 && (
             <p style={{ ...s.body, color: T.soft, fontSize: 13, marginTop: 4 }}>{idea.raw}</p>
           )}
-          {idea.status === "refining" && <div style={{ fontSize: 12, color: T.soft, marginTop: 6 }}>✨ förfinas…</div>}
+          {idea.status === "refining" && <div style={{ fontSize: 12, color: T.soft, marginTop: 6 }}><IconSparkle size={12} /> förfinas…</div>}
           {idea.status === "fail" && <div style={{ fontSize: 12, color: T.warn, marginTop: 6 }}>förfiningen misslyckades</div>}
         </>
       )}
@@ -3638,7 +3643,7 @@ function IdeaCard({ idea, onRefine, onToTask, onRemove, onUpdate, onContextMenu,
       {/* Action row */}
       <div style={{ display: "flex", gap: 10, marginTop: 12, flexWrap: "wrap", alignItems: "center" }}>
         <button style={s.linkBtn} onClick={onToTask}>→ uppgift</button>
-        <button style={s.linkBtn} onClick={() => setEditing(true)}>✎ redigera</button>
+        <button style={s.linkBtn} onClick={() => setEditing(true)}><IconPencil size={13} /> redigera</button>
         {refined && (
           <button style={{ ...s.linkBtn, color: T.soft }} onClick={() => setShowRaw((v) => !v)}>
             {showRaw ? "dölj original" : "visa original"}
@@ -3754,8 +3759,11 @@ const styles = {
   unstickBox: { marginTop: 12, padding: "12px 14px", background: T.note, border: `1px solid ${T.noteBorder}`, borderRadius: 12 },
   syncRow: { display: "flex", gap: 8, marginTop: 12 },
   micBtn: { width: 48, height: 48, borderRadius: 24, border: "none", color: T.textOnAccent, fontSize: 20, cursor: "pointer", flexShrink: 0, display: "grid", placeItems: "center" },
-  coin: { width: 32, height: 32, borderRadius: 10, background: T.surfaceQuiet, border: `1px solid ${T.line}`, display: "grid", placeItems: "center", fontSize: 16, flexShrink: 0 },
-  coinLg: { width: 42, height: 42, borderRadius: 13, background: T.surfaceQuiet, border: `1px solid ${T.line}`, display: "grid", placeItems: "center", fontSize: 21, flexShrink: 0 },
+  /* Ytorna är till för ikonerna — inte för text. Behåll fontSize på elementet
+     i fall någon renderar en sträng här inne (bakåtkompatibilitet), men sätt
+     color så SVG-ikonerna får samma färg som omgivande text i mörkt läge. */
+  coin: { width: 32, height: 32, borderRadius: 10, background: T.surfaceQuiet, border: `1px solid ${T.line}`, display: "grid", placeItems: "center", fontSize: 16, color: T.ink, flexShrink: 0 },
+  coinLg: { width: 42, height: 42, borderRadius: 13, background: T.surfaceQuiet, border: `1px solid ${T.line}`, display: "grid", placeItems: "center", fontSize: 21, color: T.ink, flexShrink: 0 },
   nav: { position: "fixed", bottom: 0, left: 0, right: 0, height: 66, background: T.card, borderTop: `1px solid ${T.line}`, display: "flex", justifyContent: "space-around", alignItems: "center", maxWidth: "100%", zIndex: 40, paddingBottom: "env(safe-area-inset-bottom)" },
   navBtn: { position: "relative", minWidth: 52, minHeight: 48, background: "none", border: "none", fontSize: 13, fontFamily: "inherit", cursor: "pointer", padding: "10px 10px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3 },
   navDash: { width: 20, height: 3, borderRadius: 2, background: T.petrol, display: "block" },

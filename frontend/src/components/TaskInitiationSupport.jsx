@@ -46,7 +46,7 @@ export function TaskInitiationSupport({ task, onStartStep, onSetTrigger, onClose
             fontFamily: F.body,
             color: T.soft
           }}>
-            <span>⚡ {energyCost}</span>
+            <span>p {energyCost}</span>
             <span>·</span>
             <span>🕐 {timeEstimate} min</span>
             {task.priority && (
