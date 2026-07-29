@@ -15,6 +15,7 @@ import { useModalDialog } from "./hooks/useModalDialog";
 import { useTheme } from "./hooks/useTheme";
 import { GhostTextarea } from "./components/GhostTextarea";
 import varvLogo from "./assets/varv-logo.png";
+import varvLogoDark from "./assets/varv-logo-dark.png";
 import { IconTrash, IconCalendar, IconSparkle, IconMic, IconStop, IconIdea, IconImage, IconLoop, IconAgent, IconCheck, IconClose, IconPencil, IconUndo, IconDot } from "./components/icons.jsx";
 import { TaskIcon, AvatarIcon, avatarIconKey } from "./components/TaskIcon.jsx";
 // Cytoscape.js is ~230kb gzipped — split it into its own chunk so opening the
@@ -1127,6 +1128,14 @@ function VarvApp({ username, onLogout }) {
         .visually-hidden { position: absolute !important; width: 1px !important; height: 1px !important; padding: 0 !important; margin: -1px !important; overflow: hidden !important; clip: rect(0, 0, 0, 0) !important; white-space: nowrap !important; border: 0 !important; }
         :focus-visible { outline: 3px solid ${T.petrol}; outline-offset: 3px; }
 
+        /* Loggan finns i två varianter — svart streckgrafik för ljust läge och
+           en ljus version med gradient-bakgrund för mörkt. Båda ligger i
+           headern, men bara den som matchar <html data-theme> visas. */
+        .varv-logo-light { display: block; }
+        .varv-logo-dark { display: none; }
+        :root[data-theme="dark"] .varv-logo-light { display: none; }
+        :root[data-theme="dark"] .varv-logo-dark { display: block; }
+
         @keyframes checkPop { 0% { transform: scale(1); } 45% { transform: scale(1.18); } 100% { transform: scale(1); } }
         .check-pop { animation: checkPop 0.28s ease; }
 
@@ -1156,7 +1165,8 @@ function VarvApp({ username, onLogout }) {
       <div className="shell" style={s.shell}>
         {/* ============ header ============ */}
         <header style={s.header}>
-          <img src={varvLogo} alt="Varv" style={s.logo} />
+          <img src={varvLogo} alt="Varv" className="varv-logo varv-logo-light" style={s.logo} />
+          <img src={varvLogoDark} alt="" aria-hidden="true" className="varv-logo varv-logo-dark" style={s.logo} />
           {/* Account menu: configuration (inställningar, agenter, kopplingar) lives
               here so the verktygslådan only holds things you actually *do*. */}
           <div style={{ marginLeft: "auto", position: "relative" }}>
