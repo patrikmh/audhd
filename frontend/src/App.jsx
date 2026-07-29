@@ -3692,7 +3692,10 @@ const styles = {
   // laptop — en inline maxWidth hade vunnit över stylesheetet.
   shell: { margin: "0 auto", padding: "16px 16px 130px" },
   header: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 },
-  logo: { display: "block", width: 132, height: "auto" },
+  /* Loggan är ~16:9 (VARV med loop-motivet) — utgå från höjden så headern
+     håller sig slank, och låt bredden följa. Några pixlar lägre än avatar-
+     knappen på höger sida, så blicken landar på loggan först. */
+  logo: { display: "block", height: 40, width: "auto", flexShrink: 0 },
   hero: { background: T.card, border: `1px solid ${T.line}`, borderRadius: 20, padding: "18px 16px 14px", marginTop: 12 },
   eyebrow: { font: `500 11px ${F.mono}`, letterSpacing: "0.12em", textTransform: "uppercase", color: T.spruce },
   section: { marginTop: 24 },
